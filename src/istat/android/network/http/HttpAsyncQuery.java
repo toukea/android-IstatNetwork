@@ -5,6 +5,9 @@ import istat.android.network.util.ToolKits.Stream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
 import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
 
 import android.os.AsyncTask;
@@ -25,6 +28,7 @@ public final class HttpAsyncQuery extends
 	private boolean running = true, complete = false;
 	private long startTimeStamp = 0;
 	private long endTimeStamp = 0;
+	static final List<HttpAsyncQuery> taskQueue = new ArrayList<HttpAsyncQuery>();
 
 	private HttpAsyncQuery(int type, HttpQuery<?> http,
 			HttpQueryCallBack callBack) {
@@ -38,6 +42,7 @@ public final class HttpAsyncQuery extends
 		super.onPreExecute();
 		running = true;
 		startTimeStamp = System.currentTimeMillis();
+		taskQueue.add(this);
 	}
 
 	@Override
@@ -99,6 +104,7 @@ public final class HttpAsyncQuery extends
 		complete = true;
 		running = false;
 		// Log.e("TAGI TAG", "post Execute");
+		taskQueue.remove(this);
 	}
 
 	@Override
@@ -116,6 +122,7 @@ public final class HttpAsyncQuery extends
 		if (mOnQueryCancel != null) {
 			mOnQueryCancel.onCancelled(this);
 		}
+		taskQueue.remove(this);
 		super.onCancelled();
 	}
 
@@ -250,5 +257,9 @@ public final class HttpAsyncQuery extends
 
 	public void setOnQueryCancelListener(OnQueryCancelListener mOnQueryCancel) {
 		this.mOnQueryCancel = mOnQueryCancel;
+	}
+
+	public static List<HttpAsyncQuery> getTaskqueue() {
+		return taskQueue;
 	}
 }
