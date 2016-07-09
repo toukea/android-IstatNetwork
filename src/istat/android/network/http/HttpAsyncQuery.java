@@ -6,7 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
 
@@ -28,7 +31,7 @@ public final class HttpAsyncQuery extends
 	private boolean running = true, complete = false;
 	private long startTimeStamp = 0;
 	private long endTimeStamp = 0;
-	static final List<HttpAsyncQuery> taskQueue = new ArrayList<HttpAsyncQuery>();
+	static final HashMap<Object, HttpAsyncQuery> taskQueue = new HashMap<Object, HttpAsyncQuery>();
 
 	private HttpAsyncQuery(int type, HttpQuery<?> http,
 			HttpQueryCallBack callBack) {
@@ -42,7 +45,8 @@ public final class HttpAsyncQuery extends
 		super.onPreExecute();
 		running = true;
 		startTimeStamp = System.currentTimeMillis();
-		taskQueue.add(this);
+		taskQueue.put(mHttpCallBack != null ? mHttpCallBack : Math.random()
+				+ "", this);
 	}
 
 	@Override
@@ -104,7 +108,7 @@ public final class HttpAsyncQuery extends
 		complete = true;
 		running = false;
 		// Log.e("TAGI TAG", "post Execute");
-		taskQueue.remove(this);
+		taskQueue.values().removeAll(Collections.singletonList(this));
 	}
 
 	@Override
@@ -122,7 +126,8 @@ public final class HttpAsyncQuery extends
 		if (mOnQueryCancel != null) {
 			mOnQueryCancel.onCancelled(this);
 		}
-		taskQueue.remove(this);
+		// taskQueue.remove(this);
+		taskQueue.values().removeAll(Collections.singletonList(this));
 		super.onCancelled();
 	}
 
@@ -259,7 +264,28 @@ public final class HttpAsyncQuery extends
 		this.mOnQueryCancel = mOnQueryCancel;
 	}
 
+	public void addTocken(String unikToken) {
+		taskQueue.put(unikToken, this);
+	}
+
+	public static HttpAsyncQuery getTask(HttpQueryCallBack callback) {
+		return taskQueue.get(callback);
+	}
+
+	public static HttpAsyncQuery getTask(Object tocken) {
+		return taskQueue.get(tocken);
+	}
+
 	public static List<HttpAsyncQuery> getTaskqueue() {
-		return taskQueue;
+		return new ArrayList<HttpAsyncQuery>(taskQueue.values());
+	}
+
+	<K, V> K getKeyByValue(Map<K, V> map, V value) {
+		for (Map.Entry<K, V> entry : map.entrySet()) {
+			if (value.equals(entry.getValue())) {
+				return entry.getKey();
+			}
+		}
+		return null;
 	}
 }
