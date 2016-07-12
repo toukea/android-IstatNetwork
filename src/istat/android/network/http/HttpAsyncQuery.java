@@ -280,6 +280,19 @@ public final class HttpAsyncQuery extends
 		return new ArrayList<HttpAsyncQuery>(taskQueue.values());
 	}
 
+	public static void cancelAll() {
+		for (HttpAsyncQuery http : getTaskqueue()) {
+			http.cancel(true);
+		}
+	}
+
+	public static void cancel(Object tocken) {
+		HttpAsyncQuery http = getTask(tocken);
+		if (http != null) {
+			http.cancel(true);
+		}
+	}
+
 	<K, V> K getKeyByValue(Map<K, V> map, V value) {
 		for (Map.Entry<K, V> entry : map.entrySet()) {
 			if (value.equals(entry.getValue())) {
