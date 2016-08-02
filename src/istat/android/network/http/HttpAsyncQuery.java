@@ -70,15 +70,15 @@ public final class HttpAsyncQuery extends
 
 			} catch (URISyntaxException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// e.printStackTrace();
 				error = e;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// e.printStackTrace();
 				error = e;
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// e.printStackTrace();
 				error = e;
 			}
 			HttpQueryResponse response = new HttpQueryResponse(stream, error,

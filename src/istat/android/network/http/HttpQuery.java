@@ -189,7 +189,9 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		URL Url = new URL(url);
 		HttpURLConnection conn = (HttpURLConnection) Url.openConnection();
 		conn.setDoOutput(true);
-		applyOptions(conn);
+		if (mOptions != null) {
+			applyOptions(conn);
+		}
 		conn.setDoInput(true);
 		fillHeader(conn);
 		currentConnexion = conn;
@@ -256,7 +258,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		String data = createStringularQueryableData(parametres,
 				mOptions.encoding);
 		if (!Text.isEmpty(data)) {
-			url += (url.contains("?")?"":"?") + data;
+			url += (url.contains("?") ? "" : "?") + data;
 		}
 		HttpURLConnection conn = preparConnexion(url);
 		conn.setRequestMethod("GET");
@@ -501,8 +503,9 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 
 	public void setOptions(HttpQueryOptions mOptions) {
 		this.mOptions = mOptions;
-		if (this.mOptions == null)
+		if (this.mOptions == null) {
 			mOptions = new HttpQueryOptions();
+		}
 	}
 
 	public HttpQueryOptions getOptions() {

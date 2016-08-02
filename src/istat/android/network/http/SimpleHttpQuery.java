@@ -6,7 +6,6 @@ import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 
-
 /*
  * Copyright (C) 2014 Istat Dev.
  *
@@ -23,29 +22,23 @@ import java.util.HashMap;
  * limitations under the License.
  */
 /**
- *
+ * 
  * @author Toukea Tatsi (Istat)
- *
+ * 
  */
 public class SimpleHttpQuery extends HttpQuery<SimpleHttpQuery> {
 
-    @Override
-    public InputStream doPost(String url) throws
-            IOException, URISyntaxException {
-        // TODO Auto-generated method stub
-        return POST(url);
-    }
+	@Override
+	public InputStream doPost(String url) throws IOException,
+			URISyntaxException {
+		// TODO Auto-generated method stub
+		return POST(url);
+	}
 
-    @Override
-    protected final HttpURLConnection preparConnexion(String url)
-            throws IOException {
-        // TODO Auto-generated method stub
-        return super.preparConnexion(url);
-    }
-    @Override
-    public final SimpleHttpQuery addParams(HashMap<String, Object> nameValues) {
-    	// TODO Auto-generated method stub
-    	return super.addParams(nameValues);
-    }
+	@Override
+	public final SimpleHttpQuery addParams(HashMap<String, Object> nameValues) {
+		// TODO Auto-generated method stub
+		return super.addParams(nameValues);
+	}
 
 }
