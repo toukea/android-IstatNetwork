@@ -14,6 +14,7 @@ import java.util.Map;
 import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
 
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -185,6 +186,36 @@ public final class HttpAsyncQuery extends
 		return System.currentTimeMillis() - startTimeStamp;
 	}
 
+	// DEFAULT PROCESS CALLBACK IF USER DONT HAS DEFINE it Own
+	QueryProcessCallBack<?> processCallBack = new QueryProcessCallBack<Integer>() {
+		{
+			this.query = HttpAsyncQuery.this;
+		}
+
+		@Override
+		public String onBuildResponseBody(InputStream stream,
+				HttpAsyncQuery query) {
+			// TODO Auto-generated method stub
+			return Stream.streamToString(stream, buffersize, encoding,
+					getQuery().mHttp);
+		}
+
+		@Override
+		public void onUpdateQueryProcess(HttpAsyncQuery query, Integer... vars) {
+			// NOTHIG TO DO
+
+		}
+	};
+
+	public boolean registerForProgressCallBack(QueryProcessCallBack<?> callBack) {
+		if (callBack != null && processCallBack == callBack) {
+			return false;
+		}
+		this.processCallBack = callBack;
+		this.processCallBack.query = this;
+		return true;
+	}
+
 	public static class HttpQueryResponse {
 		String body;
 		Exception error;
@@ -206,8 +237,8 @@ public final class HttpAsyncQuery extends
 
 		private void init(InputStream stream, String encoding, int buffersize,
 				Exception e) {
-			body = stream != null ? Stream.streamToString(stream, buffersize,
-					encoding, mAsyncQ.mHttp) : null;
+			body = stream != null ? mAsyncQ.processCallBack
+					.buildResponseBody(stream) : null;
 			error = e;
 		}
 
@@ -300,5 +331,61 @@ public final class HttpAsyncQuery extends
 			}
 		}
 		return null;
+	}
+
+	public static abstract class QueryProcessCallBack<ProgressVar> {
+		Handler handler;
+		HttpAsyncQuery query;
+
+		public QueryProcessCallBack(Handler handler) {
+			this.handler = handler;
+		}
+
+		public QueryProcessCallBack() {
+
+		}
+
+		public int getConnexionContentLenght() {
+			return query != null && query.mHttp != null
+					&& query.mHttp.currentConnexion != null ? query.mHttp.currentConnexion
+					.getContentLength() : 0;
+		}
+
+		public String getConnexionContentType() {
+			return query != null && query.mHttp != null
+					&& query.mHttp.currentConnexion != null ? query.mHttp.currentConnexion
+					.getContentType() : null;
+		}
+
+		public HttpAsyncQuery getQuery() {
+			return query;
+		}
+
+		private Handler getHandler() {
+			if (handler != null) {
+				handler = new Handler();
+			}
+			return handler;
+		}
+
+		String buildResponseBody(InputStream stream) {
+			return onBuildResponseBody(stream, query);
+		}
+
+		public abstract String onBuildResponseBody(InputStream stream,
+				HttpAsyncQuery query);
+
+		public void publishProgression(final ProgressVar... vars) {
+			getHandler().post(new Runnable() {
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					onUpdateQueryProcess(query, vars);
+				}
+			});
+		}
+
+		public abstract void onUpdateQueryProcess(HttpAsyncQuery query,
+				ProgressVar... vars);
 	}
 }
