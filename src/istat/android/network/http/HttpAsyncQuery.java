@@ -4,6 +4,7 @@ import istat.android.network.util.ToolKits.Stream;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -193,8 +194,8 @@ public final class HttpAsyncQuery extends
 		}
 
 		@Override
-		public String onBuildResponseBody(InputStream stream,
-				HttpAsyncQuery query) {
+		public String onBuildResponseBody(HttpURLConnection currentConnexion,
+				InputStream stream, HttpAsyncQuery query) {
 			// TODO Auto-generated method stub
 			return Stream.streamToString(stream, buffersize, encoding,
 					getQuery().mHttp);
@@ -205,6 +206,7 @@ public final class HttpAsyncQuery extends
 			// NOTHIG TO DO
 
 		}
+
 	};
 
 	public boolean registerForProgressCallBack(QueryProcessCallBack<?> callBack) {
@@ -222,10 +224,11 @@ public final class HttpAsyncQuery extends
 		HttpAsyncQuery mAsyncQ;
 
 		public static HttpQueryResponse getErrorInstance(Exception e) {
-			return new HttpQueryResponse(null, e);
+			return new HttpQueryResponse(null, e, null);
 		}
 
-		HttpQueryResponse(InputStream stream, Exception e) {
+		HttpQueryResponse(InputStream stream, Exception e, HttpAsyncQuery asyncQ) {
+			mAsyncQ = asyncQ;
 			init(stream, Stream.DEFAULT_ENCODING, Stream.DEFAULT_BUFFER_SIZE, e);
 		}
 
@@ -237,8 +240,8 @@ public final class HttpAsyncQuery extends
 
 		private void init(InputStream stream, String encoding, int buffersize,
 				Exception e) {
-			body = stream != null ? mAsyncQ.processCallBack
-					.buildResponseBody(stream) : null;
+			body = stream != null ? mAsyncQ.processCallBack.buildResponseBody(
+					mAsyncQ.mHttp.currentConnexion, stream) : null;
 			error = e;
 		}
 
@@ -368,12 +371,12 @@ public final class HttpAsyncQuery extends
 			return handler;
 		}
 
-		String buildResponseBody(InputStream stream) {
-			return onBuildResponseBody(stream, query);
+		String buildResponseBody(HttpURLConnection connexion, InputStream stream) {
+			return onBuildResponseBody(connexion, stream, query);
 		}
 
-		public abstract String onBuildResponseBody(InputStream stream,
-				HttpAsyncQuery query);
+		public abstract String onBuildResponseBody(HttpURLConnection connexion,
+				InputStream stream, HttpAsyncQuery query);
 
 		public void publishProgression(final ProgressVar... vars) {
 			getHandler().post(new Runnable() {
