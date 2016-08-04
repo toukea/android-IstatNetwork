@@ -198,7 +198,7 @@ public final class HttpAsyncQuery extends
 				InputStream stream, HttpAsyncQuery query) {
 			// TODO Auto-generated method stub
 			return Stream.streamToString(stream, buffersize, encoding,
-					getQuery().mHttp);
+					getQueryer().mHttp);
 		}
 
 		@Override
@@ -360,8 +360,12 @@ public final class HttpAsyncQuery extends
 					.getContentType() : null;
 		}
 
-		public HttpAsyncQuery getQuery() {
+		public HttpAsyncQuery getQueryer() {
 			return query;
+		}
+
+		public HttpQuery<?> getQuery() {
+			return getQueryer().mHttp;
 		}
 
 		private Handler getHandler() {
@@ -391,4 +395,5 @@ public final class HttpAsyncQuery extends
 		public abstract void onUpdateQueryProcess(HttpAsyncQuery query,
 				ProgressVar... vars);
 	}
+
 }

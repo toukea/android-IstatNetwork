@@ -55,9 +55,8 @@ public abstract class ReadenByteProcessCallBack extends
 				if (query.isCancelled()) {
 					return null;
 				}
-				out = out
-						+ (encoding != null ? new String(b, 0, read, encoding)
-								: new String(b, 0, read));
+				out += (encoding != null ? new String(b, 0, read, encoding)
+						: new String(b, 0, read));
 				publishProgression(totalReaden, streamSize,
 						streamSize > 0 ? (100 * totalReaden / streamSize) : 0);
 			}
