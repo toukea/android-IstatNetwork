@@ -145,20 +145,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		return (HttpQ) this;
 	}
 
-	// @SuppressWarnings("unchecked")
-	// public HttpQ addParams(HashMap<String, String> nameValues) {
-	// if (!nameValues.keySet().isEmpty()) {
-	// String[] table = new String[nameValues.size()];
-	// table = nameValues.keySet().toArray(table);
-	// for (String tmp : table) {
-	// if (tmp != null) {
-	// addParam(tmp, nameValues.get(tmp).toString());
-	// }
-	// }
-	// }
-	// return (HttpQ) this;
-	// }
-
 	public void removeParam(String name) {
 		parametres.remove(name);
 	}
@@ -200,6 +186,28 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		return conn;
 	}
 
+	protected InputStream POST(String url) throws IOException {
+		HttpURLConnection conn = preparConnexion(url);
+		conn.setDoOutput(true);
+		conn.setRequestMethod("POST");
+		OutputStream os = conn.getOutputStream();
+		DataOutputStream writer = new DataOutputStream(os);
+		String data = createStringularQueryableData(parametres,
+				mOptions.encoding);
+		writer.writeBytes(data);
+		writer.flush();
+		writer.close();
+		os.close();
+		InputStream stream = null;
+		int responseCode = conn.getResponseCode();
+		if (responseCode == HttpsURLConnection.HTTP_OK) {
+			stream = eval(conn.getInputStream());
+		}
+		addToOutputHistoric(data.length());
+		onQueryComplete();
+		return stream;
+	}
+
 	private void applyOptions(HttpURLConnection conn) {
 		if (mOptions.chunkedStreamingMode > 0)
 			conn.setChunkedStreamingMode(mOptions.chunkedStreamingMode);
@@ -231,28 +239,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		}
 	}
 
-	protected InputStream POST(String url) throws IOException {
-		HttpURLConnection conn = preparConnexion(url);
-		conn.setDoOutput(true);
-		conn.setRequestMethod("POST");
-		OutputStream os = conn.getOutputStream();
-		DataOutputStream writer = new DataOutputStream(os);
-		String data = createStringularQueryableData(parametres,
-				mOptions.encoding);
-		writer.writeBytes(data);
-		writer.flush();
-		writer.close();
-		os.close();
-		InputStream stream = null;
-		int responseCode = conn.getResponseCode();
-		if (responseCode == HttpsURLConnection.HTTP_OK) {
-			stream = eval(conn.getInputStream());
-		}
-		addToOutputHistoric(data.length());
-		onQueryComplete();
-		return stream;
-	}
-
 	public InputStream doGet(String url) throws URISyntaxException, IOException {
 		// ---------------------------
 		String data = createStringularQueryableData(parametres,
@@ -271,6 +257,8 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		onQueryComplete();
 		return stream;
 	}
+
+	
 
 	public String getURL(String adresse) throws URISyntaxException, IOException {
 		// --------------------------
@@ -512,4 +500,21 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		return mOptions;
 	}
 
+	int getCurrentResponseCode() {
+		try {
+			return getCurrentConnexion().getResponseCode();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+		}
+		return -1;
+	}
+
+	String getCurrentResponseMessage() {
+		try {
+			return getCurrentConnexion().getResponseMessage();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+		}
+		return "";
+	}
 }

@@ -113,8 +113,8 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 					data += "--" + boundary + LINE_FEED;
 					data += "content-disposition: form-data; name=\"" + name
 							+ "\"" + LINE_FEED;
-					data += "Content-Type: text/plain; charset=" + mOptions.encoding
-							+ LINE_FEED;
+					data += "Content-Type: text/plain; charset="
+							+ mOptions.encoding + LINE_FEED;
 					data += LINE_FEED;
 					data += value + LINE_FEED;
 				}

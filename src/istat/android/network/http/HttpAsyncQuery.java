@@ -57,6 +57,7 @@ public final class HttpAsyncQuery extends
 		for (String url : urls) {
 			InputStream stream = null;
 			Exception error = null;
+			int responseCode = 0;
 			try {
 				switch (type) {
 				case TYPE_GET:
@@ -69,11 +70,7 @@ public final class HttpAsyncQuery extends
 					stream = mHttp.doGet(url);
 					break;
 				}
-
-			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				// e.printStackTrace();
-				error = e;
+				responseCode = mHttp.getCurrentConnexion().getResponseCode();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
@@ -222,9 +219,19 @@ public final class HttpAsyncQuery extends
 		String body;
 		Exception error;
 		HttpAsyncQuery mAsyncQ;
+		int code;
+		String message;
 
 		public static HttpQueryResponse getErrorInstance(Exception e) {
 			return new HttpQueryResponse(null, e, null);
+		}
+
+		public int getCode() {
+			return code;
+		}
+
+		public String getMessage() {
+			return message;
 		}
 
 		HttpQueryResponse(InputStream stream, Exception e, HttpAsyncQuery asyncQ) {
@@ -240,9 +247,13 @@ public final class HttpAsyncQuery extends
 
 		private void init(InputStream stream, String encoding, int buffersize,
 				Exception e) {
-			body = stream != null ? mAsyncQ.processCallBack.buildResponseBody(
-					mAsyncQ.mHttp.currentConnexion, stream) : null;
-			error = e;
+			HttpQuery<?> http = mAsyncQ.mHttp;
+			HttpURLConnection connexion = http.getCurrentConnexion();
+			this.error = e;
+			this.code = http.getCurrentResponseCode();
+			this.message = http.getCurrentResponseMessage();
+			this.body = stream != null ? mAsyncQ.processCallBack
+					.buildResponseBody(connexion, stream) : null;
 		}
 
 		public boolean hasError() {
