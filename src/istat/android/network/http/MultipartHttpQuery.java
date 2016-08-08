@@ -37,12 +37,12 @@ import javax.net.ssl.HttpsURLConnection;
 public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
 	HashMap<String, File> fileParts = new HashMap<String, File>();
+	protected HashMap<String, String> getParametres = new HashMap<String, String>();
 	int uploadBufferSize = Stream.DEFAULT_BUFFER_SIZE;
 	private static final String LINE_FEED = "\n";
 
 	@Override
-	public InputStream doPost(String url) throws IOException,
-			URISyntaxException {
+	public InputStream doPost(String url) throws IOException {
 		// TODO Auto-generated method stub
 		return POSTM(url);
 	}
@@ -173,8 +173,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 		}
 	}
 
-	private synchronized InputStream POSTM(String url) throws IOException,
-			URISyntaxException {
+	private synchronized InputStream POSTM(String url) throws IOException {
 		HttpURLConnection conn = preparConnexionForPost(url);
 		InputStream stream = null;
 		int responseCode = conn.getResponseCode();

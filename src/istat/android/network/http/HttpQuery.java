@@ -239,7 +239,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		}
 	}
 
-	public InputStream doGet(String url) throws URISyntaxException, IOException {
+	public InputStream doGet(String url) throws IOException {
 		// ---------------------------
 		String data = createStringularQueryableData(parametres,
 				mOptions.encoding);
@@ -258,9 +258,47 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		return stream;
 	}
 
-	
+	public InputStream doPut(String url, String method) throws IOException {
+		return doQuery(url, "PUT");
+	}
 
-	public String getURL(String adresse) throws URISyntaxException, IOException {
+	public InputStream doHead(String url, String method) throws IOException {
+		return doQuery(url, "HEAD");
+	}
+
+	public InputStream doDelete(String url, String method) throws IOException {
+		return doQuery(url, "DELETE");
+	}
+
+	public InputStream doCopy(String url, String method) throws IOException {
+		return doQuery(url, "COPY");
+	}
+
+	public InputStream doQuery(String url, String method) throws IOException {
+		if ("GET".equalsIgnoreCase(method)) {
+			return doGet(url);
+		} else if ("POST".equalsIgnoreCase(method)) {
+			return doPost(url);
+		}
+		// ---------------------------
+		String data = createStringularQueryableData(parametres,
+				mOptions.encoding);
+		if (!Text.isEmpty(data)) {
+			url += (url.contains("?") ? "" : "?") + data;
+		}
+		HttpURLConnection conn = preparConnexion(url);
+		conn.setRequestMethod(method);
+		InputStream stream = null;
+		int responseCode = conn.getResponseCode();
+		if (responseCode == HttpsURLConnection.HTTP_OK) {
+			stream = eval(conn.getInputStream());
+		}
+		addToOutputHistoric(data.length());
+		onQueryComplete();
+		return stream;
+	}
+
+	public String getURL(String adresse) throws IOException {
 		// --------------------------
 		return adresse
 				+ createStringularQueryableData(parametres, mOptions.encoding);
@@ -377,6 +415,24 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		// currentConnexion. = null;
 	}
 
+	int getCurrentResponseCode() {
+		try {
+			return getCurrentConnexion().getResponseCode();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+		}
+		return -1;
+	}
+
+	String getCurrentResponseMessage() {
+		try {
+			return getCurrentConnexion().getResponseMessage();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+		}
+		return "";
+	}
+
 	/**
 	 * this method is deprecated. be shure it is really what you need.
 	 * 
@@ -441,6 +497,17 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		return out;
 	}
 
+	public void setOptions(HttpQueryOptions mOptions) {
+		this.mOptions = mOptions;
+		if (this.mOptions == null) {
+			mOptions = new HttpQueryOptions();
+		}
+	}
+
+	public HttpQueryOptions getOptions() {
+		return mOptions;
+	}
+
 	public static List<Integer> getOutputContentLegthHistoric() {
 		return historics.get(TAG_OUTPUT);
 	}
@@ -487,34 +554,5 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 			out += i;
 		}
 		return out;
-	}
-
-	public void setOptions(HttpQueryOptions mOptions) {
-		this.mOptions = mOptions;
-		if (this.mOptions == null) {
-			mOptions = new HttpQueryOptions();
-		}
-	}
-
-	public HttpQueryOptions getOptions() {
-		return mOptions;
-	}
-
-	int getCurrentResponseCode() {
-		try {
-			return getCurrentConnexion().getResponseCode();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-		}
-		return -1;
-	}
-
-	String getCurrentResponseMessage() {
-		try {
-			return getCurrentConnexion().getResponseMessage();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-		}
-		return "";
 	}
 }

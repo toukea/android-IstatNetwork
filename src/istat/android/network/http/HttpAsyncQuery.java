@@ -21,7 +21,8 @@ import android.util.Log;
 
 public final class HttpAsyncQuery extends
 		AsyncTask<String, HttpQueryResponse, Void> {
-	public final static int TYPE_GET = 1, TYPE_POST = 2,
+	public final static int TYPE_GET = 1, TYPE_POST = 2, TYPE_PUSH = 3,
+			TYPE_HEAD = 4, TYPE_DELETE = 5, TYPE_COPY = 6,
 			DEFAULT_BUFFER_SIZE = 16384;
 	public final static String DEFAULT_ENCODING = "UTF-8";
 	HttpQueryCallBack mHttpCallBack;
