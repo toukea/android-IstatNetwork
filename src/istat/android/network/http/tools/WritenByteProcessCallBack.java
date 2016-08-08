@@ -10,10 +10,8 @@ import istat.android.network.http.MultipartHttpQuery;
 import istat.android.network.util.ToolKits.Stream;
 
 public class WritenByteProcessCallBack extends UploadProcessCallBack<Integer> {
-	public final static int DEFAULT_BUFFER_SIZE = Stream.DEFAULT_BUFFER_SIZE;
-	public final static String DEFAULT_ENCODING = Stream.DEFAULT_ENCODING;
-	int buffer = DEFAULT_BUFFER_SIZE;
-	String encoding = DEFAULT_ENCODING;
+	int buffer = Stream.DEFAULT_BUFFER_SIZE;
+	String encoding = Stream.DEFAULT_ENCODING;
 
 	public WritenByteProcessCallBack() {
 
