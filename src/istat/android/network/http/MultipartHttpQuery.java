@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -46,9 +45,9 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 	int uploadBufferSize = Stream.DEFAULT_BUFFER_SIZE;
 	private static final String LINE_FEED = "\n";
 
-	protected void onFillOutPutStream(DataOutputStream request, File file)
-			throws FileNotFoundException {
-		InputStream stream = new FileInputStream(file);
+	protected void onFillOutPutStream(DataOutputStream request,
+			InputStream stream) throws FileNotFoundException {
+
 		byte[] b = new byte[uploadBufferSize];
 		int read = 0;
 		try {
@@ -231,9 +230,12 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 					data += "Content-Type: application/data\n";
 					data += "Content-Transfer-Encoding: binary\n\n";
 					request.writeBytes(data);
-					onFillOutPutStream(request, file);
+					InputStream stream = new FileInputStream(file);
+					if (uploadHandler != null) {
+						uploadHandler.onProceedStreamUpload(this, request,
+								stream);
+					}
 					request.writeBytes("\n");
-
 				}
 			}
 			request.writeBytes(boundary);
@@ -272,5 +274,38 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 			}
 		}
 		return this;
+	}
+
+	public void setUploadHandler(UpLoadHandler uploadHandler) {
+		if (uploadHandler != null) {
+			this.uploadHandler = uploadHandler;
+		}
+	}
+
+	UpLoadHandler uploadHandler = new UpLoadHandler() {
+
+		@Override
+		public void onProceedStreamUpload(MultipartHttpQuery httpQuery,
+				DataOutputStream request, InputStream stream)
+				throws IOException {
+			// TODO Auto-generated method stub
+			byte[] b = new byte[uploadBufferSize];
+			int read = 0;
+			while ((read = stream.read(b)) > -1) {
+				if (httpQuery.isAborted()) {
+					stream.close();
+					currentConnexion.disconnect();
+					break;
+				}
+				request.write(b, 0, read);
+			}
+			stream.close();
+		}
+	};
+
+	public interface UpLoadHandler {
+		public void onProceedStreamUpload(MultipartHttpQuery httpQuery,
+				DataOutputStream request, InputStream stream)
+				throws IOException;
 	}
 }
