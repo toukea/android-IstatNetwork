@@ -1,6 +1,7 @@
 package istat.android.network.http;
 
 import istat.android.network.util.ToolKits.Stream;
+import istat.android.network.util.ToolKits.Text;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -12,7 +13,11 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
+
 import javax.net.ssl.HttpsURLConnection;
+
+import org.apache.http.message.BasicNameValuePair;
 
 /*
  * Copyright (C) 2014 Istat Dev.
@@ -37,9 +42,69 @@ import javax.net.ssl.HttpsURLConnection;
 public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
 	HashMap<String, File> fileParts = new HashMap<String, File>();
-	protected HashMap<String, String> getParametres = new HashMap<String, String>();
+	protected HashMap<String, String> URLParametres = new HashMap<String, String>();
 	int uploadBufferSize = Stream.DEFAULT_BUFFER_SIZE;
 	private static final String LINE_FEED = "\n";
+
+	protected void onFillOutPutStream(DataOutputStream request, File file)
+			throws FileNotFoundException {
+		InputStream stream = new FileInputStream(file);
+		byte[] b = new byte[uploadBufferSize];
+		int read = 0;
+		try {
+			while ((read = stream.read(b)) > -1) {
+				if (isAborted()) {
+					stream.close();
+					currentConnexion.disconnect();
+					break;
+				}
+				request.write(b, 0, read);
+			}
+			stream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public MultipartHttpQuery addURLParam(String Name, String Value) {
+		URLParametres.put(Name, Value);
+		return this;
+	}
+
+	public MultipartHttpQuery addURLParam(String Name, String[] values) {
+		for (int i = 0; i < values.length; i++) {
+			addURLParam(Name + "[" + i + "]", values[i]);
+		}
+		return this;
+	}
+
+	public MultipartHttpQuery addURLParams(List<BasicNameValuePair> nameValues) {
+		for (BasicNameValuePair pair : nameValues)
+			addURLParam(pair.getName(), pair.getValue());
+		return this;
+	}
+
+	public MultipartHttpQuery addURLParams(HashMap<String, Object> nameValues) {
+		if (!nameValues.keySet().isEmpty()) {
+			String[] table = new String[nameValues.size()];
+			table = nameValues.keySet().toArray(table);
+			for (String tmp : table) {
+				if (tmp != null) {
+					addURLParam(tmp, nameValues.get(tmp).toString());
+				}
+			}
+		}
+		return this;
+	}
+
+	@Override
+	public void removeParam(String name) {
+		// TODO Auto-generated method stub
+		super.removeParam(name);
+		if (URLParametres != null && URLParametres.containsKey(name)) {
+			URLParametres.clear();
+		}
+	}
 
 	@Override
 	public InputStream doPost(String url) throws IOException {
@@ -64,11 +129,34 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 		return this;
 	}
 
-	private HttpURLConnection preparConnexionForPost(final String url)
+	@Override
+	public MultipartHttpQuery clearParams() {
+		// TODO Auto-generated method stub
+		super.clearParams();
+		clearParts();
+		URLParametres.clear();
+		return this;
+	}
+
+	public MultipartHttpQuery clearParts() {
+		fileParts.clear();
+		return this;
+	}
+
+	public void setUploadBufferSize(int uploadBufferSize) {
+		this.uploadBufferSize = uploadBufferSize;
+	}
+
+	private HttpURLConnection preparConnexionForPost(String url)
 			throws IOException {
 		HttpURLConnection conn = preparConnexion(url);
 		conn.setDoOutput(true);
 		conn.setRequestMethod("POST");
+		String data = createStringularQueryableData(URLParametres,
+				mOptions.encoding);
+		if (!Text.isEmpty(data)) {
+			url += (url.contains("?") ? "" : "?") + data;
+		}
 		if (!parametres.isEmpty() || !fileParts.isEmpty()) {
 			String boundary = createBoundary();
 
@@ -80,8 +168,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 			OutputStream os = conn.getOutputStream();
 			DataOutputStream request = new DataOutputStream(os);
 			if (!parametres.isEmpty()) {
-				String data = createBoundaryingParamsCanvas(boundary,
-						parametres);
+				data = createBoundaryingParamsCanvas(boundary, parametres);
 				request.writeBytes(data);
 			}
 			if (!fileParts.isEmpty()) {
@@ -153,26 +240,6 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 		}
 	}
 
-	protected void onFillOutPutStream(DataOutputStream request, File file)
-			throws FileNotFoundException {
-		InputStream stream = new FileInputStream(file);
-		byte[] b = new byte[uploadBufferSize];
-		int read = 0;
-		try {
-			while ((read = stream.read(b)) > -1) {
-				if (isAborted()) {
-					stream.close();
-					currentConnexion.disconnect();
-					break;
-				}
-				request.write(b, 0, read);
-			}
-			stream.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	private synchronized InputStream POSTM(String url) throws IOException {
 		HttpURLConnection conn = preparConnexionForPost(url);
 		InputStream stream = null;
@@ -184,33 +251,8 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 		return stream;
 	}
 
-	@Override
-	public MultipartHttpQuery clearParams() {
-		// TODO Auto-generated method stub
-		super.clearParams();
-		clearParts();
-		return this;
-	}
-
-	public MultipartHttpQuery clearParts() {
-		fileParts.clear();
-		return this;
-	}
-
-	@Override
-	public MultipartHttpQuery clearExtraData() {
-		// TODO Auto-generated method stub
-		super.clearExtraData();
-		clearParts();
-		return this;
-	}
-
 	private static String createBoundary() {
 		return /* "AaB03x"; */"===" + System.currentTimeMillis() + "===";
-	}
-
-	public void setUploadBufferSize(int uploadBufferSize) {
-		this.uploadBufferSize = uploadBufferSize;
 	}
 
 	public final MultipartHttpQuery addParams(HashMap<String, Object> nameValues) {
