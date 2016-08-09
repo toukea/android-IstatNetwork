@@ -6,7 +6,6 @@ import istat.android.network.util.ToolKits.Text;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,26 +43,6 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 	protected HashMap<String, String> URLParametres = new HashMap<String, String>();
 	int uploadBufferSize = Stream.DEFAULT_BUFFER_SIZE;
 	private static final String LINE_FEED = "\n";
-
-	protected void onFillOutPutStream(DataOutputStream request,
-			InputStream stream) throws FileNotFoundException {
-
-		byte[] b = new byte[uploadBufferSize];
-		int read = 0;
-		try {
-			while ((read = stream.read(b)) > -1) {
-				if (isAborted()) {
-					stream.close();
-					currentConnexion.disconnect();
-					break;
-				}
-				request.write(b, 0, read);
-			}
-			stream.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	public MultipartHttpQuery addURLParam(String Name, String Value) {
 		URLParametres.put(Name, Value);
@@ -148,11 +127,15 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
 	private HttpURLConnection preparConnexionForPost(String url)
 			throws IOException {
+		String method = "POST";
 		HttpURLConnection conn = preparConnexion(url);
 		conn.setDoOutput(true);
-		conn.setRequestMethod("POST");
-		String data = createStringularQueryableData(URLParametres,
-				mOptions.encoding);
+		conn.setRequestMethod(method);
+		String data = "";
+		if (parameterHandler != null) {
+			data = parameterHandler.onStringifyQueryParams(method, parametres,
+					mOptions.encoding);
+		}
 		if (!Text.isEmpty(data)) {
 			url += (url.contains("?") ? "" : "?") + data;
 		}

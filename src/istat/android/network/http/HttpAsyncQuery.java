@@ -185,12 +185,15 @@ public final class HttpAsyncQuery extends
 		return query;
 	}
 
-	public void setUploadProcessCallBack(UploadProcessCallBack<?> uploadCallBack) {
+	public boolean setUploadProcessCallBack(
+			UploadProcessCallBack<?> uploadCallBack) {
 		// TODO Auto-generated method stub
 		if (uploadCallBack != null && mHttp instanceof MultipartHttpQuery) {
 			MultipartHttpQuery multipartHttp = (MultipartHttpQuery) mHttp;
 			multipartHttp.setUploadHandler(uploadCallBack);
+			return true;
 		}
+		return false;
 	}
 
 	public static HttpAsyncQuery doAsyncQuery(HttpQuery<?> http, int queryType,
@@ -251,7 +254,7 @@ public final class HttpAsyncQuery extends
 	};
 
 	public boolean registerForProgressCallBack(QueryProcessCallBack<?> callBack) {
-		if (callBack != null && processCallBack == callBack) {
+		if (callBack == null || processCallBack == callBack) {
 			return false;
 		}
 		this.processCallBack = callBack;

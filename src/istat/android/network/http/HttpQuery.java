@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -187,13 +186,17 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 	}
 
 	protected InputStream POST(String url) throws IOException {
+		String method = "POST";
 		HttpURLConnection conn = preparConnexion(url);
 		conn.setDoOutput(true);
-		conn.setRequestMethod("POST");
+		conn.setRequestMethod(method);
 		OutputStream os = conn.getOutputStream();
 		DataOutputStream writer = new DataOutputStream(os);
-		String data = createStringularQueryableData(parametres,
-				mOptions.encoding);
+		String data = "";
+		if (parameterHandler != null) {
+			data = parameterHandler.onStringifyQueryParams(method, parametres,
+					mOptions.encoding);
+		}
 		writer.writeBytes(data);
 		writer.flush();
 		writer.close();
@@ -206,6 +209,31 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		addToOutputHistoric(data.length());
 		onQueryComplete();
 		return stream;
+	}
+
+	public interface ParameterHandler {
+		public abstract String onStringifyQueryParams(String method,
+				HashMap<String, String> parametres2, String encoding);
+	}
+
+	protected ParameterHandler parameterHandler = new ParameterHandler() {
+
+		@Override
+		public String onStringifyQueryParams(String method,
+				HashMap<String, String> params, String encoding) {
+			// TODO Auto-generated method stub
+			try {
+				return createStringularQueryableData(params, encoding);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+	};
+
+	public void setParameterHandler(ParameterHandler parameterHandler) {
+		if (parameterHandler != null) {
+			this.parameterHandler = parameterHandler;
+		}
 	}
 
 	private void applyOptions(HttpURLConnection conn) {
@@ -241,13 +269,17 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 
 	public InputStream doGet(String url) throws IOException {
 		// ---------------------------
-		String data = createStringularQueryableData(parametres,
-				mOptions.encoding);
+		String method = "GET";
+		String data = "";
+		if (parameterHandler != null) {
+			data = parameterHandler.onStringifyQueryParams(method, parametres,
+					mOptions.encoding);
+		}
 		if (!Text.isEmpty(data)) {
 			url += (url.contains("?") ? "" : "?") + data;
 		}
 		HttpURLConnection conn = preparConnexion(url);
-		conn.setRequestMethod("GET");
+		conn.setRequestMethod(method);
 		InputStream stream = null;
 		int responseCode = conn.getResponseCode();
 		if (responseCode == HttpsURLConnection.HTTP_OK) {
