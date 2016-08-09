@@ -24,7 +24,7 @@ import android.util.Log;
 
 public final class HttpAsyncQuery extends
 		AsyncTask<String, HttpQueryResponse, Void> {
-	public final static int TYPE_GET = 1, TYPE_POST = 2, TYPE_PUSH = 3,
+	public final static int TYPE_GET = 1, TYPE_POST = 2, TYPE_PUT = 3,
 			TYPE_HEAD = 4, TYPE_DELETE = 5, TYPE_COPY = 6,
 			DEFAULT_BUFFER_SIZE = 16384;
 	public final static String DEFAULT_ENCODING = "UTF-8";
@@ -68,6 +68,18 @@ public final class HttpAsyncQuery extends
 					break;
 				case TYPE_POST:
 					stream = mHttp.doPost(url);
+					break;
+				case TYPE_PUT:
+					stream = mHttp.doPut(url);
+					break;
+				case TYPE_HEAD:
+					stream = mHttp.doHead(url);
+					break;
+				case TYPE_COPY:
+					stream = mHttp.doCopy(url);
+					break;
+				case TYPE_DELETE:
+					stream = mHttp.doDelete(url);
 					break;
 				default:
 					stream = mHttp.doGet(url);

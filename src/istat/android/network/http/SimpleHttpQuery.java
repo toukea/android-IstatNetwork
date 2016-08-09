@@ -2,9 +2,6 @@ package istat.android.network.http;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 
 /*
@@ -39,6 +36,33 @@ public class SimpleHttpQuery extends HttpQuery<SimpleHttpQuery> {
 	public final SimpleHttpQuery addParams(HashMap<String, Object> nameValues) {
 		// TODO Auto-generated method stub
 		return super.addParams(nameValues);
+	}
+
+	@Override
+	public void setParameterHandler(
+			final istat.android.network.http.HttpQuery.ParameterHandler postHandler) {
+		// TODO Auto-generated method stub
+
+		ParameterHandler parameterHandler = new ParameterHandler() {
+
+			@Override
+			public String onStringifyQueryParams(String method,
+					HashMap<String, String> params, String encoding) {
+				// TODO Auto-generated method stub
+				if ("GET".equalsIgnoreCase(method) || postHandler == null) {
+					return ParameterHandler.DEFAULT_HANDLER
+							.onStringifyQueryParams(method, params, encoding);
+				}
+				try {
+					return postHandler.onStringifyQueryParams(method, params,
+							encoding);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+		};
+		super.setParameterHandler(parameterHandler);
 	}
 
 }

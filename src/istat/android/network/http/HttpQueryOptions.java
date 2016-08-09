@@ -1,9 +1,11 @@
 package istat.android.network.http;
 
+import istat.android.network.util.ToolKits.Stream;
+
 public class HttpQueryOptions {
 	int connexionTimeOut = -1;
 	int soTimeOut = -1;
-	String encoding = "UTF-8";
+	String encoding = Stream.DEFAULT_ENCODING;
 	boolean autoClearRequestParams = false;
 	int chunkedStreamingMode = 0, fixedLengthStreamingMode = 0;
 	boolean followRedirects = true, instanceFollowRedirects = true,

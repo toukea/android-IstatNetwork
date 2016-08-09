@@ -125,6 +125,13 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 		this.uploadBufferSize = uploadBufferSize;
 	}
 
+	@Override
+	public void setParameterHandler(
+			istat.android.network.http.HttpQuery.ParameterHandler parameterHandler) {
+		// TODO Auto-generated method stub
+		super.setParameterHandler(parameterHandler);
+	}
+
 	private HttpURLConnection preparConnexionForPost(String url)
 			throws IOException {
 		String method = "POST";

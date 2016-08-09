@@ -202,35 +202,38 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		writer.close();
 		os.close();
 		InputStream stream = null;
-		int responseCode = conn.getResponseCode();
-		if (responseCode == HttpsURLConnection.HTTP_OK) {
-			stream = eval(conn.getInputStream());
-		}
+		// int responseCode = conn.getResponseCode();
+		// if (responseCode == HttpsURLConnection.HTTP_OK) {
+		stream = eval(conn.getInputStream());
+		// }
 		addToOutputHistoric(data.length());
 		onQueryComplete();
 		return stream;
 	}
 
 	public interface ParameterHandler {
+		public static ParameterHandler DEFAULT_HANDLER = new ParameterHandler() {
+
+			@Override
+			public String onStringifyQueryParams(String method,
+					HashMap<String, String> params, String encoding) {
+				// TODO Auto-generated method stub
+				try {
+					return createStringularQueryableData(params, encoding);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+		};
+
 		public abstract String onStringifyQueryParams(String method,
-				HashMap<String, String> parametres2, String encoding);
+				HashMap<String, String> params, String encoding);
 	}
 
-	protected ParameterHandler parameterHandler = new ParameterHandler() {
+	ParameterHandler parameterHandler = ParameterHandler.DEFAULT_HANDLER;
 
-		@Override
-		public String onStringifyQueryParams(String method,
-				HashMap<String, String> params, String encoding) {
-			// TODO Auto-generated method stub
-			try {
-				return createStringularQueryableData(params, encoding);
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		}
-	};
-
-	public void setParameterHandler(ParameterHandler parameterHandler) {
+	void setParameterHandler(ParameterHandler parameterHandler) {
 		if (parameterHandler != null) {
 			this.parameterHandler = parameterHandler;
 		}
@@ -281,28 +284,28 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		HttpURLConnection conn = preparConnexion(url);
 		conn.setRequestMethod(method);
 		InputStream stream = null;
-		int responseCode = conn.getResponseCode();
-		if (responseCode == HttpsURLConnection.HTTP_OK) {
-			stream = eval(conn.getInputStream());
-		}
+		// int responseCode = conn.getResponseCode();
+		// if (responseCode == HttpsURLConnection.HTTP_OK) {
+		stream = eval(conn.getInputStream());
+		// }
 		addToOutputHistoric(data.length());
 		onQueryComplete();
 		return stream;
 	}
 
-	public InputStream doPut(String url, String method) throws IOException {
+	public InputStream doPut(String url) throws IOException {
 		return doQuery(url, "PUT");
 	}
 
-	public InputStream doHead(String url, String method) throws IOException {
+	public InputStream doHead(String url) throws IOException {
 		return doQuery(url, "HEAD");
 	}
 
-	public InputStream doDelete(String url, String method) throws IOException {
+	public InputStream doDelete(String url) throws IOException {
 		return doQuery(url, "DELETE");
 	}
 
-	public InputStream doCopy(String url, String method) throws IOException {
+	public InputStream doCopy(String url) throws IOException {
 		return doQuery(url, "COPY");
 	}
 
@@ -311,6 +314,8 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 			return doGet(url);
 		} else if ("POST".equalsIgnoreCase(method)) {
 			return doPost(url);
+		} else if ("PUT".equalsIgnoreCase(method)) {
+			return doPut(url);
 		}
 		// ---------------------------
 		String data = createStringularQueryableData(parametres,
@@ -321,10 +326,10 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		HttpURLConnection conn = preparConnexion(url);
 		conn.setRequestMethod(method);
 		InputStream stream = null;
-		int responseCode = conn.getResponseCode();
-		if (responseCode == HttpsURLConnection.HTTP_OK) {
-			stream = eval(conn.getInputStream());
-		}
+		// int responseCode = conn.getResponseCode();
+		// if (responseCode == HttpsURLConnection.HTTP_OK) {
+		stream = eval(conn.getInputStream());
+		// }
 		addToOutputHistoric(data.length());
 		onQueryComplete();
 		return stream;
