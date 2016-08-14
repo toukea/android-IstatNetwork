@@ -29,6 +29,7 @@ public class SimpleHttpQuery extends HttpQuery<SimpleHttpQuery> {
 	@Override
 	public InputStream doPost(String url) throws IOException {
 		// TODO Auto-generated method stub
+		
 		return POST(url);
 	}
 

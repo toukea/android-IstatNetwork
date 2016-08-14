@@ -237,7 +237,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 		InputStream stream = null;
 		int responseCode = conn.getResponseCode();
 		if (responseCode == HttpsURLConnection.HTTP_OK) {
-			stream = eval(conn.getInputStream());
+			stream = eval(conn);
 		}
 		onQueryComplete();
 		return stream;
