@@ -24,13 +24,14 @@ import android.util.Log;
 public final class HttpAsyncQuery extends
 		AsyncTask<String, HttpQueryResponse, Void> {
 	public final static int TYPE_GET = 1, TYPE_POST = 2, TYPE_PUT = 3,
-			TYPE_HEAD = 4, TYPE_DELETE = 5, TYPE_COPY = 6,
-			DEFAULT_BUFFER_SIZE = 16384;
+			TYPE_HEAD = 4, TYPE_DELETE = 5, TYPE_COPY = 6, TYPE_PATCH = 7,
+			TYPE_RENAME = 8, TYPE_MOVE = 9, DEFAULT_BUFFER_SIZE = 16384;
 	public final static String DEFAULT_ENCODING = "UTF-8";
 	HttpQueryCallBack mHttpCallBack;
 	OnQueryCancelListener mOnQueryCancel;
 	HttpQuery<?> mHttp;
 	int type = TYPE_GET;
+	String typeString;
 	int buffersize = DEFAULT_BUFFER_SIZE;
 	String encoding = DEFAULT_ENCODING;
 	// private boolean running = true, complete = false;
@@ -38,8 +39,7 @@ public final class HttpAsyncQuery extends
 	private long endTimeStamp = 0;
 	static final HashMap<Object, HttpAsyncQuery> taskQueue = new HashMap<Object, HttpAsyncQuery>();
 
-	private HttpAsyncQuery(int type, HttpQuery<?> http,
-			HttpQueryCallBack callBack) {
+	private HttpAsyncQuery(HttpQuery<?> http, HttpQueryCallBack callBack) {
 		mHttpCallBack = callBack;
 		mHttp = http;
 	}
@@ -60,6 +60,7 @@ public final class HttpAsyncQuery extends
 		for (String url : urls) {
 			InputStream stream = null;
 			Exception error = null;
+			Log.d("HttpAsyncQuery.doInBackground", "type=" + type);
 			try {
 				switch (type) {
 				case TYPE_GET:
@@ -77,8 +78,17 @@ public final class HttpAsyncQuery extends
 				case TYPE_COPY:
 					stream = mHttp.doCopy(url);
 					break;
+				case TYPE_RENAME:
+					stream = mHttp.doQuery(url, "RENAME");
+					break;
+				case TYPE_MOVE:
+					stream = mHttp.doQuery(url, "MOVE");
+					break;
 				case TYPE_DELETE:
 					stream = mHttp.doDelete(url);
+					break;
+				case TYPE_PATCH:
+					stream = mHttp.doPatch(url);
 					break;
 				default:
 					stream = mHttp.doGet(url);
@@ -194,7 +204,7 @@ public final class HttpAsyncQuery extends
 			QueryProcessCallBack<?> processCallBack,
 			OnQueryCancelListener mOnQueryCancel,
 			UploadProcessCallBack<?> uploadCallBack, String... urls) {
-		HttpAsyncQuery query = new HttpAsyncQuery(queryType, http, callBack);
+		HttpAsyncQuery query = new HttpAsyncQuery(http, callBack);
 		query.setProgressCallBack(processCallBack);
 		query.setOnQueryCancelListener(mOnQueryCancel);
 		query.setUploadProcessCallBack(uploadCallBack);
@@ -219,7 +229,7 @@ public final class HttpAsyncQuery extends
 			int buffersize, String encoding, HttpQueryCallBack callBack,
 			QueryProcessCallBack<?> processCallBack,
 			OnQueryCancelListener mOnQueryCancel, String... urls) {
-		HttpAsyncQuery query = new HttpAsyncQuery(queryType, http, callBack);
+		HttpAsyncQuery query = new HttpAsyncQuery(http, callBack);
 		query.setProgressCallBack(processCallBack);
 		query.setOnQueryCancelListener(mOnQueryCancel);
 		query.type = queryType;
@@ -379,6 +389,9 @@ public final class HttpAsyncQuery extends
 
 		@SuppressWarnings("unchecked")
 		public <T> T getBody() {
+			if (body == null) {
+				return null;
+			}
 			try {
 				return (T) body;
 			} catch (Exception e) {

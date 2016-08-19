@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -13,11 +14,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.net.ssl.HttpsURLConnection;
 import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
 import istat.android.network.util.ToolKits.Text;
-
 import org.apache.http.message.BasicNameValuePair;
-
 import android.util.Log;
 
 /*
@@ -149,6 +149,10 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		parametres.remove(name);
 	}
 
+	public void removeHeder(String name) {
+		headers.remove(name);
+	}
+
 	@SuppressWarnings("unchecked")
 	public HttpQ clearParams() {
 		parametres.clear();
@@ -226,7 +230,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 			conn.setInstanceFollowRedirects(mOptions.instanceFollowRedirects);
 		if (mOptions.useCaches)
 			conn.setUseCaches(mOptions.useCaches);
-
 		if (mOptions.soTimeOut > 0)
 			conn.setReadTimeout(mOptions.soTimeOut);
 		if (mOptions.connexionTimeOut > 0)
@@ -246,7 +249,69 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		}
 	}
 
-	protected InputStream POST(String url) throws IOException {
+	public InputStream doGet(String url, boolean handleerrror)
+			throws IOException {
+		// ---------------------------
+		String method = "GET";
+		String data = "";
+		if (parameterHandler != null) {
+			data = parameterHandler.onStringifyQueryParams(method, parametres,
+					mOptions.encoding);
+		}
+		if (!Text.isEmpty(data)) {
+			url += (url.contains("?") ? "" : "?") + data;
+		}
+		HttpURLConnection conn = preparConnexion(url);
+		conn.setRequestMethod(method);
+		Log.d("HttpQuery.doGet", "method:" + conn.getRequestMethod() + " | "
+				+ method);
+		InputStream stream = eval(conn, handleerrror);
+		addToOutputHistoric(data.length());
+		onQueryComplete();
+		return stream;
+	}
+
+	public InputStream doQuery(String url, String method, boolean handleerror)
+			throws IOException {
+		if ("GET".equalsIgnoreCase(method)) {
+			return doGet(url);
+		} else if ("POST".equalsIgnoreCase(method)) {
+			return doPost(url);
+		}
+		// ---------------------------
+		String data = "";
+		if (parameterHandler != null) {
+			data = parameterHandler.onStringifyQueryParams(method, parametres,
+					mOptions.encoding);
+		}
+		if (!Text.isEmpty(data)) {
+			url += (url.contains("?") ? "" : "?") + data;
+		}
+		HttpURLConnection conn = preparConnexion(url);
+		try {
+			final Class<?> httpURLConnectionClass = conn.getClass();
+			final Class<?> parentClass = httpURLConnectionClass.getSuperclass();
+			final Field methodField;
+			if (parentClass == HttpsURLConnection.class) {
+				methodField = parentClass.getSuperclass().getDeclaredField(
+						"method");
+			} else {
+				methodField = parentClass.getDeclaredField("method");
+			}
+			methodField.setAccessible(true);
+			methodField.set(conn, method);
+		} catch (final Exception e) {
+			throw new RuntimeException(e);
+		}
+		// .setRequestMethod(method);
+		InputStream stream = eval(conn, handleerror);
+		addToOutputHistoric(data.length());
+		onQueryComplete();
+		return stream;
+	}
+
+	protected InputStream POST(String url, boolean handleerror)
+			throws IOException {
 		String method = "POST";
 		HttpURLConnection conn = preparConnexion(url);
 		conn.setDoOutput(true);
@@ -262,29 +327,14 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		writer.flush();
 		writer.close();
 		os.close();
-		InputStream stream = eval(conn);
+		InputStream stream = eval(conn, handleerror);
 		addToOutputHistoric(data.length());
 		onQueryComplete();
 		return stream;
 	}
 
 	public InputStream doGet(String url) throws IOException {
-		// ---------------------------
-		String method = "GET";
-		String data = "";
-		if (parameterHandler != null) {
-			data = parameterHandler.onStringifyQueryParams(method, parametres,
-					mOptions.encoding);
-		}
-		if (!Text.isEmpty(data)) {
-			url += (url.contains("?") ? "" : "?") + data;
-		}
-		HttpURLConnection conn = preparConnexion(url);
-		conn.setRequestMethod(method);
-		InputStream stream = eval(conn);
-		addToOutputHistoric(data.length());
-		onQueryComplete();
-		return stream;
+		return doGet(url, true);
 	}
 
 	public InputStream doPut(String url) throws IOException {
@@ -321,32 +371,17 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		return doQuery(url, "COPY");
 	}
 
+	public InputStream doPatch(String url) throws IOException {
+		return doQuery(url, "PATCH");
+	}
+
 	public InputStream doQuery(String url, String method) throws IOException {
-		if ("GET".equalsIgnoreCase(method)) {
-			return doGet(url);
-		} else if ("POST".equalsIgnoreCase(method)) {
-			return doPost(url);
-		}
-		// ---------------------------
-		String data = "";
-		if (parameterHandler != null) {
-			data = parameterHandler.onStringifyQueryParams(method, parametres,
-					mOptions.encoding);
-		}
-		if (!Text.isEmpty(data)) {
-			url += (url.contains("?") ? "" : "?") + data;
-		}
-		HttpURLConnection conn = preparConnexion(url);
-		conn.setRequestMethod(method);
-		InputStream stream = eval(conn);
-		addToOutputHistoric(data.length());
-		onQueryComplete();
-		return stream;
+		return doQuery(url, method, true);
 	}
 
 	public String getURL(String adresse) throws IOException {
 		// --------------------------
-		return adresse
+		return adresse + "?"
 				+ createStringularQueryableData(parametres, mOptions.encoding);
 	}
 
@@ -404,15 +439,20 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		StringBuilder result = new StringBuilder();
 		boolean first = true;
 		for (Map.Entry<String, String> entry : params.entrySet()) {
+			String name = entry.getKey();
+			String value = entry.getValue();
+			if (value == null) {
+				continue;
+			}
 			if (first) {
 				first = false;
 			} else {
 				result.append("&");
 			}
 
-			result.append(URLEncoder.encode(entry.getKey(), encoding));
+			result.append(URLEncoder.encode(name, encoding));
 			result.append("=");
-			result.append(URLEncoder.encode(entry.getValue(), encoding));
+			result.append(URLEncoder.encode(value, encoding));
 		}
 
 		return result.toString();
@@ -448,6 +488,10 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 	}
 
 	InputStream eval(HttpURLConnection conn) {
+		return eval(conn, true);
+	}
+
+	InputStream eval(HttpURLConnection conn, boolean handleerrror) {
 		int eval = 0;
 		InputStream stream = null;
 		if (conn != null) {
@@ -456,33 +500,12 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		try {
 			if (HttpQueryResponse.isSuccessCode(conn.getResponseCode())) {
 				stream = conn.getInputStream();
-				// Log.d("HttpQuery.eval",
-				// "SUCCESS STREAM:" + conn.getContentLength()
-				// + ", streamL:" + stream.available());
-			} else {
+			} else if (handleerrror) {
 				stream = conn.getErrorStream();
-				// Log.d("HttpQuery.eval",
-				// "ERROR STREAM: ConteinL:" + conn.getContentLength());
-				// Log.d("HttpQuery.eval",
-				// "ERROR STREAM: Code:" + conn.getResponseCode());
-				// Log.d("HttpQuery.eval",
-				// "ERROR STREAM: Message:" + conn.getResponseMessage());
-				// // Log.d("HttpQuery.eval",
-				// // "ERROR STREAM: SuccessStream" + conn.getInputStream());
-				// Log.d("HttpQuery.eval",
-				// "ERROR STREAM: ErrorStream:" + conn.getErrorStream());
-				// if (conn.getResponseCode() ==
-				// HttpURLConnection.HTTP_UNAUTHORIZED) {
-				// URLConnection urlConn = (URLConnection) currentConnexion;
-				// Log.d("HttpQuery.eval",
-				// "ERROR STREAM: pap:" + urlConn.getClass());
-				// }
-
 			}
 			if (stream != null) {
 				eval = stream.available();
 			}
-			// Log.d("HttpQuery.eval", "stream Size:" + stream.available());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -492,7 +515,12 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 
 	int getCurrentResponseCode() {
 		try {
-			return getCurrentConnexion().getResponseCode();
+			if (getCurrentConnexion() != null) {
+				return getCurrentConnexion().getResponseCode();
+			} else {
+				Log.d("HttpQuery.getCurrentResponseCode", "connexion::"
+						+ getCurrentConnexion());
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 		}
@@ -501,7 +529,9 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 
 	String getCurrentResponseMessage() {
 		try {
-			return getCurrentConnexion().getResponseMessage();
+			if (getCurrentConnexion() != null) {
+				return getCurrentConnexion().getResponseMessage();
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 		}
@@ -572,10 +602,10 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		return out;
 	}
 
-	public void setOptions(HttpQueryOptions mOptions) {
-		this.mOptions = mOptions;
+	public void setOptions(HttpQueryOptions option) {
+		this.mOptions = option;
 		if (this.mOptions == null) {
-			mOptions = new HttpQueryOptions();
+			this.mOptions = new HttpQueryOptions();
 		}
 	}
 
