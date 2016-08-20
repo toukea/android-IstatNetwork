@@ -262,6 +262,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 			url += (url.contains("?") ? "" : "?") + data;
 		}
 		HttpURLConnection conn = preparConnexion(url);
+		conn.setDoOutput(false);
 		conn.setRequestMethod(method);
 		Log.d("HttpQuery.doGet", "method:" + conn.getRequestMethod() + " | "
 				+ method);
@@ -487,17 +488,17 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		timeHistorics.get(TAG_OUTPUT).add(elapsed);
 	}
 
-	InputStream eval(HttpURLConnection conn) {
+	InputStream eval(HttpURLConnection conn) throws IOException {
 		return eval(conn, true);
 	}
 
-	InputStream eval(HttpURLConnection conn, boolean handleerrror) {
+	InputStream eval(HttpURLConnection conn, boolean handleerrror) throws IOException {
 		int eval = 0;
 		InputStream stream = null;
 		if (conn != null) {
 			eval = conn.getContentLength();
 		}
-		try {
+		
 			if (HttpQueryResponse.isSuccessCode(conn.getResponseCode())) {
 				stream = conn.getInputStream();
 			} else if (handleerrror) {
@@ -506,9 +507,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 			if (stream != null) {
 				eval = stream.available();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		addToInputHistoric(eval);
 		return stream;
 	}
