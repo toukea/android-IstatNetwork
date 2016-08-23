@@ -319,19 +319,26 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		conn.setRequestMethod(method);
 		OutputStream os = conn.getOutputStream();
 		DataOutputStream writer = new DataOutputStream(os);
+		int length = onWriteDataOnOutputStream(method, writer);
+		writer.flush();
+		writer.close();
+		os.close();
+		InputStream stream = eval(conn, handleerror);
+		addToOutputHistoric(length);
+		onQueryComplete();
+		return stream;
+	}
+
+	protected int onWriteDataOnOutputStream(String method,
+			DataOutputStream writer) throws IOException {
+		// TODO Auto-generated method stub
 		String data = "";
 		if (parameterHandler != null) {
 			data = parameterHandler.onStringifyQueryParams(method, parametres,
 					mOptions.encoding);
 		}
 		writer.writeBytes(data);
-		writer.flush();
-		writer.close();
-		os.close();
-		InputStream stream = eval(conn, handleerror);
-		addToOutputHistoric(data.length());
-		onQueryComplete();
-		return stream;
+		return data.length();
 	}
 
 	public InputStream doGet(String url) throws IOException {
@@ -492,21 +499,22 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		return eval(conn, true);
 	}
 
-	InputStream eval(HttpURLConnection conn, boolean handleerrror) throws IOException {
+	InputStream eval(HttpURLConnection conn, boolean handleerrror)
+			throws IOException {
 		int eval = 0;
 		InputStream stream = null;
 		if (conn != null) {
 			eval = conn.getContentLength();
 		}
-		
-			if (HttpQueryResponse.isSuccessCode(conn.getResponseCode())) {
-				stream = conn.getInputStream();
-			} else if (handleerrror) {
-				stream = conn.getErrorStream();
-			}
-			if (stream != null) {
-				eval = stream.available();
-			}
+
+		if (HttpQueryResponse.isSuccessCode(conn.getResponseCode())) {
+			stream = conn.getInputStream();
+		} else if (handleerrror) {
+			stream = conn.getErrorStream();
+		}
+		if (stream != null) {
+			eval = stream.available();
+		}
 		addToInputHistoric(eval);
 		return stream;
 	}

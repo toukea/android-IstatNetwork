@@ -36,6 +36,16 @@ public abstract class ReadenByteProcessCallBack extends
 		return buffer;
 	}
 
+//	/**
+//	 * @param vars
+//	 *            un tableaqu d'entier representant la progression.
+//	 *            vars[0]=nombre de byte deja lu, vars[1]=nobre total de byte a
+//	 *            lire, vars[2] le pourcentage deja lue
+//	 */
+//	@Override
+//	public abstract void onUpdateQueryProcess(HttpAsyncQuery query,
+//			Integer... vars);
+
 	@Override
 	public String onBuildResponseBody(HttpURLConnection currentConnexion,
 			InputStream inp, HttpAsyncQuery query) {
