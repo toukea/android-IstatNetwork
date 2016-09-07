@@ -12,12 +12,15 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
 import istat.android.network.util.ToolKits.Text;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONObject;
+
 import android.util.Log;
 
 /*
@@ -45,31 +48,31 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 	protected HttpQueryOptions mOptions = new HttpQueryOptions();
 	protected HashMap<String, String> parametres = new HashMap<String, String>();
 	protected HashMap<String, String> headers = new HashMap<String, String>();
-	private boolean aborted = false, querying = false;;
+	private volatile boolean aborted = false, querying = false;
 	static String TAG_INPUT = "input", TAG_OUTPUT = "output";
-	HttpURLConnection currentConnexion;
+	volatile HttpURLConnection currentConnexion;
 	long lastConnextionTime = System.currentTimeMillis();
-	protected HashMap<String, List<Integer>> historic = new HashMap<String, List<Integer>>() {
+	protected HashMap<String, List<Long>> historic = new HashMap<String, List<Long>>() {
 
 		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
 		{
-			put(TAG_INPUT, new ArrayList<Integer>());
-			put(TAG_OUTPUT, new ArrayList<Integer>());
+			put(TAG_INPUT, new ArrayList<Long>());
+			put(TAG_OUTPUT, new ArrayList<Long>());
 		}
 
 	};
-	static HashMap<String, List<Integer>> historics = new HashMap<String, List<Integer>>() {
+	static HashMap<String, List<Long>> historics = new HashMap<String, List<Long>>() {
 
 		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
 		{
-			put(TAG_INPUT, new ArrayList<Integer>());
-			put(TAG_OUTPUT, new ArrayList<Integer>());
+			put(TAG_INPUT, new ArrayList<Long>());
+			put(TAG_OUTPUT, new ArrayList<Long>());
 		}
 
 	};
@@ -114,6 +117,17 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 	public HttpQ addParam(String Name, String[] values) {
 		for (int i = 0; i < values.length; i++) {
 			addParam(Name + "[" + i + "]", values[i]);
+		}
+		return (HttpQ) this;
+	}
+
+	@SuppressWarnings("unchecked")
+	public HttpQ addParam(String Name, HashMap<Object, String> values) {
+		Iterator<Object> iterator = values.keySet().iterator();
+		while (iterator.hasNext()) {
+			Object name = iterator.next();
+			String value = values.get(name);
+			addParam(Name + "[" + name + "]", value);
 		}
 		return (HttpQ) this;
 	}
@@ -173,21 +187,25 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		return (HttpQ) this;
 	}
 
-	protected HttpURLConnection preparConnexion(final String url)
+	protected synchronized HttpURLConnection preparConnexion(final String url, String method)
 			throws IOException {
 		onQueryStarting();
 		URL Url = new URL(url);
 		URLConnection urlConnexion = Url.openConnection();
 		HttpURLConnection conn = (HttpURLConnection) urlConnexion;
-		conn.setDoOutput(true);
+		if (method.equals("POST") || method.equals("PUT")
+				|| method.equals("PATCH")) {
+			conn.setDoOutput(true);
+		}
+		if (!"COPY".equals(method) && !"RENAME".equals(method)
+				&& !"MOVE".equals(method)) {
+			conn.setRequestMethod(method);
+		}
 		if (mOptions != null) {
 			applyOptions(conn);
 		}
-		conn.setDoInput(true);
 		fillHeader(conn);
 		currentConnexion = conn;
-		aborted = false;
-		querying = true;
 		return conn;
 	}
 
@@ -261,9 +279,8 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		if (!Text.isEmpty(data)) {
 			url += (url.contains("?") ? "" : "?") + data;
 		}
-		HttpURLConnection conn = preparConnexion(url);
+		HttpURLConnection conn = preparConnexion(url, method);
 		conn.setDoOutput(false);
-		conn.setRequestMethod(method);
 		Log.d("HttpQuery.doGet", "method:" + conn.getRequestMethod() + " | "
 				+ method);
 		InputStream stream = eval(conn, handleerrror);
@@ -288,7 +305,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		if (!Text.isEmpty(data)) {
 			url += (url.contains("?") ? "" : "?") + data;
 		}
-		HttpURLConnection conn = preparConnexion(url);
+		HttpURLConnection conn = preparConnexion(url, method);
 		try {
 			final Class<?> httpURLConnectionClass = conn.getClass();
 			final Class<?> parentClass = httpURLConnectionClass.getSuperclass();
@@ -314,12 +331,11 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 	protected InputStream POST(String url, boolean handleerror)
 			throws IOException {
 		String method = "POST";
-		HttpURLConnection conn = preparConnexion(url);
+		HttpURLConnection conn = preparConnexion(url, method);
 		conn.setDoOutput(true);
-		conn.setRequestMethod(method);
 		OutputStream os = conn.getOutputStream();
 		DataOutputStream writer = new DataOutputStream(os);
-		int length = onWriteDataOnOutputStream(method, writer);
+		long length = onWriteDataOnOutputStream(method, writer);
 		writer.flush();
 		writer.close();
 		os.close();
@@ -329,7 +345,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		return stream;
 	}
 
-	protected int onWriteDataOnOutputStream(String method,
+	protected long onWriteDataOnOutputStream(String method,
 			DataOutputStream writer) throws IOException {
 		// TODO Auto-generated method stub
 		String data = "";
@@ -347,9 +363,8 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 
 	public InputStream doPut(String url) throws IOException {
 		String method = "PUT";
-		HttpURLConnection conn = preparConnexion(url);
+		HttpURLConnection conn = preparConnexion(url, method);
 		conn.setDoOutput(true);
-		conn.setRequestMethod(method);
 		OutputStream os = conn.getOutputStream();
 		DataOutputStream writer = new DataOutputStream(os);
 		String data = "";
@@ -389,15 +404,18 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 
 	public String getURL(String adresse) throws IOException {
 		// --------------------------
-		return adresse + "?"
-				+ createStringularQueryableData(parametres, mOptions.encoding);
+		String parmString = createStringularQueryableData(parametres,
+				mOptions.encoding);
+		return adresse
+				+ (parmString == null || parmString.equals("") ? "" : "?"
+						+ parmString);
 	}
 
 	public void shutDownConnection() {
 		currentConnexion.disconnect();
 		currentConnexion = null;
+		onQueryComplete();
 		aborted = true;
-		querying = false;
 	}
 
 	public boolean isAutoClearParamsEnable() {
@@ -409,7 +427,8 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 	}
 
 	public boolean hasRunningRequest() {
-		return querying && currentConnexion != null;
+		Log.d("HttQuery", "hasRunningRequest::querying=" + querying);
+		return /* querying && */currentConnexion != null;
 	}
 
 	public boolean isAborted() {
@@ -469,6 +488,8 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 	void onQueryStarting() {
 		// TODO Auto-generated method stub
 		lastConnextionTime = System.currentTimeMillis();
+		aborted = false;
+		querying = true;
 	}
 
 	void onQueryComplete() {
@@ -476,10 +497,9 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 			clearParams();
 		}
 		querying = false;
-		// currentConnexion. = null;
 	}
 
-	void addToInputHistoric(int input) {
+	void addToInputHistoric(long input) {
 		historic.get(TAG_INPUT).add(input);
 		historics.get(TAG_INPUT).add(input);
 		Long elapsed = System.currentTimeMillis() - lastConnextionTime;
@@ -487,7 +507,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		timeHistorics.get(TAG_INPUT).add(elapsed);
 	}
 
-	void addToOutputHistoric(int input) {
+	void addToOutputHistoric(long input) {
 		historic.get(TAG_OUTPUT).add(input);
 		historics.get(TAG_OUTPUT).add(input);
 		Long elapsed = System.currentTimeMillis() - lastConnextionTime;
@@ -498,6 +518,9 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 	InputStream eval(HttpURLConnection conn) throws IOException {
 		return eval(conn, true);
 	}
+
+	protected InputStream currentInputStream;
+	protected OutputStream currentOutputStream;
 
 	InputStream eval(HttpURLConnection conn, boolean handleerrror)
 			throws IOException {
@@ -515,6 +538,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		if (stream != null) {
 			eval = stream.available();
 		}
+		currentInputStream = stream;
 		addToInputHistoric(eval);
 		return stream;
 	}
@@ -550,34 +574,53 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 	 */
 	public boolean abortRequest() {
 		boolean out = hasRunningRequest();
+		Log.d("HttQuery", "abortRequest_start");
 		if (out) {
+			Log.d("HttQuery", "abortRequest_has_running");
+			try {
+
+				if (currentInputStream != null) {
+					currentInputStream.close();
+				}
+				Log.d("HttQuery", "abortRequest_stream_closed::"+currentInputStream);
+				// if (outp != null) {
+				// currentConnexion.getOutputStream().close();
+				// }
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			Log.d("HttQuery", "abortRequest_stream_Yooooo::"+currentInputStream);
 			currentConnexion.disconnect();
 			onQueryComplete();
 		}
 		aborted = true;
-		querying = false;
 		return out;
 	}
 
-	public List<Integer> getCurrentOutputContentLegthHistoric() {
+	// private void notifyAborted() {
+	// onQueryComplete();
+	// aborted = true;
+	// }
+
+	public List<Long> getCurrentOutputContentLegthHistoric() {
 		return historic.get(TAG_OUTPUT);
 	}
 
-	public List<Integer> getCurrentInputContentLegthHistoric() {
+	public List<Long> getCurrentInputContentLegthHistoric() {
 		return historic.get(TAG_INPUT);
 	}
 
-	public int getCurrentOutputContentLegth() {
-		int out = 0;
-		for (int i : historic.get(TAG_OUTPUT)) {
+	public long getCurrentOutputContentLegth() {
+		long out = 0;
+		for (long i : historic.get(TAG_OUTPUT)) {
 			out += i;
 		}
 		return out;
 	}
 
-	public int getCurrentInputContentLegth() {
-		int out = 0;
-		for (int i : historic.get(TAG_INPUT)) {
+	public long getCurrentInputContentLegth() {
+		long out = 0;
+		for (long i : historic.get(TAG_INPUT)) {
 			out += i;
 		}
 		return out;
@@ -619,25 +662,25 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 		return mOptions;
 	}
 
-	public static List<Integer> getOutputContentLegthHistoric() {
+	public static List<Long> getOutputContentLegthHistoric() {
 		return historics.get(TAG_OUTPUT);
 	}
 
-	public static List<Integer> getInputContentLegthHistoric() {
+	public static List<Long> getInputContentLegthHistoric() {
 		return historics.get(TAG_INPUT);
 	}
 
-	public static int getOutputContentLegth() {
-		int out = 0;
-		for (int i : historics.get(TAG_OUTPUT)) {
+	public static long getOutputContentLegth() {
+		long out = 0;
+		for (long i : historics.get(TAG_OUTPUT)) {
 			out += i;
 		}
 		return out;
 	}
 
-	public static int getInputContentLegth() {
-		int out = 0;
-		for (int i : historics.get(TAG_INPUT)) {
+	public static long getInputContentLegth() {
+		long out = 0;
+		for (long i : historics.get(TAG_INPUT)) {
 			out += i;
 		}
 		return out;

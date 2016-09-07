@@ -126,16 +126,15 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 	}
 
 	@Override
-	public void setParameterHandler(
-			istat.android.network.http.HttpQuery.ParameterHandler parameterHandler) {
+	public void setParameterHandler(ParameterHandler parameterHandler) {
 		// TODO Auto-generated method stub
 		super.setParameterHandler(parameterHandler);
 	}
 
-	private HttpURLConnection preparConnexionForPost(String url)
+	private HttpURLConnection preparMultipartPostConnexion(String url)
 			throws IOException {
 		String method = "POST";
-		HttpURLConnection conn = preparConnexion(url);
+		HttpURLConnection conn = preparConnexion(url, method);
 		conn.setDoOutput(true);
 		conn.setRequestMethod(method);
 		String data = "";
@@ -232,8 +231,8 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 		}
 	}
 
-	private synchronized InputStream POSTM(String url) throws IOException {
-		HttpURLConnection conn = preparConnexionForPost(url);
+	protected synchronized InputStream POSTM(String url) throws IOException {
+		HttpURLConnection conn = preparMultipartPostConnexion(url);
 		InputStream stream = null;
 		int responseCode = conn.getResponseCode();
 		if (responseCode == HttpsURLConnection.HTTP_OK) {
@@ -272,8 +271,11 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 		}
 	}
 
-	UpLoadHandler uploadHandler = new UpLoadHandler() {
+	protected UpLoadHandler getUploadHandler() {
+		return uploadHandler;
+	}
 
+	UpLoadHandler uploadHandler = new UpLoadHandler() {
 		@Override
 		public void onProceedStreamUpload(MultipartHttpQuery httpQuery,
 				DataOutputStream request, InputStream stream)
@@ -283,13 +285,13 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 			int read = 0;
 			while ((read = stream.read(b)) > -1) {
 				if (httpQuery.isAborted()) {
-					stream.close();
 					currentConnexion.disconnect();
 					break;
 				}
 				request.write(b, 0, read);
 			}
 			stream.close();
+			request.close();
 		}
 	};
 

@@ -221,8 +221,8 @@ public final class ToolKits {
 			try {
 				while ((read = inp.read(b)) > -1) {
 					if (mHttp.isAborted()) {
-						mHttp.abortRequest();
-						return null;
+						// mHttp.abortRequest();
+						break;
 					}
 					out = out
 							+ (encoding != null ? new String(b, 0, read,

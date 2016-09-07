@@ -11,10 +11,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.concurrent.ConcurrentHashMap;
 import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
 import istat.android.network.http.MultipartHttpQuery.UpLoadHandler;
-
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
@@ -28,20 +27,22 @@ public final class HttpAsyncQuery extends
 			TYPE_RENAME = 8, TYPE_MOVE = 9, DEFAULT_BUFFER_SIZE = 16384;
 	public final static String DEFAULT_ENCODING = "UTF-8";
 	HttpQueryCallBack mHttpCallBack;
-	OnQueryCancelListener mOnQueryCancel;
+	CancelListener mCancelListener;
 	HttpQuery<?> mHttp;
 	int type = TYPE_GET;
 	String typeString;
 	int buffersize = DEFAULT_BUFFER_SIZE;
 	String encoding = DEFAULT_ENCODING;
-	// private boolean running = true, complete = false;
 	private long startTimeStamp = 0;
 	private long endTimeStamp = 0;
-	static final HashMap<Object, HttpAsyncQuery> taskQueue = new HashMap<Object, HttpAsyncQuery>();
+	static final ConcurrentHashMap<Object, HttpAsyncQuery> taskQueue = new ConcurrentHashMap<Object, HttpAsyncQuery>();
 
 	private HttpAsyncQuery(HttpQuery<?> http, HttpQueryCallBack callBack) {
 		mHttpCallBack = callBack;
 		mHttp = http;
+		if (callBack != null && (callBack instanceof CancelListener)) {
+			setCancelListener((CancelListener) callBack);
+		}
 	}
 
 	@Override
@@ -58,6 +59,9 @@ public final class HttpAsyncQuery extends
 	protected Void doInBackground(String... urls) {
 		// TODO Auto-generated method stub
 		for (String url : urls) {
+			if (isCancelled()) {
+				break;
+			}
 			InputStream stream = null;
 			Exception error = null;
 			Log.d("HttpAsyncQuery.doInBackground", "type=" + type);
@@ -94,18 +98,12 @@ public final class HttpAsyncQuery extends
 					stream = mHttp.doGet(url);
 					break;
 				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				// e.printStackTrace();
-				error = e;
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				// e.printStackTrace();
 				error = e;
 			}
 			HttpQueryResponse response = new HttpQueryResponse(stream, error,
 					encoding, buffersize, this);
-			if (!mHttp.isAborted() && !isCancelled()) {
+			if (!mHttp.isAborted() || !isCancelled()) {
 				publishProgress(response);
 			} else {
 				Log.i("istat.http.asyncQuery.query", "was aborded");
@@ -135,23 +133,23 @@ public final class HttpAsyncQuery extends
 
 	@Override
 	protected void onCancelled() {
-		// TODO Auto-generated method stub
-		// running = false;
-		// complete = false;
+		Log.d("HttpAsyncQuery", "onCancelled");
 		endTimeStamp = System.currentTimeMillis();
-		if (mHttp.hasRunningRequest()) {
-			mHttp.abortRequest();
+		// if (mHttpCallBack != null && mHttpCallBack instanceof HttpCallBack) {
+		// ((HttpCallBack) mHttpCallBack).onHttpAborted();
+		// }
+		if (mCancelListener != null) {
+			mCancelListener.onCancelled(this);
 		}
-		if (mHttpCallBack != null && mHttpCallBack instanceof HttpCallBack) {
-			((HttpCallBack) mHttpCallBack).onHttpAborted();
-		}
-		if (mOnQueryCancel != null) {
-			mOnQueryCancel.onCancelled(this);
-		}
-		// taskQueue.remove(this);
 		taskQueue.values().removeAll(Collections.singletonList(this));
 		super.onCancelled();
 	}
+
+	private Runnable httpAbortRunnable = new Runnable() {
+		public void run() {
+			mHttp.abortRequest();
+		}
+	};
 
 	public static HttpAsyncQuery doAsyncGet(HttpQuery<?> http, String... urls) {
 		return doAsyncQuery(http, TYPE_GET, DEFAULT_BUFFER_SIZE,
@@ -199,16 +197,15 @@ public final class HttpAsyncQuery extends
 	}
 
 	public static HttpAsyncQuery doAsyncPost(MultipartHttpQuery http,
-			int queryType, int buffersize, String encoding,
-			HttpQueryCallBack callBack,
+			int buffersize, String encoding, HttpQueryCallBack callBack,
 			QueryProcessCallBack<?> processCallBack,
-			OnQueryCancelListener mOnQueryCancel,
+			CancelListener cancelCallback,
 			UploadProcessCallBack<?> uploadCallBack, String... urls) {
 		HttpAsyncQuery query = new HttpAsyncQuery(http, callBack);
 		query.setProgressCallBack(processCallBack);
-		query.setOnQueryCancelListener(mOnQueryCancel);
+		query.setCancelListener(cancelCallback);
 		query.setUploadProcessCallBack(uploadCallBack);
-		query.type = queryType;
+		query.type = TYPE_POST;
 		query.encoding = encoding;
 		query.buffersize = buffersize;
 		query.execute(urls);
@@ -228,10 +225,10 @@ public final class HttpAsyncQuery extends
 	public static HttpAsyncQuery doAsyncQuery(HttpQuery<?> http, int queryType,
 			int buffersize, String encoding, HttpQueryCallBack callBack,
 			QueryProcessCallBack<?> processCallBack,
-			OnQueryCancelListener mOnQueryCancel, String... urls) {
+			CancelListener mOnQueryCancel, String... urls) {
 		HttpAsyncQuery query = new HttpAsyncQuery(http, callBack);
 		query.setProgressCallBack(processCallBack);
-		query.setOnQueryCancelListener(mOnQueryCancel);
+		query.setCancelListener(mOnQueryCancel);
 		query.type = queryType;
 		query.encoding = encoding;
 		query.buffersize = buffersize;
@@ -253,6 +250,15 @@ public final class HttpAsyncQuery extends
 		if (endTimeStamp <= startTimeStamp)
 			return getDuration();
 		return endTimeStamp - startTimeStamp;
+	}
+
+	public final boolean cancel() {
+		Log.d("HttAsyncQuery", "cancel_start");
+		if (mHttp.hasRunningRequest()) {
+			Log.d("HttQuery", "cancel_has_running");
+			new Thread(httpAbortRunnable).start();
+		}
+		return cancel(true);
 	}
 
 	private long getDuration() {
@@ -330,16 +336,27 @@ public final class HttpAsyncQuery extends
 			this.code = http.getCurrentResponseCode();
 			this.message = http.getCurrentResponseMessage();
 			if (connexion != null) {
-				this.body = stream != null ? mAsyncQ.processCallBack
-						.buildResponseBody(connexion, stream) : null;
+				try {
+					this.body = null;
+					if (stream != null) {
+						this.body = mAsyncQ.processCallBack.buildResponseBody(
+								connexion, stream);
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					code = 0;
+					this.error = ex;
+				}
 				this.headers = connexion.getHeaderFields();
 			}
 			if (e == null && !isSuccess() && !TextUtils.isEmpty(message)
 					&& code > 0) {
 				this.error = new HttpQueryException(code, message);
-				// StackTraceElement element=new ST
-				// this.error.setStackTrace()
 			}
+		}
+
+		public boolean containHeader(String name) {
+			return getHeaders() != null && getHeaders().containsKey(name);
 		}
 
 		public Map<String, List<String>> getHeaders() {
@@ -376,6 +393,10 @@ public final class HttpAsyncQuery extends
 		}
 
 		public boolean hasError() {
+			// Log.d("HttpAsyc", "haserror:" + error + ", code=" + code);
+			// if (error != null) {
+			// error.printStackTrace();
+			// }
 			return error != null || !isSuccessCode(code);
 		}
 
@@ -400,7 +421,9 @@ public final class HttpAsyncQuery extends
 		}
 
 		public String getBodyAsString() {
-			return "" + body;
+			if (body == null)
+				return null;
+			return body.toString();
 		}
 
 		public Exception getError() {
@@ -428,7 +451,7 @@ public final class HttpAsyncQuery extends
 		public abstract void onHttRequestComplete(HttpQueryResponse result);
 	}
 
-	public static interface OnQueryCancelListener {
+	public static interface CancelListener {
 		public abstract void onCancelled(HttpAsyncQuery asyncQ);
 	}
 
@@ -446,7 +469,8 @@ public final class HttpAsyncQuery extends
 		public abstract void onHttpAborted();
 	}
 
-	public static abstract class HttpCallBack implements OnHttpQueryComplete {
+	public static abstract class HttpCallBack implements OnHttpQueryComplete,
+			CancelListener {
 		public final void onHttRequestComplete(HttpQueryResponse resp) {
 			if (resp.isAccepeted()) {
 				if (resp.isSuccess()) {
@@ -461,13 +485,19 @@ public final class HttpAsyncQuery extends
 			onHttRequestCompleted(resp);
 		}
 
+		@Override
+		public final void onCancelled(HttpAsyncQuery asyncQ) {
+			// TODO Auto-generated method stub
+			onHttpAborted();
+		}
+
 		public abstract void onHttRequestCompleted(HttpQueryResponse result);
 
 	}
 
-	public void setOnQueryCancelListener(OnQueryCancelListener mOnQueryCancel) {
-		if (mOnQueryCancel != null) {
-			this.mOnQueryCancel = mOnQueryCancel;
+	public void setCancelListener(CancelListener listener) {
+		if (listener != null) {
+			this.mCancelListener = listener;
 		}
 	}
 
@@ -519,24 +549,39 @@ public final class HttpAsyncQuery extends
 		}
 
 		public UploadProcessCallBack() {
-
+			try {
+				this.handler = getHandler();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 
 		private Handler getHandler() {
-			if (handler != null) {
+			if (handler == null) {
 				handler = new Handler(Looper.getMainLooper());
 			}
 			return handler;
 		}
 
+		protected void onProcessFail(Exception e) {
+
+		}
+
+		Runnable publishRunner = new Runnable() {
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				onUpdateUploadProcess(query, processVars);
+			}
+		};
+		ProgressVar[] processVars;
+
 		public void publishProgression(final ProgressVar... vars) {
-			getHandler().post(new Runnable() {
-				@Override
-				public void run() {
-					// TODO Auto-generated method stub
-					onUpdateUploadProcess(query, vars);
-				}
-			});
+			Handler tmpHandler = getHandler();
+			if (tmpHandler != null) {
+				processVars = vars;
+				tmpHandler.post(publishRunner);
+			}
 		}
 
 		@Override
@@ -544,7 +589,21 @@ public final class HttpAsyncQuery extends
 				DataOutputStream request, InputStream stream)
 				throws IOException {
 			// TODO Auto-generated method stub
-			onProceedStreamUpload(httpQuery, request, stream, query);
+			try {
+				onProceedStreamUpload(httpQuery, request, stream, query);
+			} catch (final Exception e) {
+				e.printStackTrace();
+				Handler tmpHandler = getHandler();
+				if (tmpHandler != null) {
+					getHandler().post(new Runnable() {
+						@Override
+						public void run() {
+							// TODO Auto-generated method stub
+							onProcessFail(e);
+						}
+					});
+				}
+			}
 		}
 
 		public abstract void onProceedStreamUpload(
@@ -564,7 +623,11 @@ public final class HttpAsyncQuery extends
 		}
 
 		public QueryProcessCallBack() {
+			try {
+				handler = getHandler();
+			} catch (Exception e) {
 
+			}
 		}
 
 		public int getConnexionContentLenght() {
@@ -588,14 +651,33 @@ public final class HttpAsyncQuery extends
 		}
 
 		private Handler getHandler() {
-			if (handler != null) {
+			if (handler == null) {
 				handler = new Handler(Looper.getMainLooper());
 			}
 			return handler;
 		}
 
+		protected void onProcessFail(Exception e) {
+
+		}
+
 		Object buildResponseBody(HttpURLConnection connexion, InputStream stream) {
-			return onBuildResponseBody(connexion, stream, query);
+			try {
+				return onBuildResponseBody(connexion, stream, query);
+			} catch (final Exception e) {
+				e.printStackTrace();
+				Handler tmpHandler = getHandler();
+				if (tmpHandler != null) {
+					getHandler().post(new Runnable() {
+						@Override
+						public void run() {
+							// TODO Auto-generated method stub
+							onProcessFail(e);
+						}
+					});
+				}
+			}
+			return null;
 		}
 
 		public void publishProgression(final ProgressVar... vars) {

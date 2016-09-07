@@ -11,23 +11,13 @@ import istat.android.network.util.ToolKits.Stream;
 
 public class WritenByteProcessCallBack extends UploadProcessCallBack<Integer> {
 	int buffer = Stream.DEFAULT_BUFFER_SIZE;
-	String encoding = Stream.DEFAULT_ENCODING;
 
 	public WritenByteProcessCallBack() {
 
 	}
 
-	public WritenByteProcessCallBack(String encoding, int bufferSize) {
-		this.encoding = encoding;
+	public WritenByteProcessCallBack(int bufferSize) {
 		this.buffer = bufferSize;
-	}
-
-	public String getEncoding() {
-		return encoding;
-	}
-
-	public void setEncoding(String encoding) {
-		this.encoding = encoding;
 	}
 
 	public void setBuffer(int buffer) {
@@ -54,12 +44,13 @@ public class WritenByteProcessCallBack extends UploadProcessCallBack<Integer> {
 				break;
 			}
 			request.write(b, 0, writen);
+			request.flush();
 			totalWriten += writen;
-			int writenPercentage = uploadSize > 0 ? (100 * totalWriten / uploadSize)
-					: -1;
+			int writenPercentage = uploadSize > 0 ? (100 * totalWriten / uploadSize): 0;
 			publishProgression(totalWriten, uploadSize, writenPercentage);
 		}
 		stream.close();
+		request.close();
 	}
 
 	@Override
