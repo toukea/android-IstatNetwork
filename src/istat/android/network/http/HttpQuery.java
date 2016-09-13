@@ -193,8 +193,36 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
         return (HttpQ) this;
     }
 
-    protected HttpURLConnection preparConnexion(final String url,
-                                                String method) throws IOException {
+    public InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
+            throws IOException {
+        Log.d("HttpQuery", "Method=" + method);
+        long length = 0;
+        String data = "";
+        if (!bodyData) {
+            if (parameterHandler != null) {
+                data = parameterHandler.onStringifyQueryParams(method, parameters,
+                        mOptions.encoding);
+            }
+            if (!Text.isEmpty(data)) {
+                url += (url.contains("?") ? "" : "?") + data;
+                length = data.length();
+            }
+        }
+        HttpURLConnection conn = prepareConnexion(url, method);
+        if (bodyData && parameters != null && parameters.size() > 0) {
+            conn.setDoOutput(true);
+            OutputStream os = conn.getOutputStream();
+            length = writeDataOnOutputStream(method, os);
+            os.close();
+        }
+        InputStream stream = eval(conn, holdError);
+        addToOutputHistoric(length);
+        onQueryComplete();
+        return stream;
+    }
+
+    protected HttpURLConnection prepareConnexion(final String url,
+                                                 String method) throws IOException {
         onQueryStarting();
         URL Url = new URL(url);
         URLConnection urlConnexion = Url.openConnection();
@@ -203,6 +231,25 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
             applyOptions(conn);
         }
         fillHeader(conn);
+        try {
+            conn.setRequestMethod(method);
+        } catch (Exception ex) {
+            try {
+                final Class<?> httpURLConnectionClass = conn.getClass();
+                final Class<?> parentClass = httpURLConnectionClass.getSuperclass();
+                final Field methodField;
+                if (parentClass == HttpsURLConnection.class) {
+                    methodField = parentClass.getSuperclass().getDeclaredField(
+                            "method");
+                } else {
+                    methodField = parentClass.getDeclaredField("method");
+                }
+                methodField.setAccessible(true);
+                methodField.set(conn, method);
+            } catch (final Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
         currentConnexion = conn;
         return conn;
     }
@@ -276,58 +323,11 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
         return doQuery(url, method, false, holdError);
     }
 
-    public InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
-            throws IOException {
-        Log.d("HttpQuery", "Method=" + method);
-        long length = 0;
-        String data = "";
-        if (!bodyData) {
-            if (parameterHandler != null) {
-                data = parameterHandler.onStringifyQueryParams(method, parameters,
-                        mOptions.encoding);
-            }
-            if (!Text.isEmpty(data)) {
-                url += (url.contains("?") ? "" : "?") + data;
-                length = data.length();
-            }
-        }
-        HttpURLConnection conn = preparConnexion(url, method);
-        try {
-            conn.setRequestMethod(method);
-        } catch (Exception ex) {
-            //Log.e("doQuery", "error::" + ex);
-            try {
-                final Class<?> httpURLConnectionClass = conn.getClass();
-                final Class<?> parentClass = httpURLConnectionClass.getSuperclass();
-                final Field methodField;
-                if (parentClass == HttpsURLConnection.class) {
-                    methodField = parentClass.getSuperclass().getDeclaredField(
-                            "method");
-                } else {
-                    methodField = parentClass.getDeclaredField("method");
-                }
-                methodField.setAccessible(true);
-                methodField.set(conn, method);
-            } catch (final Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-        if (bodyData && parameters != null && parameters.size() > 0) {
-            conn.setDoOutput(true);
-            OutputStream os = conn.getOutputStream();
-            length = writeDataOnOutputStream(method, os);
-            os.close();
-        }
-        InputStream stream = eval(conn, holdError);
-        addToOutputHistoric(length);
-        onQueryComplete();
-        return stream;
-    }
 
     protected InputStream POST(String url, boolean holdError)
             throws IOException {
         String method = "POST";
-        HttpURLConnection conn = preparConnexion(url, method);
+        HttpURLConnection conn = prepareConnexion(url, method);
         conn.setDoOutput(true);
         OutputStream os = conn.getOutputStream();
         long length = writeDataOnOutputStream(method, os);

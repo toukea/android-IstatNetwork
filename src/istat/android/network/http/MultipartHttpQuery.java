@@ -133,7 +133,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
     private HttpURLConnection preparMultipartPostConnexion(String url)
             throws IOException {
         String method = "POST";
-        HttpURLConnection conn = preparConnexion(url, method);
+        HttpURLConnection conn = prepareConnexion(url, method);
         conn.setDoOutput(true);
         conn.setRequestMethod(method);
         String data = "";
