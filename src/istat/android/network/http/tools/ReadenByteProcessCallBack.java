@@ -60,7 +60,7 @@ public abstract class ReadenByteProcessCallBack extends
 			streamSize = streamSize == 0 ? inp.available() : streamSize;
 			while ((read = inp.read(b)) > -1) {
 
-				if (query.isCancelled()) {
+				if (query.isCancelled() || !query.isRunning()) {
 					return null;
 				}
 				out += (encoding != null ? new String(b, 0, read, encoding)

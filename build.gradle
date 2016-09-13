@@ -1,4 +1,4 @@
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
@@ -7,7 +7,9 @@ dependencies {
 android {
     compileSdkVersion 18
     buildToolsVersion "19.1.0"
-
+    lintOptions {
+        abortOnError false
+    }
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -31,4 +33,16 @@ android {
         debug.setRoot('build-types/debug')
         release.setRoot('build-types/release')
     }
+	task clearJar(type: Delete) {
+        delete '../MtnDriveSdk/libs/istatnetwork_v2.jar'
+    }
+
+    task makeJar(type: Copy) {
+        from('build/intermediates/bundles/release/')
+        into('../MtnDriveSdk/libs/')
+        include('classes.jar')
+        rename('classes.jar', 'istatnetwork_v2.jar')
+    }
+
+    makeJar.dependsOn(clearJar, build)
 }
