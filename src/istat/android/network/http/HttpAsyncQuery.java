@@ -229,8 +229,8 @@ public final class HttpAsyncQuery extends
     }
 
     boolean setUploadProcessCallBack(UploadProcessCallBack<?> uploadCallBack) {
-        // TODO Auto-generated method stub
         if (uploadCallBack != null && mHttp instanceof MultipartHttpQuery) {
+            uploadCallBack.query = this;
             MultipartHttpQuery multipartHttp = (MultipartHttpQuery) mHttp;
             multipartHttp.setUploadHandler(uploadCallBack);
             return true;
@@ -318,6 +318,20 @@ public final class HttpAsyncQuery extends
         this.processCallBack = callBack;
         this.processCallBack.query = this;
         return true;
+    }
+
+    volatile boolean paused = false;
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void resume() {
+        paused = false;
+    }
+
+    public void pause() {
+        paused = true;
     }
 
     public static class HttpQueryResponse {
@@ -595,7 +609,6 @@ public final class HttpAsyncQuery extends
         Runnable publishRunner = new Runnable() {
             @Override
             public void run() {
-                // TODO Auto-generated method stub
                 onUpdateUploadProcess(query, processVars);
             }
         };
@@ -613,7 +626,6 @@ public final class HttpAsyncQuery extends
         public final void onProceedStreamUpload(MultipartHttpQuery httpQuery,
                                                 DataOutputStream request, InputStream stream)
                 throws IOException {
-            // TODO Auto-generated method stub
             try {
                 onProceedStreamUpload(httpQuery, request, stream, query);
             } catch (final Exception e) {
@@ -623,7 +635,6 @@ public final class HttpAsyncQuery extends
                     getHandler().post(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO Auto-generated method stub
                             onProcessFail(e);
                         }
                     });
