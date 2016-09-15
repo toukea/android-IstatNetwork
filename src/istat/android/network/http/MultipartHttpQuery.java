@@ -179,7 +179,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
             table = params.keySet().toArray(table);
             for (String name : table) {
                 if (isAborted()) {
-                    currentConnexion.disconnect();
+                    currentConnetion.disconnect();
                     break;
                 }
                 if (name != null) {
@@ -207,7 +207,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
             table = params.keySet().toArray(table);
             for (String tmp : table) {
                 if (isAborted()) {
-                    currentConnexion.disconnect();
+                    currentConnetion.disconnect();
                     break;
                 }
                 if (tmp != null) {

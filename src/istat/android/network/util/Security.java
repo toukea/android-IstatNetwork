@@ -8,9 +8,10 @@ import java.util.TimeZone;
 
 import android.annotation.SuppressLint;
 import android.util.Base64;
+import android.util.Log;
 
 public class Security {
-    static String[] PASSWORD_PROPOSITION_CHAR = {"0", "1", "2", "3", "4", "5",
+    final static String[] PASSWORD_PROPOSITION_CHAR = {"0", "1", "2", "3", "4", "5",
             "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"};
 
     @SuppressLint("SimpleDateFormat")
@@ -33,9 +34,10 @@ public class Security {
                         .nextInt(PASSWORD_PROPOSITION_CHAR.length - 1);
                 nonce += PASSWORD_PROPOSITION_CHAR[index];
             }
+            Log.i("Security", "generateXWSSEToken::nonce=" + nonce);
             String createAt = nowAsISO;
             String password = nonce + createAt + secret;
-            String sha1 = SHA1.toSHA1(password);
+            String sha1 = SHA1.toSHA1(password.getBytes());
             String passwordDigest = Base64.encodeToString(SHA1.toByte(sha1),
                     Base64.NO_WRAP);
             String header = "UsernameToken Username=\"" + userName

@@ -369,7 +369,7 @@ public final class HttpAsyncQuery extends
         private void init(InputStream stream, String encoding, int buffersize,
                           Exception e) {
             HttpQuery<?> http = mAsyncQ.mHttp;
-            connexion = http.getCurrentConnexion();
+            connexion = http.getCurrentConnetion();
             this.error = e;
             this.code = http.getCurrentResponseCode();
             this.message = http.getCurrentResponseMessage();
@@ -666,15 +666,15 @@ public final class HttpAsyncQuery extends
             }
         }
 
-        public int getConnexionContentLenght() {
+        public int getConnetionContentLenght() {
             return query != null && query.mHttp != null
-                    && query.mHttp.currentConnexion != null ? query.mHttp.currentConnexion
+                    && query.mHttp.currentConnetion != null ? query.mHttp.currentConnetion
                     .getContentLength() : 0;
         }
 
-        public String getConnexionContentType() {
+        public String getConnetionContentType() {
             return query != null && query.mHttp != null
-                    && query.mHttp.currentConnexion != null ? query.mHttp.currentConnexion
+                    && query.mHttp.currentConnetion != null ? query.mHttp.currentConnetion
                     .getContentType() : null;
         }
 

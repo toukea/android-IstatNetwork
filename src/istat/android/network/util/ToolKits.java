@@ -1,5 +1,6 @@
 package istat.android.network.util;
 
+import istat.android.network.http.HttpAsyncQuery;
 import istat.android.network.http.HttpQuery;
 
 import java.io.BufferedReader;
@@ -211,6 +212,37 @@ public final class ToolKits {
 
             return out;
 
+        }
+
+        public static String streamToString(java.io.InputStream inp,
+                                            int buffer, String encoding, HttpAsyncQuery asyc) {
+            String out = "";
+            byte[] b = new byte[buffer];
+            int read = 0;
+            try {
+                while ((read = inp.read(b)) > -1) {
+                    if (asyc.isPaused()) {
+                        while (asyc.isPaused()) {
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    if (!asyc.isRunning()) {
+                        Log.i("HttpQuery", "streamToString::aborted");
+                        break;
+                    }
+                    out = out
+                            + (encoding != null ? new String(b, 0, read,
+                            encoding) : new String(b, 0, read));
+                }
+                inp.close();
+            } catch (Exception e) {
+            }
+
+            return out;
         }
 
         public static String streamToString(java.io.InputStream inp,

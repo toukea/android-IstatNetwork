@@ -52,7 +52,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
     protected HashMap<String, String> headers = new HashMap<String, String>();
     private volatile boolean aborted = false, querying = false;
     static String TAG_INPUT = "input", TAG_OUTPUT = "output";
-    volatile HttpURLConnection currentConnexion;
+    volatile HttpURLConnection currentConnetion;
     long lastConnextionTime = System.currentTimeMillis();
     protected HashMap<String, List<Long>> historic = new HashMap<String, List<Long>>() {
 
@@ -250,7 +250,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
                 throw new RuntimeException(e);
             }
         }
-        currentConnexion = conn;
+        currentConnetion = conn;
         return conn;
     }
 
@@ -404,8 +404,8 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
     }
 
     public void shutDownConnection() {
-        currentConnexion.disconnect();
-        currentConnexion = null;
+        currentConnetion.disconnect();
+        currentConnetion = null;
         onQueryComplete();
         aborted = true;
     }
@@ -414,13 +414,13 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
         return mOptions.autoClearRequestParams;
     }
 
-    public HttpURLConnection getCurrentConnexion() {
-        return currentConnexion;
+    public HttpURLConnection getCurrentConnetion() {
+        return currentConnetion;
     }
 
     public boolean hasRunningRequest() {
         Log.i("HttQuery", "hasRunningRequest::querying=" + querying);
-        return /* querying && */currentConnexion != null && (currentInputStream != null || currentOutputStream != null);
+        return /* querying && */currentConnetion != null && (currentInputStream != null || currentOutputStream != null);
     }
 
     public boolean isAborted() {
@@ -538,11 +538,11 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 
     int getCurrentResponseCode() {
         try {
-            if (getCurrentConnexion() != null) {
-                return getCurrentConnexion().getResponseCode();
+            if (getCurrentConnetion() != null) {
+                return getCurrentConnetion().getResponseCode();
             } else {
                 Log.d("HttpQuery", "getCurrentResponseCode::connexion::"
-                        + getCurrentConnexion());
+                        + getCurrentConnetion());
             }
         } catch (IOException e) {
 
@@ -552,8 +552,8 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 
     String getCurrentResponseMessage() {
         try {
-            if (getCurrentConnexion() != null) {
-                return getCurrentConnexion().getResponseMessage();
+            if (getCurrentConnetion() != null) {
+                return getCurrentConnetion().getResponseMessage();
             }
         } catch (IOException e) {
 
@@ -571,7 +571,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
         if (out) {
             Log.e("HttQuery", "abortRequest_has_running");
             try {
-                currentConnexion.disconnect();
+                currentConnetion.disconnect();
 //                if (currentInputStream != null) {
 //                    currentInputStream.close();
 //                }

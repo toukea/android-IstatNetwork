@@ -377,7 +377,7 @@ public final class SHA1 {
 	}
 
 	public static String toSHA1(byte[] convertme) {
-		final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
+		final char[] HEX_CHARS = "0123456789ABCDEF".toCharArray();
 		MessageDigest md = null;
 		try {
 			md = MessageDigest.getInstance("SHA-1");
