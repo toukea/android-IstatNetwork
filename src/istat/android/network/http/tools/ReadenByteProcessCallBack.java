@@ -49,7 +49,6 @@ public abstract class ReadenByteProcessCallBack extends
 	@Override
 	public String onBuildResponseBody(HttpURLConnection currentConnexion,
 			InputStream inp, HttpAsyncQuery query) {
-		// TODO Auto-generated method stub
 		String out = "";
 		byte[] b = new byte[buffer];
 		int read = 0;

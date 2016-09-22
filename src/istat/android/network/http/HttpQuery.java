@@ -50,9 +50,9 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
     protected HttpQueryOptions mOptions = new HttpQueryOptions();
     protected HashMap<String, String> parameters = new HashMap<String, String>();
     protected HashMap<String, String> headers = new HashMap<String, String>();
-    private volatile boolean aborted = false, querying = false;
+    private volatile boolean aborted = false;
     static String TAG_INPUT = "input", TAG_OUTPUT = "output";
-    volatile HttpURLConnection currentConnetion;
+    volatile HttpURLConnection currentConnection;
     long lastConnextionTime = System.currentTimeMillis();
     protected HashMap<String, List<Long>> historic = new HashMap<String, List<Long>>() {
 
@@ -250,7 +250,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
                 throw new RuntimeException(e);
             }
         }
-        currentConnetion = conn;
+        currentConnection = conn;
         return conn;
     }
 
@@ -404,8 +404,8 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
     }
 
     public void shutDownConnection() {
-        currentConnetion.disconnect();
-        currentConnetion = null;
+        currentConnection.disconnect();
+        currentConnection = null;
         onQueryComplete();
         aborted = true;
     }
@@ -414,13 +414,14 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
         return mOptions.autoClearRequestParams;
     }
 
-    public HttpURLConnection getCurrentConnetion() {
-        return currentConnetion;
+    public HttpURLConnection getCurrentConnection() {
+        return currentConnection;
     }
 
     public boolean hasRunningRequest() {
-        Log.i("HttQuery", "hasRunningRequest::querying=" + querying);
-        return /* querying && */currentConnetion != null && (currentInputStream != null || currentOutputStream != null);
+        Log.i("HttpQuery", "hasRunningRequest::currentInputStream=" + currentInputStream);
+        Log.i("HttpQuery", "hasRunningRequest::currentOutputStream=" + currentOutputStream);
+        return /* querying && */currentConnection != null && (currentInputStream != null || currentOutputStream != null);
     }
 
     public boolean isAborted() {
@@ -480,14 +481,12 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
     void onQueryStarting() {
         lastConnextionTime = System.currentTimeMillis();
         aborted = false;
-        querying = true;
     }
 
     void onQueryComplete() {
         if (mOptions != null && mOptions.autoClearRequestParams) {
             clearParams();
         }
-        querying = false;
         currentInputStream = null;
         currentOutputStream = null;
     }
@@ -538,11 +537,11 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 
     int getCurrentResponseCode() {
         try {
-            if (getCurrentConnetion() != null) {
-                return getCurrentConnetion().getResponseCode();
+            if (getCurrentConnection() != null) {
+                return getCurrentConnection().getResponseCode();
             } else {
                 Log.d("HttpQuery", "getCurrentResponseCode::connexion::"
-                        + getCurrentConnetion());
+                        + getCurrentConnection());
             }
         } catch (IOException e) {
 
@@ -552,8 +551,8 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 
     String getCurrentResponseMessage() {
         try {
-            if (getCurrentConnetion() != null) {
-                return getCurrentConnetion().getResponseMessage();
+            if (getCurrentConnection() != null) {
+                return getCurrentConnection().getResponseMessage();
             }
         } catch (IOException e) {
 
@@ -571,7 +570,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
         if (out) {
             Log.e("HttQuery", "abortRequest_has_running");
             try {
-                currentConnetion.disconnect();
+                currentConnection.disconnect();
 //                if (currentInputStream != null) {
 //                    currentInputStream.close();
 //                }
@@ -583,7 +582,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            Log.e("HttQuery", "abortRequest_stream_Yooooo::I="
+            Log.e("HttpQuery", "abortRequest_stream_Yooooo::I="
                     + currentInputStream + ", O=" + currentOutputStream);
 
             onQueryComplete();

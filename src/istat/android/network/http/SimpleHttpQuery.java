@@ -28,35 +28,27 @@ public class SimpleHttpQuery extends HttpQuery<SimpleHttpQuery> {
 
 	@Override
 	public InputStream doPost(String url) throws IOException {
-		// TODO Auto-generated method stub
-
 		return POST(url, true);
 	}
 
-	public InputStream doPost(String url, boolean handleerror)
+	public InputStream doPost(String url, boolean holdError)
 			throws IOException {
-		// TODO Auto-generated method stub
-
-		return POST(url, handleerror);
+		return POST(url, holdError);
 	}
 
 	@Override
 	public final SimpleHttpQuery addParams(HashMap<String, Object> nameValues) {
-		// TODO Auto-generated method stub
 		return super.addParams(nameValues);
 	}
 
 	@Override
 	public void setParameterHandler(
 			final istat.android.network.http.HttpQuery.ParameterHandler postHandler) {
-		// TODO Auto-generated method stub
-
 		ParameterHandler parameterHandler = new ParameterHandler() {
 
 			@Override
 			public String onStringifyQueryParams(String method,
 					HashMap<String, String> params, String encoding) {
-				// TODO Auto-generated method stub
 				if ("GET".equalsIgnoreCase(method) || postHandler == null) {
 					return ParameterHandler.DEFAULT_HANDLER
 							.onStringifyQueryParams(method, params, encoding);

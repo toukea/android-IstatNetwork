@@ -162,7 +162,6 @@ public final class ToolKits {
                 out = total.toString();
                 inp.close();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             return out;
@@ -370,6 +369,20 @@ public final class ToolKits {
             } catch (Exception ex) {
             }
             return os;
+        }
+
+        public static OutputStream[] dispatch(int buffer_size, InputStream is, OutputStream... oss) throws IOException {
+            byte[] bytes = new byte[buffer_size];
+            for (; ; ) {
+                // Read byte from input stream
+                int count = is.read(bytes, 0, buffer_size);
+                if (count == -1)
+                    break;
+                for (OutputStream os : oss) {
+                    os.write(bytes, 0, count);
+                }
+            }
+            return oss;
         }
     }
 

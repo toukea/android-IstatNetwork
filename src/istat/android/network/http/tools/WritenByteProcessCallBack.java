@@ -34,7 +34,6 @@ public class WritenByteProcessCallBack extends UploadProcessCallBack<Integer> {
     public void onProceedStreamUpload(MultipartHttpQuery httpQuery,
                                       DataOutputStream request, InputStream stream, HttpAsyncQuery asyc)
             throws IOException {
-        // TODO Auto-generated method stub
         byte[] b = new byte[buffer];
         int writen = 0;
         int totalWriten = 0;
@@ -58,7 +57,6 @@ public class WritenByteProcessCallBack extends UploadProcessCallBack<Integer> {
 
     @Override
     public void onUpdateUploadProcess(HttpAsyncQuery query, Integer... vars) {
-        // TODO Auto-generated method stub
 
     }
 

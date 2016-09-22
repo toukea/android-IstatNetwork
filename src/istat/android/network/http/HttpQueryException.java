@@ -25,7 +25,6 @@ public class HttpQueryException extends RuntimeException {
 
 	@Override
 	public String getMessage() {
-		// TODO Auto-generated method stub
 		return code + " : " + super.getMessage();
 	}
 }

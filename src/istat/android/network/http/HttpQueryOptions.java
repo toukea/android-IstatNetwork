@@ -16,7 +16,7 @@ public class HttpQueryOptions {
 	}
 
 	HttpQueryOptions() {
-		// TODO Auto-generated constructor stub
+
 	}
 
 	public HttpQueryOptions setAllowUserInteraction(boolean allowUserInteraction) {

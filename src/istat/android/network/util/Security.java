@@ -24,13 +24,14 @@ public class Security {
                                             long time) {
         try {
             TimeZone tz = TimeZone.getTimeZone("UTC");
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+00:00");
             df.setTimeZone(tz);
             String nowAsISO = df.format(new Date(time));
             String nonce = "";
             Random random = new Random();
+            int index = 0;
             for (int i = 0; i < 16; i++) {
-                int index = random
+                index = random
                         .nextInt(PASSWORD_PROPOSITION_CHAR.length - 1);
                 nonce += PASSWORD_PROPOSITION_CHAR[index];
             }

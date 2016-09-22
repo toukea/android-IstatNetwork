@@ -76,7 +76,6 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
     @Override
     public void removeParam(String name) {
-        // TODO Auto-generated method stub
         super.removeParam(name);
         if (URLParametres != null && URLParametres.containsKey(name)) {
             URLParametres.clear();
@@ -85,13 +84,11 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
     @Override
     public InputStream doPost(String url) throws IOException {
-        // TODO Auto-generated method stub
         return POSTM(url);
     }
 
     @Override
     public MultipartHttpQuery addHeader(String name, String value) {
-        // TODO Auto-generated method stub
         super.addHeader(name, value);
         return this;
     }
@@ -108,7 +105,6 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
     @Override
     public MultipartHttpQuery clearParams() {
-        // TODO Auto-generated method stub
         super.clearParams();
         clearParts();
         URLParametres.clear();
@@ -126,7 +122,6 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
     @Override
     public void setParameterHandler(ParameterHandler parameterHandler) {
-        // TODO Auto-generated method stub
         super.setParameterHandler(parameterHandler);
     }
 
@@ -179,7 +174,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
             table = params.keySet().toArray(table);
             for (String name : table) {
                 if (isAborted()) {
-                    currentConnetion.disconnect();
+                    currentConnection.disconnect();
                     break;
                 }
                 if (name != null) {
@@ -207,7 +202,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
             table = params.keySet().toArray(table);
             for (String tmp : table) {
                 if (isAborted()) {
-                    currentConnetion.disconnect();
+                    currentConnection.disconnect();
                     break;
                 }
                 if (tmp != null) {
