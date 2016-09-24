@@ -125,7 +125,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         super.setParameterHandler(parameterHandler);
     }
 
-    private HttpURLConnection preparMultipartPostConnexion(String url)
+    private HttpURLConnection prepareMultipartPostConnexion(String url)
             throws IOException {
         String method = "POST";
         HttpURLConnection conn = prepareConnexion(url, method);
@@ -150,7 +150,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
             OutputStream os = conn.getOutputStream();
             DataOutputStream request = new DataOutputStream(os);
             if (!parameters.isEmpty()) {
-                data = createBoundaryingParamsCanvas(boundary, parameters);
+                data = createBoundaryParamsCanvas(boundary, parameters);
                 request.writeBytes(data);
             }
             if (!fileParts.isEmpty()) {
@@ -166,8 +166,8 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         return conn;
     }
 
-    private String createBoundaryingParamsCanvas(String boundary,
-                                                 HashMap<String, String> params) {
+    private String createBoundaryParamsCanvas(String boundary,
+                                              HashMap<String, String> params) {
         String data = "";
         if (!params.keySet().isEmpty()) {
             String[] table = new String[params.size()];
@@ -227,7 +227,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
     }
 
     protected synchronized InputStream POSTM(String url) throws IOException {
-        HttpURLConnection conn = preparMultipartPostConnexion(url);
+        HttpURLConnection conn = prepareMultipartPostConnexion(url);
         InputStream stream = null;
         int responseCode = conn.getResponseCode();
         if (responseCode == HttpsURLConnection.HTTP_OK) {
@@ -238,7 +238,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
     }
 
     private static String createBoundary() {
-        return /* "AaB03x"; */"===" + System.currentTimeMillis() + "===";
+        return "===" + System.currentTimeMillis() + "===";
     }
 
     public final MultipartHttpQuery addParams(HashMap<String, Object> nameValues) {

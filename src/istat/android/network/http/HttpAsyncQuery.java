@@ -1,5 +1,6 @@
 package istat.android.network.http;
 
+import istat.android.network.util.StreamOperationTools;
 import istat.android.network.util.ToolKits.Stream;
 
 import java.io.DataOutputStream;
@@ -292,7 +293,7 @@ public final class HttpAsyncQuery extends
         return System.currentTimeMillis() - startTimeStamp;
     }
 
-    // DEFAULT PROCESS CALLBACK IF USER DONT HAS DEFINE it Own
+    // DEFAULT PROCESS CALLBACK IF USER DON'T HAS DEFINE it Own
     QueryProcessCallBack<?> processCallBack = new QueryProcessCallBack<Integer>() {
         {
             this.query = HttpAsyncQuery.this;
@@ -301,14 +302,17 @@ public final class HttpAsyncQuery extends
         @Override
         public String onBuildResponseBody(HttpURLConnection currentConnexion,
                                           InputStream stream, HttpAsyncQuery query) {
-            return Stream.streamToString(stream, bufferSize, encoding,
-                    getQueryer().mHttp);
+            try {
+                return StreamOperationTools.streamToString(executionController,
+                        stream, bufferSize, encoding);
+            } catch (Exception e) {
+                return "";
+            }
         }
 
         @Override
         public void onUpdateQueryProcess(HttpAsyncQuery query, Integer... vars) {
             // NOTHIG TO DO
-
         }
 
     };
@@ -322,18 +326,16 @@ public final class HttpAsyncQuery extends
         return true;
     }
 
-    volatile boolean paused = false;
-
     public boolean isPaused() {
-        return paused;
+        return executionController.isPaused();
     }
 
     public void resume() {
-        paused = false;
+        executionController.resume();
     }
 
     public void pause() {
-        paused = true;
+        executionController.pause();
     }
 
     public static class HttpQueryResponse {
@@ -732,5 +734,13 @@ public final class HttpAsyncQuery extends
         public abstract void onUpdateQueryProcess(HttpAsyncQuery query,
                                                   ProgressVar... vars);
     }
+
+    private StreamOperationTools.OperationController executionController = new StreamOperationTools.OperationController() {
+        @Override
+        public boolean isStopped() {
+            return !isRunning();
+        }
+    };
+
 
 }

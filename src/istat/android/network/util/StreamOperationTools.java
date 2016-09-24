@@ -18,12 +18,6 @@ public class StreamOperationTools {
     public final static int DEFAULT_BUFFER_SIZE = 16384;
     public final static String DEFAULT_ENCODING = "UTF-8";
 
-    public static OperationController streamToLinearisedString(java.io.InputStream inp,
-                                                               String encoding) throws IOException {
-        OperationController controller = new OperationController();
-        streamToLinearisedString(controller, inp, encoding);
-        return controller;
-    }
 
     public static String streamToLinearisedString(OperationController controller, java.io.InputStream inp,
                                                   String encoding) throws IOException {
@@ -44,30 +38,6 @@ public class StreamOperationTools {
 
     }
 
-    //-----------------------------------------------------------------
-    public static OperationController streamToString(java.io.InputStream inp) throws IOException {
-
-        return streamToString(inp, DEFAULT_ENCODING);
-
-    }
-
-    public static OperationController streamToString(java.io.InputStream inp, int buffer) throws IOException {
-        return streamToString(inp, buffer, null);
-    }
-
-    public static OperationController streamToString(java.io.InputStream inp,
-                                                     String encoding) throws IOException {
-
-        return streamToString(inp, DEFAULT_BUFFER_SIZE, encoding);
-    }
-
-    public static OperationController streamToString(java.io.InputStream inp, int buffer, String encoding) throws IOException {
-        OperationController controller = new OperationController();
-        streamToString(controller, inp, buffer, encoding);
-        return controller;
-    }
-
-    //-----------------------------------------------------------
     public static String streamToString(OperationController controller, java.io.InputStream inp) throws IOException {
         return streamToString(controller, inp, DEFAULT_ENCODING);
     }

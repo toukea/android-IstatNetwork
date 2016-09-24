@@ -4,6 +4,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
@@ -351,14 +352,15 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
     }
 
     protected long onWriteDataOnOutputStream(String method,
-                                             DataOutputStream writer) throws IOException {
+                                             DataOutputStream dataOutputStream) throws IOException {
+        OutputStreamWriter writer = new OutputStreamWriter(dataOutputStream, getOptions().encoding);
         String data = "";
         if (parameterHandler != null) {
             data = parameterHandler.onStringifyQueryParams(method, parameters,
                     mOptions.encoding);
         }
         if (!TextUtils.isEmpty(data)) {
-            writer.writeBytes(data);
+            writer.write(data);
             return data.length();
         } else {
             return 0;
