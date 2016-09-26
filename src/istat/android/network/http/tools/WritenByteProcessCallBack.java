@@ -5,6 +5,7 @@ import android.util.Log;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import istat.android.network.http.HttpAsyncQuery;
 import istat.android.network.http.HttpAsyncQuery.UploadProcessCallBack;
@@ -32,23 +33,23 @@ public class WritenByteProcessCallBack extends UploadProcessCallBack<Integer> {
 
     @Override
     public void onProceedStreamUpload(MultipartHttpQuery httpQuery,
-                                      DataOutputStream request, InputStream stream, HttpAsyncQuery asyc)
+                                      OutputStream request, InputStream stream, HttpAsyncQuery asyc)
             throws IOException {
         byte[] b = new byte[buffer];
-        int writen = 0;
-        int totalWriten = 0;
+        int write = 0;
+        int totalWrite = 0;
         int uploadSize = stream.available();
-        while ((writen = stream.read(b)) > -1) {
+        while ((write = stream.read(b)) > -1) {
             if (httpQuery.isAborted() || !httpQuery.hasRunningRequest()) {
                 Log.i("Uploader", "onProceedStreamUpload::Aborted");
                 stream.close();
                 return;
             }
-            request.write(b, 0, writen);
+            request.write(b, 0, write);
             request.flush();
-            totalWriten += writen;
-            int writenPercentage = uploadSize > 0 ? (100 * totalWriten / uploadSize) : 0;
-            publishProgression(totalWriten, uploadSize, writenPercentage);
+            totalWrite += write;
+            int writePercentage = uploadSize > 0 ? (100 * totalWrite / uploadSize) : 0;
+            publishProgression(totalWrite, uploadSize, writePercentage);
         }
         stream.close();
         request.close();

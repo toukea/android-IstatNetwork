@@ -342,25 +342,24 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
     protected final long writeDataOnOutputStream(String method,
                                                  OutputStream os) throws IOException {
         currentOutputStream = os;
-        DataOutputStream writer = new DataOutputStream(os);
-        long length = onWriteDataOnOutputStream(method, writer);
+        long length = onWriteDataOnOutputStream(method, currentOutputStream);
         if (length > 0) {
-            writer.flush();
+            currentOutputStream.flush();
         }
-        writer.close();
         return length;
     }
 
     protected long onWriteDataOnOutputStream(String method,
-                                             DataOutputStream dataOutputStream) throws IOException {
-        OutputStreamWriter writer = new OutputStreamWriter(dataOutputStream, getOptions().encoding);
+                                             OutputStream dataOutputStream) throws IOException {
+        //OutputStreamWriter writer1 = new OutputStreamWriter(dataOutputStream, getOptions().encoding);
+        DataOutputStream writer = new DataOutputStream(dataOutputStream);
         String data = "";
         if (parameterHandler != null) {
             data = parameterHandler.onStringifyQueryParams(method, parameters,
                     mOptions.encoding);
         }
         if (!TextUtils.isEmpty(data)) {
-            writer.write(data);
+            writer.writeBytes(new String(data.getBytes(mOptions.encoding), mOptions.encoding));
             return data.length();
         } else {
             return 0;

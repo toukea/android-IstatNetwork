@@ -15,8 +15,6 @@ import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import org.apache.http.message.BasicNameValuePair;
-
 /*
  * Copyright (C) 2014 Istat Dev.
  *
@@ -39,12 +37,12 @@ import org.apache.http.message.BasicNameValuePair;
 public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
     HashMap<String, File> fileParts = new HashMap<String, File>();
-    protected HashMap<String, String> URLParametres = new HashMap<String, String>();
+    protected HashMap<String, String> URLParameters = new HashMap<String, String>();
     int uploadBufferSize = Stream.DEFAULT_BUFFER_SIZE;
     private static final String LINE_FEED = "\n";
 
     public MultipartHttpQuery addURLParam(String Name, String Value) {
-        URLParametres.put(Name, Value);
+        URLParameters.put(Name, Value);
         return this;
     }
 
@@ -52,12 +50,6 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         for (int i = 0; i < values.length; i++) {
             addURLParam(Name + "[" + i + "]", values[i]);
         }
-        return this;
-    }
-
-    public MultipartHttpQuery addURLParams(List<BasicNameValuePair> nameValues) {
-        for (BasicNameValuePair pair : nameValues)
-            addURLParam(pair.getName(), pair.getValue());
         return this;
     }
 
@@ -77,8 +69,8 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
     @Override
     public void removeParam(String name) {
         super.removeParam(name);
-        if (URLParametres != null && URLParametres.containsKey(name)) {
-            URLParametres.clear();
+        if (URLParameters != null && URLParameters.containsKey(name)) {
+            URLParameters.clear();
         }
     }
 
@@ -107,7 +99,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
     public MultipartHttpQuery clearParams() {
         super.clearParams();
         clearParts();
-        URLParametres.clear();
+        URLParameters.clear();
         return this;
     }
 
@@ -273,7 +265,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
     UpLoadHandler uploadHandler = new UpLoadHandler() {
         @Override
         public void onProceedStreamUpload(MultipartHttpQuery httpQuery,
-                                          DataOutputStream request, InputStream stream)
+                                          OutputStream request, InputStream stream)
                 throws IOException {
             byte[] b = new byte[uploadBufferSize];
             int read;
@@ -293,7 +285,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
     public interface UpLoadHandler {
         public void onProceedStreamUpload(MultipartHttpQuery httpQuery,
-                                          DataOutputStream request, InputStream stream)
+                                          OutputStream request, InputStream stream)
                 throws IOException;
     }
 }

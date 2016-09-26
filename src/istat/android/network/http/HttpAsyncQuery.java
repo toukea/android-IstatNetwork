@@ -6,6 +6,7 @@ import istat.android.network.util.ToolKits.Stream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -628,7 +629,7 @@ public final class HttpAsyncQuery extends
 
         @Override
         public final void onProceedStreamUpload(MultipartHttpQuery httpQuery,
-                                                DataOutputStream request, InputStream stream)
+                                                OutputStream request, InputStream stream)
                 throws IOException {
             try {
                 onProceedStreamUpload(httpQuery, request, stream, query);
@@ -647,7 +648,7 @@ public final class HttpAsyncQuery extends
         }
 
         public abstract void onProceedStreamUpload(
-                MultipartHttpQuery httpQuery, DataOutputStream request,
+                MultipartHttpQuery httpQuery, OutputStream request,
                 InputStream stream, HttpAsyncQuery asyc) throws IOException;
 
         public abstract void onUpdateUploadProcess(HttpAsyncQuery query,
