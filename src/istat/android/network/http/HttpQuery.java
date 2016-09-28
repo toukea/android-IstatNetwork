@@ -572,14 +572,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
             Log.e("HttQuery", "abortRequest_has_running");
             try {
                 currentConnection.disconnect();
-//                if (currentInputStream != null) {
-//                    currentInputStream.close();
-//                }
-//                Log.e("HttQuery", "abortRequest_stream_closed::I="
-//                        + currentInputStream + ", O=" + currentOutputStream);
-//                if (currentOutputStream != null) {
-//                    currentOutputStream.close();
-//                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
