@@ -19,8 +19,13 @@ public class Security {
         return generateXWSSEToken(userName, secret, System.currentTimeMillis());
     }
 
-    @SuppressLint("SimpleDateFormat")
     public static String generateXWSSEToken(String userName, String secret,
+                                            long time) {
+        return generateXWSSEToken(userName, secret, "", time);
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    public static String generateXWSSEToken(String userName, String secret, String salt,
                                             long time) {
         try {
             TimeZone tz = TimeZone.getTimeZone("UTC");
@@ -29,12 +34,13 @@ public class Security {
             String nowAsISO = df.format(new Date(time));
             String nonce = "";
             Random random = new Random();
-            int index = 0;
+            int index;
             for (int i = 0; i < 16; i++) {
                 index = random
                         .nextInt(PASSWORD_PROPOSITION_CHAR.length - 1);
                 nonce += PASSWORD_PROPOSITION_CHAR[index];
             }
+            nonce += salt;
             Log.i("Security", "generateXWSSEToken::nonce=" + nonce);
             String createAt = nowAsISO;
             String password = nonce + createAt + secret;
