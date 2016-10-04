@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main$Generated" generated="true"><source path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/res"/><source path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/build/generated/res/rs/release"/><source path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/build/generated/res/resValues/release"/></dataSet><dataSet config="release$Generated" generated="true"><source path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/build-types/release/res"/></dataSet><dataSet config="main" generated-set="main$Generated"><source path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/res"><file path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/res/values/styles.xml" qualifiers=""><style name="AppTheme" parent="AppBaseTheme">
+        
+    </style><style name="AppBaseTheme" parent="android:Theme.Light">
+        
+    </style></file><file path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/res/values/strings.xml" qualifiers=""><string name="app_name">istatNetwork</string></file><file path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/res/values-v14/styles.xml" qualifiers="v14"><style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar">
+        
+    </style></file><file name="ic_launcher" path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/res/drawable-xhdpi/ic_launcher.png" qualifiers="xhdpi-v4" type="drawable"/><file name="ic_launcher" path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/res/drawable-mdpi/ic_launcher.png" qualifiers="mdpi-v4" type="drawable"/><file path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/res/values-v11/styles.xml" qualifiers="v11"><style name="AppBaseTheme" parent="android:Theme.Holo.Light">
+        
+    </style></file></source><source path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/build/generated/res/rs/release"/><source path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/build/generated/res/resValues/release"/></dataSet><dataSet config="release" generated-set="release$Generated"><source path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/build-types/release/res"/></dataSet><mergedItems/></merger>

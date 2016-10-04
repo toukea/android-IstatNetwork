@@ -21,26 +21,25 @@ public class Security {
 
     public static String generateXWSSEToken(String userName, String secret,
                                             long time) {
-        return generateXWSSEToken(userName, secret, "", time);
+        String nonce = "";
+        Random random = new Random();
+        int index;
+        for (int i = 0; i < 16; i++) {
+            index = random
+                    .nextInt(PASSWORD_PROPOSITION_CHAR.length - 1);
+            nonce += PASSWORD_PROPOSITION_CHAR[index];
+        }
+        return generateXWSSEToken(userName, secret, nonce, time);
     }
 
     @SuppressLint("SimpleDateFormat")
-    public static String generateXWSSEToken(String userName, String secret, String salt,
+    public static String generateXWSSEToken(String userName, String secret, String nonce,
                                             long time) {
         try {
             TimeZone tz = TimeZone.getTimeZone("UTC");
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+00:00");
             df.setTimeZone(tz);
             String nowAsISO = df.format(new Date(time));
-            String nonce = "";
-            Random random = new Random();
-            int index;
-            for (int i = 0; i < 16; i++) {
-                index = random
-                        .nextInt(PASSWORD_PROPOSITION_CHAR.length - 1);
-                nonce += PASSWORD_PROPOSITION_CHAR[index];
-            }
-            nonce += salt;
             Log.i("Security", "generateXWSSEToken::nonce=" + nonce);
             String createAt = nowAsISO;
             String password = nonce + createAt + secret;

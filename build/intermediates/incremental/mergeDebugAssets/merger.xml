@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main"><source path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/assets"/><source path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/build/generated/assets/shaders/debug"/></dataSet><dataSet config="debug"><source path="/home/istat/Veone/MtnDriveTest/istatNetwork_v2/build-types/debug/assets"/></dataSet></merger>

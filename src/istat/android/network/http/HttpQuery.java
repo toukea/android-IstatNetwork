@@ -1,6 +1,5 @@
 package istat.android.network.http;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -213,7 +212,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
         if (bodyData && parameters != null && parameters.size() > 0) {
             conn.setDoOutput(true);
             OutputStream os = conn.getOutputStream();
-            length = writeDataOnOutputStream(method, os);
+            length = writeDataToOutputStream(method, os);
             os.close();
         }
         InputStream stream = eval(conn, holdError);
@@ -270,8 +269,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 
         };
 
-        public abstract String onStringifyQueryParams(String method,
-                                                      HashMap<String, String> params, String encoding);
+        public abstract String onStringifyQueryParams(String method, HashMap<String, String> params, String encoding);
     }
 
     ParameterHandler parameterHandler = ParameterHandler.DEFAULT_HANDLER;
@@ -331,7 +329,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
         HttpURLConnection conn = prepareConnexion(url, method);
         conn.setDoOutput(true);
         OutputStream os = conn.getOutputStream();
-        long length = writeDataOnOutputStream(method, os);
+        long length = writeDataToOutputStream(method, os);
         os.close();
         InputStream stream = eval(conn, holdError);
         addToOutputHistoric(length);
@@ -339,27 +337,27 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
         return stream;
     }
 
-    protected final long writeDataOnOutputStream(String method,
+    protected final long writeDataToOutputStream(String method,
                                                  OutputStream os) throws IOException {
         currentOutputStream = os;
-        long length = onWriteDataOnOutputStream(method, currentOutputStream);
+        long length = onWriteDataToOutputStream(method, currentOutputStream);
         if (length > 0) {
             currentOutputStream.flush();
         }
         return length;
     }
 
-    protected long onWriteDataOnOutputStream(String method,
+    protected long onWriteDataToOutputStream(String method,
                                              OutputStream dataOutputStream) throws IOException {
-        //OutputStreamWriter writer1 = new OutputStreamWriter(dataOutputStream, getOptions().encoding);
-        DataOutputStream writer = new DataOutputStream(dataOutputStream);
+        String encoding = getOptions().encoding;
+        OutputStreamWriter writer = new OutputStreamWriter(dataOutputStream, encoding);
         String data = "";
         if (parameterHandler != null) {
-            data = parameterHandler.onStringifyQueryParams(method, parameters,
-                    mOptions.encoding);
+            data = parameterHandler.onStringifyQueryParams(method, parameters, encoding);
         }
         if (!TextUtils.isEmpty(data)) {
-            writer.writeBytes(new String(data.getBytes(mOptions.encoding), mOptions.encoding));
+            writer.write(data);
+            writer.flush();
             return data.length();
         } else {
             return 0;
@@ -395,13 +393,13 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
         return doQuery(url, method, true);
     }
 
-    public String getURL(String adresse) throws IOException {
+    public String getURL(String address) throws IOException {
         // --------------------------
-        String parmString = createStringularQueryableData(parameters,
+        String paramString = createStringularQueryableData(parameters,
                 mOptions.encoding);
-        return adresse
-                + (parmString == null || parmString.equals("") ? "" : "?"
-                + parmString);
+        return address
+                + (paramString == null || paramString.equals("") ? "" : "?"
+                + paramString);
     }
 
     public void shutDownConnection() {
@@ -515,7 +513,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
     protected volatile InputStream currentInputStream;
     protected volatile OutputStream currentOutputStream;
 
-    InputStream eval(HttpURLConnection conn, boolean handleerrror)
+    InputStream eval(HttpURLConnection conn, boolean handleError)
             throws IOException {
         int eval = 0;
         InputStream stream = null;
@@ -525,7 +523,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
 
         if (HttpQueryResponse.isSuccessCode(conn.getResponseCode())) {
             stream = conn.getInputStream();
-        } else if (handleerrror) {
+        } else if (handleError) {
             stream = conn.getErrorStream();
         }
         if (stream != null) {
@@ -561,27 +559,18 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
         return "";
     }
 
-    /**
-     * this method is deprecated. be sure it is really what you need.
-     */
     public boolean abortRequest() {
         aborted = true;
         boolean out = hasRunningRequest();
-        Log.e("HttQuery", "abortRequest_start");
+        Log.e("HttQuery", "abortRequest_start::runningRequest=" + out);
         if (out) {
-            Log.e("HttQuery", "abortRequest_has_running");
             try {
                 currentConnection.disconnect();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            Log.e("HttpQuery", "abortRequest_stream_Yooooo::I="
-                    + currentInputStream + ", O=" + currentOutputStream);
-
             onQueryComplete();
         }
-
-
         return out;
     }
 
