@@ -686,4 +686,12 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
         }
         return out;
     }
+
+    public boolean disconnect() {
+        boolean out = hasRunningRequest();
+        if (getCurrentConnection() != null) {
+            getCurrentConnection().disconnect();
+        }
+        return out;
+    }
 }
