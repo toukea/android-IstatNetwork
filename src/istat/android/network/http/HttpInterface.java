@@ -20,15 +20,13 @@ import java.net.URISyntaxException;
  * limitations under the License.
  */
 /**
- *
+ * 
  * @author Toukea Tatsi (Istat)
- *
+ * 
  */
 interface HttpInterface {
 
-    public InputStream doGet(String url) throws
-            URISyntaxException, IOException;
+	public InputStream doGet(String url) throws IOException;
 
-    public InputStream doPost(String url) throws
-            IOException, URISyntaxException;
+	public InputStream doPost(String url) throws IOException;
 }

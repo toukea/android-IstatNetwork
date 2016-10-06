@@ -2,10 +2,7 @@ package istat.android.network.http;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
 import java.util.HashMap;
-
 
 /*
  * Copyright (C) 2014 Istat Dev.
@@ -23,29 +20,49 @@ import java.util.HashMap;
  * limitations under the License.
  */
 /**
- *
+ * 
  * @author Toukea Tatsi (Istat)
- *
+ * 
  */
 public class SimpleHttpQuery extends HttpQuery<SimpleHttpQuery> {
 
-    @Override
-    public InputStream doPost(String url) throws
-            IOException, URISyntaxException {
-        // TODO Auto-generated method stub
-        return POST(url);
-    }
+	@Override
+	public InputStream doPost(String url) throws IOException {
+		return POST(url, true);
+	}
 
-    @Override
-    protected final HttpURLConnection preparConnexion(String url)
-            throws IOException {
-        // TODO Auto-generated method stub
-        return super.preparConnexion(url);
-    }
-    @Override
-    public final SimpleHttpQuery addParams(HashMap<String, Object> nameValues) {
-    	// TODO Auto-generated method stub
-    	return super.addParams(nameValues);
-    }
+	public InputStream doPost(String url, boolean holdError)
+			throws IOException {
+		return POST(url, holdError);
+	}
+
+	@Override
+	public final SimpleHttpQuery addParams(HashMap<String, Object> nameValues) {
+		return super.addParams(nameValues);
+	}
+
+	@Override
+	public void setParameterHandler(
+			final istat.android.network.http.HttpQuery.ParameterHandler postHandler) {
+		ParameterHandler parameterHandler = new ParameterHandler() {
+
+			@Override
+			public String onStringifyQueryParams(String method,
+					HashMap<String, String> params, String encoding) {
+				if ("GET".equalsIgnoreCase(method) || postHandler == null) {
+					return ParameterHandler.DEFAULT_HANDLER
+							.onStringifyQueryParams(method, params, encoding);
+				}
+				try {
+					return postHandler.onStringifyQueryParams(method, params,
+							encoding);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+		};
+		super.setParameterHandler(parameterHandler);
+	}
 
 }

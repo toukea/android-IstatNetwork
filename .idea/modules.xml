@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../../Cinetcore.iml" filepath="$PROJECT_DIR$/../../Cinetcore.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../../Eclipse.iml" filepath="$PROJECT_DIR$/../../../Eclipse.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../../Veone/MtnDrive/MtnDrive.iml" filepath="$PROJECT_DIR$/../../../Veone/MtnDrive/MtnDrive.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../../Veone/MtnDrive/MtnDriveSdk/MtnDriveSdk.iml" filepath="$PROJECT_DIR$/../../../Veone/MtnDrive/MtnDriveSdk/MtnDriveSdk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../../Veone/Veone.iml" filepath="$PROJECT_DIR$/../../../Veone/Veone.iml" />
+      <module fileurl="file://$PROJECT_DIR$/istatNetwork_v2.iml" filepath="$PROJECT_DIR$/istatNetwork_v2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../pharma_ci.iml" filepath="$PROJECT_DIR$/../pharma_ci.iml" />
+    </modules>
+  </component>
+</project>
