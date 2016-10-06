@@ -307,6 +307,7 @@ public final class HttpAsyncQuery extends
                 return StreamOperationTools.streamToString(executionController,
                         stream, bufferSize, encoding);
             } catch (Exception e) {
+                e.printStackTrace();
                 return "";
             }
         }
@@ -366,9 +367,9 @@ public final class HttpAsyncQuery extends
         }
 
         HttpQueryResponse(InputStream stream, Exception e, String encoding,
-                          int buffersize, HttpAsyncQuery asyncQ) {
+                          int bufferSize, HttpAsyncQuery asyncQ) {
             mAsyncQ = asyncQ;
-            init(stream, encoding, buffersize, e);
+            init(stream, encoding, bufferSize, e);
         }
 
         private void init(InputStream stream, String encoding, int buffersize,
