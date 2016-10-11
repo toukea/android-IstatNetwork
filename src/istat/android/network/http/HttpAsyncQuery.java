@@ -743,6 +743,5 @@ public final class HttpAsyncQuery extends
             return !isRunning();
         }
     };
-
-
+    
 }
