@@ -3,7 +3,6 @@ package istat.android.network.http;
 import istat.android.network.util.StreamOperationTools;
 import istat.android.network.util.ToolKits.Stream;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -414,11 +413,11 @@ public final class HttpAsyncQuery extends
             return "";
         }
 
-        public long getHeaderAslong(String name) {
-            return getHeaderAslong(name, 0);
+        public long getHeaderAsLong(String name) {
+            return getHeaderAsLong(name, 0);
         }
 
-        public long getHeaderAslong(String name, long deflt) {
+        public long getHeaderAsLong(String name, long deflt) {
             if (connexion != null) {
                 return connexion.getHeaderFieldDate(name, deflt);
             }
@@ -448,7 +447,7 @@ public final class HttpAsyncQuery extends
             return !hasError();
         }
 
-        public boolean isAccepeted() {
+        public boolean isAccepted() {
             return code > 0;
         }
 
@@ -516,7 +515,7 @@ public final class HttpAsyncQuery extends
     public static abstract class HttpCallBack implements OnHttpQueryComplete/*,
             CancelListener*/ {
         public final void onHttRequestComplete(HttpQueryResponse resp) {
-            if (resp.isAccepeted()) {
+            if (resp.isAccepted()) {
                 if (resp.isSuccess()) {
                     onHttpRequestSuccess(resp);
                 } else {
