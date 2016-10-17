@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
-import istat.android.network.http.MultipartHttpQuery.UpLoadHandler;
+import istat.android.network.http.interfaces.UpLoadHandler;
 
 import android.annotation.TargetApi;
 import android.os.AsyncTask;
@@ -561,8 +561,8 @@ public final class HttpAsyncQuery extends
         return false;
     }
 
-    public void addTocken(String unikToken) {
-        taskQueue.put(unikToken, this);
+    public void addTocken(String uniqueToken) {
+        taskQueue.put(uniqueToken, this);
     }
 
     public static HttpAsyncQuery getTask(HttpQueryCallBack callback) {

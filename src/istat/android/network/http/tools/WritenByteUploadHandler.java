@@ -11,14 +11,14 @@ import istat.android.network.http.HttpAsyncQuery.HttpUploadHandler;
 import istat.android.network.http.MultipartHttpQuery;
 import istat.android.network.util.ToolKits.Stream;
 
-public class WritenByteProcessCallBack extends HttpUploadHandler<Integer> {
+public class WritenByteUploadHandler extends HttpUploadHandler<Integer> {
     int buffer = Stream.DEFAULT_BUFFER_SIZE;
 
-    public WritenByteProcessCallBack() {
+    public WritenByteUploadHandler() {
 
     }
 
-    public WritenByteProcessCallBack(int bufferSize) {
+    public WritenByteUploadHandler(int bufferSize) {
         this.buffer = bufferSize;
     }
 

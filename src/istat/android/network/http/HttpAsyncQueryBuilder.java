@@ -1,5 +1,7 @@
 package istat.android.network.http;
 
+import istat.android.network.http.interfaces.UpLoadHandler;
+
 /**
  * Created by istat on 16/10/16.
  */
@@ -107,7 +109,7 @@ public class HttpAsyncQueryBuilder {
         return this.mAsyncQuery;
     }
 
-    public HttpAsyncQuery doQuery(int method, MultipartHttpQuery.UpLoadHandler handler, HttpAsyncQuery.HttpQueryCallBack callback, String url) {
+    public HttpAsyncQuery doQuery(int method, UpLoadHandler handler, HttpAsyncQuery.HttpQueryCallBack callback, String url) {
         this.mAsyncQuery.type = method;
         this.mAsyncQuery.mHttpCallBack = callback;
         this.mAsyncQuery.executeURLs(url);

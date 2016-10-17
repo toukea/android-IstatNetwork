@@ -1,5 +1,6 @@
 package istat.android.network.http;
 
+import istat.android.network.http.interfaces.UpLoadHandler;
 import istat.android.network.util.ToolKits.Stream;
 import istat.android.network.util.ToolKits.Text;
 
@@ -282,9 +283,4 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         }
     };
 
-    public interface UpLoadHandler {
-        public void onProceedStreamUpload(MultipartHttpQuery httpQuery,
-                                          OutputStream request, InputStream stream)
-                throws IOException;
-    }
 }
