@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -76,7 +75,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
     @Override
     public InputStream doPost(String url) throws IOException {
-        return POSTM(url);
+        return POST(url);
     }
 
     @Override
@@ -218,7 +217,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         }
     }
 
-    protected synchronized InputStream POSTM(String url) throws IOException {
+    protected synchronized InputStream POST(String url) throws IOException {
         HttpURLConnection conn = prepareMultipartPostConnexion(url);
         InputStream stream = null;
         int responseCode = conn.getResponseCode();
