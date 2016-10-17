@@ -2,17 +2,16 @@ package istat.android.network.http.tools;
 
 import android.util.Log;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import istat.android.network.http.HttpAsyncQuery;
-import istat.android.network.http.HttpAsyncQuery.UploadProcessCallBack;
+import istat.android.network.http.HttpAsyncQuery.HttpUploadHandler;
 import istat.android.network.http.MultipartHttpQuery;
 import istat.android.network.util.ToolKits.Stream;
 
-public class WritenByteProcessCallBack extends UploadProcessCallBack<Integer> {
+public class WritenByteProcessCallBack extends HttpUploadHandler<Integer> {
     int buffer = Stream.DEFAULT_BUFFER_SIZE;
 
     public WritenByteProcessCallBack() {
@@ -57,7 +56,7 @@ public class WritenByteProcessCallBack extends UploadProcessCallBack<Integer> {
     }
 
     @Override
-    public void onUpdateUploadProcess(HttpAsyncQuery query, Integer... vars) {
+    public void onUploadProgress(HttpAsyncQuery query, Integer... vars) {
 
     }
 

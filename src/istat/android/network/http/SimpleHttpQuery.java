@@ -19,50 +19,39 @@ import java.util.HashMap;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /**
- * 
  * @author Toukea Tatsi (Istat)
- * 
  */
 public class SimpleHttpQuery extends HttpQuery<SimpleHttpQuery> {
 
-	@Override
-	public InputStream doPost(String url) throws IOException {
-		return POST(url, true);
-	}
+    @Override
+    public final SimpleHttpQuery addParams(HashMap<String, Object> nameValues) {
+        return super.addParams(nameValues);
+    }
 
-	public InputStream doPost(String url, boolean holdError)
-			throws IOException {
-		return POST(url, holdError);
-	}
+    @Override
+    public void setParameterHandler(
+            final istat.android.network.http.HttpQuery.ParameterHandler postHandler) {
+        ParameterHandler parameterHandler = new ParameterHandler() {
 
-	@Override
-	public final SimpleHttpQuery addParams(HashMap<String, Object> nameValues) {
-		return super.addParams(nameValues);
-	}
+            @Override
+            public String onStringifyQueryParams(String method,
+                                                 HashMap<String, String> params, String encoding) {
+                if ("GET".equalsIgnoreCase(method) || postHandler == null) {
+                    return ParameterHandler.DEFAULT_HANDLER
+                            .onStringifyQueryParams(method, params, encoding);
+                }
+                try {
+                    return postHandler.onStringifyQueryParams(method, params,
+                            encoding);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
 
-	@Override
-	public void setParameterHandler(
-			final istat.android.network.http.HttpQuery.ParameterHandler postHandler) {
-		ParameterHandler parameterHandler = new ParameterHandler() {
-
-			@Override
-			public String onStringifyQueryParams(String method,
-					HashMap<String, String> params, String encoding) {
-				if ("GET".equalsIgnoreCase(method) || postHandler == null) {
-					return ParameterHandler.DEFAULT_HANDLER
-							.onStringifyQueryParams(method, params, encoding);
-				}
-				try {
-					return postHandler.onStringifyQueryParams(method, params,
-							encoding);
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-			}
-
-		};
-		super.setParameterHandler(parameterHandler);
-	}
+        };
+        super.setParameterHandler(parameterHandler);
+    }
 
 }

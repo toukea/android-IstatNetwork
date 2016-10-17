@@ -19,6 +19,7 @@ import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 
 import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
+import istat.android.network.http.interfaces.HttpSendable;
 import istat.android.network.util.ToolKits.Text;
 
 import org.apache.http.message.BasicNameValuePair;
@@ -45,15 +46,14 @@ import android.util.Log;
 /**
  * @author Toukea Tatsi (Istat)
  */
-public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
-        HttpInterface {
+public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     protected HttpQueryOptions mOptions = new HttpQueryOptions();
     protected HashMap<String, String> parameters = new HashMap<String, String>();
     protected HashMap<String, String> headers = new HashMap<String, String>();
     private volatile boolean aborted = false;
     static String TAG_INPUT = "input", TAG_OUTPUT = "output";
     volatile HttpURLConnection currentConnection;
-    long lastConnextionTime = System.currentTimeMillis();
+    long lastConnectionTime = System.currentTimeMillis();
     protected HashMap<String, List<Long>> historic = new HashMap<String, List<Long>>() {
 
         /**
@@ -254,6 +254,10 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
         return conn;
     }
 
+    public InputStream doPost(String url) throws IOException {
+        return doQuery("POST", url, true, true);
+    }
+
     public interface ParameterHandler {
         public static ParameterHandler DEFAULT_HANDLER = new ParameterHandler() {
 
@@ -323,19 +327,19 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
     }
 
 
-    protected InputStream POST(String url, boolean holdError)
-            throws IOException {
-        String method = "POST";
-        HttpURLConnection conn = prepareConnexion(url, method);
-        conn.setDoOutput(true);
-        OutputStream os = conn.getOutputStream();
-        long length = writeDataToOutputStream(method, os);
-        os.close();
-        InputStream stream = eval(conn, holdError);
-        addToOutputHistoric(length);
-        onQueryComplete();
-        return stream;
-    }
+//    protected InputStream POST(String url, boolean holdError)
+//            throws IOException {
+//        String method = "POST";
+//        HttpURLConnection conn = prepareConnexion(url, method);
+//        conn.setDoOutput(true);
+//        OutputStream os = conn.getOutputStream();
+//        long length = writeDataToOutputStream(method, os);
+//        os.close();
+//        InputStream stream = eval(conn, holdError);
+//        addToOutputHistoric(length);
+//        onQueryComplete();
+//        return stream;
+//    }
 
     protected final long writeDataToOutputStream(String method,
                                                  OutputStream os) throws IOException {
@@ -478,7 +482,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
     }
 
     void onQueryStarting() {
-        lastConnextionTime = System.currentTimeMillis();
+        lastConnectionTime = System.currentTimeMillis();
         aborted = false;
     }
 
@@ -493,7 +497,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
     void addToInputHistoric(long input) {
         historic.get(TAG_INPUT).add(input);
         historics.get(TAG_INPUT).add(input);
-        Long elapsed = System.currentTimeMillis() - lastConnextionTime;
+        Long elapsed = System.currentTimeMillis() - lastConnectionTime;
         timeHistoric.get(TAG_INPUT).add(elapsed);
         timeHistories.get(TAG_INPUT).add(elapsed);
     }
@@ -501,7 +505,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> implements
     void addToOutputHistoric(long input) {
         historic.get(TAG_OUTPUT).add(input);
         historics.get(TAG_OUTPUT).add(input);
-        Long elapsed = System.currentTimeMillis() - lastConnextionTime;
+        Long elapsed = System.currentTimeMillis() - lastConnectionTime;
         timeHistoric.get(TAG_OUTPUT).add(elapsed);
         timeHistories.get(TAG_OUTPUT).add(elapsed);
     }

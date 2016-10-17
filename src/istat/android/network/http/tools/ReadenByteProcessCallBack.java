@@ -3,11 +3,10 @@ package istat.android.network.http.tools;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import istat.android.network.http.HttpAsyncQuery;
-import istat.android.network.http.HttpAsyncQuery.QueryProcessCallBack;
 import istat.android.network.util.ToolKits.Stream;
 
 public abstract class ReadenByteProcessCallBack extends
-		QueryProcessCallBack<Integer> {
+		HttpAsyncQuery.HttpDownloadHandler<Integer> {
 	int buffer = Stream.DEFAULT_BUFFER_SIZE;
 	String encoding = Stream.DEFAULT_ENCODING;
 
@@ -43,7 +42,7 @@ public abstract class ReadenByteProcessCallBack extends
 //	 *            lire, vars[2] le pourcentage deja lue
 //	 */
 //	@Override
-//	public abstract void onUpdateQueryProcess(HttpAsyncQuery query,
+//	public abstract void onDownloadProgress(HttpAsyncQuery query,
 //			Integer... vars);
 
 	@Override
