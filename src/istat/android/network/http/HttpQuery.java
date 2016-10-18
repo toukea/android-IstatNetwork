@@ -255,7 +255,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     public InputStream doPost(String url) throws IOException {
-        return doQuery("POST", url, true, true);
+        return doQuery(url, "POST", true, true);
     }
 
     public interface ParameterHandler {
@@ -431,13 +431,13 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return aborted;
     }
 
-    public void setConnectionTimeOut(int milisec) {
-        mOptions.connexionTimeOut = milisec;
+    public void setConnectionTimeOut(int milliSec) {
+        mOptions.connexionTimeOut = milliSec;
 
     }
 
-    public void setSoTimeOut(int milisec) {
-        mOptions.connexionTimeOut = milisec;
+    public void setSoTimeOut(int milliSec) {
+        mOptions.connexionTimeOut = milliSec;
     }
 
     public int getConnectionTimeOut() {
