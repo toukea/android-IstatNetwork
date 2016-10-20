@@ -193,9 +193,10 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return (HttpQ) this;
     }
 
-    public InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
+
+    protected synchronized InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
             throws IOException {
-        Log.d("HttpQuery", "Method=" + method);
+        Log.d("HttpQuery", "Method=" + method + ", bodyData=" + bodyData + ", holdError=" + holdError + ", url=" + url);
         long length = 0;
         String data = "";
         if (!bodyData) {
@@ -209,7 +210,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             }
         }
         HttpURLConnection conn = prepareConnexion(url, method);
-        if (bodyData && parameters != null && parameters.size() > 0) {
+        if (bodyData) {
             conn.setDoOutput(true);
             OutputStream os = conn.getOutputStream();
             length = writeDataToOutputStream(method, os);
@@ -220,6 +221,53 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         onQueryComplete();
         return stream;
     }
+
+//    protected synchronized InputStream POST(String url, boolean holdError)
+//            throws IOException {
+//        String method = "POST";
+//        HttpURLConnection conn = prepareConnexion(url, method);
+//        conn.setDoOutput(true);
+//        OutputStream os = conn.getOutputStream();
+//        long length = writeDataToOutputStream(method, os);
+//        os.close();
+//        InputStream stream = eval(conn, holdError);
+//        addToOutputHistoric(length);
+//        onQueryComplete();
+//        return stream;
+//    }
+//
+//    protected synchronized InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
+//            throws IOException {
+////        if (method.equalsIgnoreCase("POST")) {
+////            return POST(url, holdError);
+////        }
+//        Log.d("HttpQuery", "Method=" + method);
+//        long length = 0;
+//        String data = "";
+//        if (!bodyData) {
+//            if (parameterHandler != null) {
+//                data = parameterHandler.onStringifyQueryParams(method, parameters,
+//                        mOptions.encoding);
+//            }
+//            if (!Text.isEmpty(data)) {
+//                url += (url.contains("?") ? "" : "?") + data;
+//                length = data.length();
+//            }
+//        }
+//        HttpURLConnection conn = prepareConnexion(url, method);
+//        if (bodyData) {
+//            conn.setDoOutput(true);
+//            if (parameters != null && parameters.size() > 0) {
+//                OutputStream os = conn.getOutputStream();
+//                length = writeDataToOutputStream(method, os);
+//                os.close();
+//            }
+//        }
+//        InputStream stream = eval(conn, holdError);
+//        addToOutputHistoric(length);
+//        onQueryComplete();
+//        return stream;
+//    }
 
     protected HttpURLConnection prepareConnexion(final String url,
                                                  String method) throws IOException {
@@ -308,7 +356,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             for (String tmp : table) {
                 if (tmp != null) {
                     conn.addRequestProperty(tmp, headers.get(tmp));
-
                 }
             }
         }
@@ -325,21 +372,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             throws IOException {
         return doQuery(url, method, false, holdError);
     }
-
-
-//    protected InputStream POST(String url, boolean holdError)
-//            throws IOException {
-//        String method = "POST";
-//        HttpURLConnection conn = prepareConnexion(url, method);
-//        conn.setDoOutput(true);
-//        OutputStream os = conn.getOutputStream();
-//        long length = writeDataToOutputStream(method, os);
-//        os.close();
-//        InputStream stream = eval(conn, holdError);
-//        addToOutputHistoric(length);
-//        onQueryComplete();
-//        return stream;
-//    }
 
     protected final long writeDataToOutputStream(String method,
                                                  OutputStream os) throws IOException {

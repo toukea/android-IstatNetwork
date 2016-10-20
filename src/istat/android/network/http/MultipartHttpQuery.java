@@ -76,7 +76,11 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
     @Override
     public InputStream doPost(String url) throws IOException {
-        return POST(url);
+        return POST(url, true);
+    }
+
+    public InputStream doPost(String url, boolean holdError) throws IOException {
+        return POST(url, holdError);
     }
 
     @Override
@@ -218,12 +222,12 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         }
     }
 
-    protected synchronized InputStream POST(String url) throws IOException {
+    protected synchronized InputStream POST(String url, boolean holdError) throws IOException {
         HttpURLConnection conn = prepareMultipartPostConnexion(url);
         InputStream stream = null;
         int responseCode = conn.getResponseCode();
         if (responseCode == HttpsURLConnection.HTTP_OK) {
-            stream = eval(conn);
+            stream = eval(conn, holdError);
         }
         onQueryComplete();
         return stream;

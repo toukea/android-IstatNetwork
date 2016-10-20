@@ -129,6 +129,7 @@ public final class HttpAsyncQuery extends
                 }
             } catch (Exception e) {
                 error = e;
+                e.printStackTrace();
             }
             HttpQueryResponse response = new HttpQueryResponse(stream, error,
                     encoding, bufferSize, this);
