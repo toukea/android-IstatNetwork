@@ -120,7 +120,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     @SuppressWarnings("unchecked")
-    public HttpQ addParam(String Name, String[] values) {
+    public HttpQ addParam(String Name, String... values) {
         for (int i = 0; i < values.length; i++) {
             addParam(Name + "[" + i + "]", values[i]);
         }
@@ -128,12 +128,12 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     @SuppressWarnings("unchecked")
-    public HttpQ addParam(String Name, HashMap<Object, String> values) {
-        Iterator<Object> iterator = values.keySet().iterator();
+    public HttpQ addParam(String Name, HashMap<?, ?> values) {
+        Iterator<?> iterator = values.keySet().iterator();
         while (iterator.hasNext()) {
             Object name = iterator.next();
-            String value = values.get(name);
-            addParam(Name + "[" + name + "]", value);
+            Object value = values.get(name);
+            addParam(Name + "[" + name + "]", value + "");
         }
         return (HttpQ) this;
     }
@@ -141,6 +141,14 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public HttpQ addSendable(HttpSendable sendable) {
         sendable.onFillHttpQuery(this);
+        return (HttpQ) this;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public HttpQ addSendable(HttpSendable... sendableArray) {
+        for (HttpSendable sendable : sendableArray) {
+            sendable.onFillHttpQuery(this);
+        }
         return (HttpQ) this;
     }
 

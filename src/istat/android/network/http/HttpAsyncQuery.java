@@ -75,7 +75,6 @@ public final class HttpAsyncQuery extends
 //            e.printStackTrace();
 //        }
     }
-
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
@@ -761,6 +760,16 @@ public final class HttpAsyncQuery extends
     };
 
     public final static HttpAsyncQueryBuilder from(HttpQuery<?> http) {
+        return new HttpAsyncQueryBuilder(new HttpAsyncQuery(http));
+    }
+
+    public final static HttpAsyncQueryBuilder fromDefaultHttp() {
+        SimpleHttpQuery http = new SimpleHttpQuery();
+        return new HttpAsyncQueryBuilder(new HttpAsyncQuery(http));
+    }
+
+    public final static HttpAsyncQueryBuilder fromMultipartHttp() {
+        MultipartHttpQuery http = new MultipartHttpQuery();
         return new HttpAsyncQueryBuilder(new HttpAsyncQuery(http));
     }
 

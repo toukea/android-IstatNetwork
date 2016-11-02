@@ -11,3 +11,4 @@ bin/*
 .project
 project.properties
 proguard-project.txt
+/build/release/

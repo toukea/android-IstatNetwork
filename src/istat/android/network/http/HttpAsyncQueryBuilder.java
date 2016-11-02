@@ -6,7 +6,7 @@ import istat.android.network.http.interfaces.UpLoadHandler;
  * Created by istat on 16/10/16.
  */
 
-public class HttpAsyncQueryBuilder {
+public final class HttpAsyncQueryBuilder {
     HttpAsyncQuery mAsyncQuery;
 
     HttpAsyncQueryBuilder(HttpAsyncQuery asycQuery) {
@@ -18,6 +18,20 @@ public class HttpAsyncQueryBuilder {
     public HttpAsyncQueryBuilder useEncoding(String encoding) {
         this.encoding = encoding;
         return this;
+    }
+
+    public HttpAsyncQueryBuilder addHttpParam(String name, String value) {
+        this.mAsyncQuery.mHttp.addParam(name, value);
+        return this;
+    }
+
+    public HttpAsyncQueryBuilder addHttpHeader(String name, String value) {
+        this.mAsyncQuery.mHttp.addHeader(name, value);
+        return this;
+    }
+
+    public HttpQuery<?> getHttpQuery() {
+        return this.mAsyncQuery.mHttp;
     }
 
     public HttpAsyncQueryBuilder useDownloader(HttpAsyncQuery.HttpDownloadHandler downloader) {
