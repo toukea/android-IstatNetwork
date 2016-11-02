@@ -9,7 +9,7 @@ import java.io.OutputStream;
 import istat.android.network.http.HttpAsyncQuery;
 import istat.android.network.http.HttpAsyncQuery.HttpUploadHandler;
 import istat.android.network.http.MultipartHttpQuery;
-import istat.android.network.util.ToolKits.Stream;
+import istat.android.network.utils.ToolKits.Stream;
 
 public class WritenByteUploadHandler extends HttpUploadHandler<Integer> {
     int buffer = Stream.DEFAULT_BUFFER_SIZE;

@@ -20,7 +20,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
 import istat.android.network.http.interfaces.HttpSendable;
-import istat.android.network.util.ToolKits.Text;
+import istat.android.network.utils.ToolKits.Text;
 
 import org.apache.http.message.BasicNameValuePair;
 

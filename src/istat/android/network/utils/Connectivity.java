@@ -1,4 +1,4 @@
-package istat.android.network.util;
+package istat.android.network.utils;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

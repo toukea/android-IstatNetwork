@@ -1,7 +1,7 @@
 package istat.android.network.http;
 
-import istat.android.network.util.StreamOperationTools;
-import istat.android.network.util.ToolKits.Stream;
+import istat.android.network.utils.StreamOperationTools;
+import istat.android.network.utils.ToolKits.Stream;
 
 import java.io.IOException;
 import java.io.InputStream;

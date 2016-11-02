@@ -1,4 +1,4 @@
-package istat.android.network.util;
+package istat.android.network.utils;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

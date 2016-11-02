@@ -1,8 +1,8 @@
 package istat.android.network.http;
 
 import istat.android.network.http.interfaces.UpLoadHandler;
-import istat.android.network.util.ToolKits.Stream;
-import istat.android.network.util.ToolKits.Text;
+import istat.android.network.utils.ToolKits.Stream;
+import istat.android.network.utils.ToolKits.Text;
 
 import java.io.DataOutputStream;
 import java.io.File;
