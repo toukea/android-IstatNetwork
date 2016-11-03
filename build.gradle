@@ -3,7 +3,7 @@ apply plugin: 'com.android.library'
 //ext {
 //    PUBLISH_GROUP_ID = 'istat.android.network.http'
 //    PUBLISH_ARTIFACT_ID = 'istat-network'
-//    PUBLISH_VERSION = '2.4.0'
+//    PUBLISH_VERSION = '2.5.0'
 //}
 // apply from: 'file:///home/istat/Scripts/gradle/android-release-jar.gradle.txt'
 dependencies {
@@ -41,12 +41,12 @@ android {
         release.setRoot('build-types/release')
     }
     task clearJar(type: Delete) {
-        delete '../MtnDriveSdk/libs/istatnetwork_v2.jar'
+        delete '../build/libs/istatnetwork_v2.jar'
     }
 
     task makeJar(type: Copy) {
         from('build/intermediates/bundles/release/')
-        into('../MtnDriveSdk/libs/')
+        into('../build/libs/')
         include('classes.jar')
         rename('classes.jar', 'istatnetwork_v2.jar')
     }
