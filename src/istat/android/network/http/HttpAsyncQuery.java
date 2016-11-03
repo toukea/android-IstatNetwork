@@ -75,6 +75,7 @@ public final class HttpAsyncQuery extends
 //            e.printStackTrace();
 //        }
     }
+
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
@@ -146,8 +147,22 @@ public final class HttpAsyncQuery extends
     protected void onProgressUpdate(HttpQueryResponse... values) {
         HttpQueryResponse response = values.length > 0 ? values[0] : null;
         if (mHttpCallBack != null && !mHttp.isAborted() && !isCancelled()) {
-            mHttpCallBack.onHttRequestComplete(response);
+            dispatchQueryResponse(response);
         }
+    }
+
+    private void dispatchQueryResponse(HttpQueryResponse resp) {
+        if (resp.isAccepted()) {
+            if (resp.isSuccess()) {
+                mHttpCallBack.onHttpRequestSuccess(resp);
+            } else {
+                mHttpCallBack.onHttpRequestError(resp,
+                        new HttpQueryException(resp.getError()));
+            }
+        } else {
+            mHttpCallBack.onHttpRequestFail(resp.getError());
+        }
+        mHttpCallBack.onHttRequestComplete(resp);
     }
 
     @Override
@@ -162,7 +177,7 @@ public final class HttpAsyncQuery extends
         Log.i("HttpAsyncQuery", "onCancelled::httpCallback::" + mHttpCallBack);
         try {
             // if (mHttpCallBack != null && mHttpCallBack instanceof OnHttpQueryComplete) {
-            ((OnHttpQueryComplete) mHttpCallBack).onHttpAborted();
+            mHttpCallBack.onHttpAborted();
             Log.i("HttpAsyncQuery", "onCancelled::abort-callaed::" + mHttpCallBack);
             //
         } catch (Exception e) {
@@ -506,16 +521,12 @@ public final class HttpAsyncQuery extends
         }
     }
 
-    public static interface HttpQueryCallBack {
-        public abstract void onHttRequestComplete(HttpQueryResponse result);
-    }
 
     public static interface CancelListener {
         public abstract void onCancelled(HttpAsyncQuery asyncQ);
     }
 
-    public static interface OnHttpQueryComplete extends HttpQueryCallBack {
-
+    public static interface HttpQueryCallBack {
         public abstract void onHttpRequestSuccess(HttpQueryResponse result);
 
         public abstract void onHttpRequestError(HttpQueryResponse result,
@@ -526,31 +537,6 @@ public final class HttpAsyncQuery extends
         public abstract void onHttRequestComplete(HttpQueryResponse result);
 
         public abstract void onHttpAborted();
-    }
-
-    public static abstract class HttpCallBack implements OnHttpQueryComplete/*,
-            CancelListener*/ {
-        public final void onHttRequestComplete(HttpQueryResponse resp) {
-            if (resp.isAccepted()) {
-                if (resp.isSuccess()) {
-                    onHttpRequestSuccess(resp);
-                } else {
-                    onHttpRequestError(resp,
-                            new HttpQueryException(resp.getError()));
-                }
-            } else {
-                onHttpRequestFail(resp.getError());
-            }
-            onHttRequestCompleted(resp);
-        }
-
-//        @Override
-//        public final void onCancelled(HttpAsyncQuery asyncQ) {
-//            onHttpAborted();
-//        }
-
-        public abstract void onHttRequestCompleted(HttpQueryResponse result);
-
     }
 
     public boolean setCancelListener(CancelListener listener) {
