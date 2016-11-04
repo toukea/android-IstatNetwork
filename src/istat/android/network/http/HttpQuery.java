@@ -160,7 +160,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     @SuppressWarnings("unchecked")
-    public HttpQ addParams(HashMap<String, Object> nameValues) {
+    public HttpQ addParams(HashMap<?, ?> nameValues) {
         if (!nameValues.keySet().isEmpty()) {
             String[] table = new String[nameValues.size()];
             table = nameValues.keySet().toArray(table);
