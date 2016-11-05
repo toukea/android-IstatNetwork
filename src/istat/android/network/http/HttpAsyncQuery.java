@@ -630,7 +630,7 @@ public final class HttpAsyncQuery extends
         }
 
         @Override
-        public final void onProceedStreamUpload(MultipartHttpQuery httpQuery,
+        public final void onProceedStreamUpload(HttpQuery httpQuery,
                                                 OutputStream request, InputStream stream)
                 throws IOException {
             try {
@@ -650,7 +650,7 @@ public final class HttpAsyncQuery extends
         }
 
         public abstract void onProceedStreamUpload(
-                MultipartHttpQuery httpQuery, OutputStream request,
+                HttpQuery httpQuery, OutputStream request,
                 InputStream stream, HttpAsyncQuery asyc) throws IOException;
 
         public abstract void onUploadProgress(HttpAsyncQuery query,

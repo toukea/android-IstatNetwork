@@ -1,11 +1,11 @@
 apply plugin: 'com.android.library'
-//apply plugin: 'maven'
-//ext {
-//    PUBLISH_GROUP_ID = 'istat.android.network.http'
-//    PUBLISH_ARTIFACT_ID = 'istat-network'
-//    PUBLISH_VERSION = '2.5.0'
-//}
-// apply from: 'file:///home/istat/Scripts/gradle/android-release-jar.gradle.txt'
+ext {
+    PUBLISH_GROUP_ID = 'istat.android.network.http'
+    PUBLISH_ARTIFACT_ID = 'istat-network'
+    PUBLISH_VERSION = '2.5.0'
+}
+apply from: 'release-jar.gradle'
+//apply from: 'release-aar.gradle'
 dependencies {
     // compile fileTree(dir: 'libs', include: '*.jar')
 }

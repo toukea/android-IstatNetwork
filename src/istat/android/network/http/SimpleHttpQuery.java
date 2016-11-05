@@ -26,7 +26,7 @@ import java.util.HashMap;
 public class SimpleHttpQuery extends HttpQuery<SimpleHttpQuery> {
 
     @Override
-    public final SimpleHttpQuery addParams(HashMap<String, Object> nameValues) {
+    public final SimpleHttpQuery addParams(HashMap<?, ?> nameValues) {
         return super.addParams(nameValues);
     }
 

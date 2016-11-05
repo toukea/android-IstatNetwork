@@ -8,6 +8,7 @@ import java.io.OutputStream;
 
 import istat.android.network.http.HttpAsyncQuery;
 import istat.android.network.http.HttpAsyncQuery.HttpUploadHandler;
+import istat.android.network.http.HttpQuery;
 import istat.android.network.http.MultipartHttpQuery;
 import istat.android.network.utils.ToolKits.Stream;
 
@@ -31,7 +32,7 @@ public class WritenByteUploadHandler extends HttpUploadHandler<Integer> {
     }
 
     @Override
-    public void onProceedStreamUpload(MultipartHttpQuery httpQuery,
+    public void onProceedStreamUpload(HttpQuery httpQuery,
                                       OutputStream request, InputStream stream, HttpAsyncQuery asyc)
             throws IOException {
         byte[] b = new byte[buffer];

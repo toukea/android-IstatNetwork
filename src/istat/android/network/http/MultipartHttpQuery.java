@@ -237,7 +237,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         return "===" + System.currentTimeMillis() + "===";
     }
 
-    public final MultipartHttpQuery addParams(HashMap<String, Object> nameValues) {
+    public final MultipartHttpQuery addParams(HashMap<?, ?> nameValues) {
         if (!nameValues.keySet().isEmpty()) {
             String[] table = new String[nameValues.size()];
             table = nameValues.keySet().toArray(table);
@@ -268,7 +268,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
     UpLoadHandler uploadHandler = new UpLoadHandler() {
         @Override
-        public void onProceedStreamUpload(MultipartHttpQuery httpQuery,
+        public void onProceedStreamUpload(HttpQuery httpQuery,
                                           OutputStream request, InputStream stream)
                 throws IOException {
             byte[] b = new byte[uploadBufferSize];
