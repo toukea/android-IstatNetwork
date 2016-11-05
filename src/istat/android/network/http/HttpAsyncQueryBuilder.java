@@ -1,5 +1,10 @@
 package istat.android.network.http;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.util.concurrent.Executor;
+
+import istat.android.network.http.interfaces.DownloadHandler;
 import istat.android.network.http.interfaces.UpLoadHandler;
 
 /**
@@ -34,8 +39,33 @@ public final class HttpAsyncQueryBuilder {
         return this.mAsyncQuery.mHttp;
     }
 
+    public HttpAsyncQueryBuilder useExecutor(Executor executor) {
+        this.mAsyncQuery.mExecutor = executor;
+        return this;
+    }
+
     public HttpAsyncQueryBuilder useDownloader(HttpAsyncQuery.HttpDownloadHandler downloader) {
         this.mAsyncQuery.downloadHandler = downloader;
+        return this;
+    }
+
+    public HttpAsyncQueryBuilder useDownloader(final DownloadHandler downloader) {
+        this.mAsyncQuery.downloadHandler = new HttpAsyncQuery.HttpDownloadHandler<Integer>() {
+            @Override
+            public void onDownloadProgress(HttpAsyncQuery query, Integer... integers) {
+
+            }
+
+            @Override
+            public Object onBuildResponseBody(HttpURLConnection connexion, InputStream stream, HttpAsyncQuery query) {
+                return downloader.onBuildResponseBody(connexion, stream, query);
+            }
+
+            @Override
+            protected void onProcessFail(Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
         return this;
     }
 

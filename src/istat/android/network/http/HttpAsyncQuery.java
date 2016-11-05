@@ -1,5 +1,6 @@
 package istat.android.network.http;
 
+import istat.android.network.http.interfaces.DownloadHandler;
 import istat.android.network.utils.StreamOperationTools;
 import istat.android.network.utils.ToolKits.Stream;
 
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
 import istat.android.network.http.interfaces.UpLoadHandler;
@@ -24,6 +26,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
+
 
 public final class HttpAsyncQuery extends
         AsyncTask<String, HttpQueryResponse, Void> {
@@ -156,8 +159,7 @@ public final class HttpAsyncQuery extends
             if (resp.isSuccess()) {
                 mHttpCallBack.onHttpRequestSuccess(resp);
             } else {
-                mHttpCallBack.onHttpRequestError(resp,
-                        new HttpQueryException(resp.getError()));
+                mHttpCallBack.onHttpRequestError(resp, new HttpQueryException(resp.getError()));
             }
         } else {
             mHttpCallBack.onHttpRequestFail(resp.getError());
@@ -282,10 +284,15 @@ public final class HttpAsyncQuery extends
         return query;
     }
 
+    Executor mExecutor;
+
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     void executeURLs(String... urls) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, urls);
+            if (mExecutor == null) {
+                mExecutor = AsyncTask.THREAD_POOL_EXECUTOR;
+            }
+            executeOnExecutor(mExecutor, urls);
         } else {
             execute(urls);
         }
@@ -657,7 +664,7 @@ public final class HttpAsyncQuery extends
                                               ProgressVar... vars);
     }
 
-    public static abstract class HttpDownloadHandler<ProgressVar> {
+    public static abstract class HttpDownloadHandler<ProgressVar> implements DownloadHandler {
         Handler handler;
         HttpAsyncQuery query;
 
@@ -718,8 +725,8 @@ public final class HttpAsyncQuery extends
                         }
                     });
                 }
+                throw new RuntimeException(e);
             }
-            return null;
         }
 
         public void publishProgression(final ProgressVar... vars) {
@@ -731,8 +738,6 @@ public final class HttpAsyncQuery extends
             });
         }
 
-        public abstract Object onBuildResponseBody(HttpURLConnection connexion,
-                                                   InputStream stream, HttpAsyncQuery query);
 
         public abstract void onDownloadProgress(HttpAsyncQuery query,
                                                 ProgressVar... vars);
