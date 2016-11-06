@@ -47,7 +47,7 @@ public final class HttpAsyncQuery extends
 //        }
 //    };
     public final static String DEFAULT_ENCODING = "UTF-8";
-    HttpQueryCallBack mHttpCallBack;
+    HttpQueryCallback mHttpCallBack;
     CancelListener mCancelListener;
     HttpQuery<?> mHttp;
     int type = TYPE_GET;
@@ -61,7 +61,7 @@ public final class HttpAsyncQuery extends
         this.mHttp = http;
     }
 
-    private HttpAsyncQuery(HttpQuery<?> http, HttpQueryCallBack callBack) {
+    private HttpAsyncQuery(HttpQuery<?> http, HttpQueryCallback callBack) {
         this.mHttpCallBack = callBack;
         this.mHttp = http;
 //        Log.e("HttpAsyncQuery", "build:" + callBack.getClass());
@@ -205,20 +205,20 @@ public final class HttpAsyncQuery extends
     }
 
     public static HttpAsyncQuery doAsyncGet(HttpQuery<?> http,
-                                            HttpQueryCallBack callBack, String url) {
+                                            HttpQueryCallback callBack, String url) {
         return doAsyncQuery(http, TYPE_GET, DEFAULT_BUFFER_SIZE,
                 http.mOptions.encoding, callBack, url);
     }
 
     public static HttpAsyncQuery doAsyncQuery(HttpQuery<?> http, int queryType,
-                                              int bufferSize, String encoding, HttpQueryCallBack callBack,
+                                              int bufferSize, String encoding, HttpQueryCallback callBack,
                                               HttpDownloadHandler<?> processCallBack, String url) {
         return doAsyncQuery(http, queryType, bufferSize, encoding, callBack,
                 processCallBack, null, url);
     }
 
     public static HttpAsyncQuery doAsyncQuery(HttpQuery<?> http, int queryType,
-                                              int bufferSize, String encoding, HttpQueryCallBack callBack,
+                                              int bufferSize, String encoding, HttpQueryCallback callBack,
                                               String url) {
         return doAsyncQuery(http, queryType, bufferSize, encoding, callBack,
                 null, null, url);
@@ -230,13 +230,13 @@ public final class HttpAsyncQuery extends
     }
 
     public static HttpAsyncQuery doAsyncPost(HttpQuery<?> http,
-                                             HttpQueryCallBack callBack, String url) {
+                                             HttpQueryCallback callBack, String url) {
         return doAsyncQuery(http, TYPE_POST, DEFAULT_BUFFER_SIZE,
                 http.mOptions.encoding, callBack, url);
     }
 
     public static HttpAsyncQuery doAsyncPost(HttpQuery<?> http,
-                                             HttpQueryCallBack callBack,
+                                             HttpQueryCallback callBack,
                                              HttpUploadHandler<?> uploadCallback, String url) {
         HttpAsyncQuery query = doAsyncQuery(http, TYPE_POST,
                 DEFAULT_BUFFER_SIZE, http.mOptions.encoding, callBack, url);
@@ -245,7 +245,7 @@ public final class HttpAsyncQuery extends
     }
 
     public static HttpAsyncQuery doAsyncPost(MultipartHttpQuery http,
-                                             int bufferSize, String encoding, HttpQueryCallBack callBack,
+                                             int bufferSize, String encoding, HttpQueryCallback callBack,
                                              HttpDownloadHandler<?> processCallBack,
                                              CancelListener cancelCallback,
                                              HttpUploadHandler<?> uploadCallBack, String... urls) {
@@ -271,7 +271,7 @@ public final class HttpAsyncQuery extends
     }
 
     public static HttpAsyncQuery doAsyncQuery(HttpQuery<?> http, int queryType,
-                                              int bufferSize, String encoding, HttpQueryCallBack callBack,
+                                              int bufferSize, String encoding, HttpQueryCallback callBack,
                                               HttpDownloadHandler<?> processCallBack,
                                               CancelListener cancelListener, String... urls) {
         HttpAsyncQuery query = new HttpAsyncQuery(http, callBack);
@@ -375,6 +375,10 @@ public final class HttpAsyncQuery extends
 
     public void pause() {
         executionController.pause();
+    }
+
+    public static class HttpQueryError extends RuntimeException {
+
     }
 
     public static class HttpQueryResponse {
@@ -533,7 +537,7 @@ public final class HttpAsyncQuery extends
         public abstract void onCancelled(HttpAsyncQuery asyncQ);
     }
 
-    public static interface HttpQueryCallBack {
+    public static interface HttpQueryCallback {
         public abstract void onHttpRequestSuccess(HttpQueryResponse result);
 
         public abstract void onHttpRequestError(HttpQueryResponse result,
@@ -558,7 +562,7 @@ public final class HttpAsyncQuery extends
         taskQueue.put(uniqueToken, this);
     }
 
-    public static HttpAsyncQuery getTask(HttpQueryCallBack callback) {
+    public static HttpAsyncQuery getTask(HttpQueryCallback callback) {
         return taskQueue.get(callback);
     }
 

@@ -79,7 +79,7 @@ public final class HttpAsyncQueryBuilder {
         return doDelete(null, url);
     }
 
-    public HttpAsyncQuery doDelete(HttpAsyncQuery.HttpQueryCallBack callback, String url) {
+    public HttpAsyncQuery doDelete(HttpAsyncQuery.HttpQueryCallback callback, String url) {
         this.mAsyncQuery.type = HttpAsyncQuery.TYPE_DELETE;
         this.mAsyncQuery.mHttpCallBack = callback;
         this.mAsyncQuery.executeURLs(url);
@@ -91,7 +91,7 @@ public final class HttpAsyncQueryBuilder {
         return doGet(null, url);
     }
 
-    public HttpAsyncQuery doGet(HttpAsyncQuery.HttpQueryCallBack callback, String url) {
+    public HttpAsyncQuery doGet(HttpAsyncQuery.HttpQueryCallback callback, String url) {
         this.mAsyncQuery.type = HttpAsyncQuery.TYPE_GET;
         this.mAsyncQuery.mHttpCallBack = callback;
         this.mAsyncQuery.executeURLs(url);
@@ -102,11 +102,11 @@ public final class HttpAsyncQueryBuilder {
         return doPost(null, null, url);
     }
 
-    public HttpAsyncQuery doPost(HttpAsyncQuery.HttpQueryCallBack callback, String url) {
+    public HttpAsyncQuery doPost(HttpAsyncQuery.HttpQueryCallback callback, String url) {
         return doPost(null, callback, url);
     }
 
-    public HttpAsyncQuery doPost(HttpAsyncQuery.HttpUploadHandler<?> uploader, HttpAsyncQuery.HttpQueryCallBack callback, String url) {
+    public HttpAsyncQuery doPost(HttpAsyncQuery.HttpUploadHandler<?> uploader, HttpAsyncQuery.HttpQueryCallback callback, String url) {
         this.mAsyncQuery.type = HttpAsyncQuery.TYPE_POST;
         this.mAsyncQuery.setUploadHandler(uploader);
         this.mAsyncQuery.mHttpCallBack = callback;
@@ -118,7 +118,7 @@ public final class HttpAsyncQueryBuilder {
         return doHead(null, url);
     }
 
-    public HttpAsyncQuery doHead(HttpAsyncQuery.HttpQueryCallBack callback, String url) {
+    public HttpAsyncQuery doHead(HttpAsyncQuery.HttpQueryCallback callback, String url) {
         this.mAsyncQuery.type = HttpAsyncQuery.TYPE_HEAD;
         this.mAsyncQuery.mHttpCallBack = callback;
         this.mAsyncQuery.executeURLs(url);
@@ -129,7 +129,7 @@ public final class HttpAsyncQueryBuilder {
         return doPatch(null, url);
     }
 
-    public HttpAsyncQuery doPatch(HttpAsyncQuery.HttpQueryCallBack callback, String url) {
+    public HttpAsyncQuery doPatch(HttpAsyncQuery.HttpQueryCallback callback, String url) {
         this.mAsyncQuery.type = HttpAsyncQuery.TYPE_PATCH;
         this.mAsyncQuery.mHttpCallBack = callback;
         this.mAsyncQuery.executeURLs(url);
@@ -141,11 +141,11 @@ public final class HttpAsyncQueryBuilder {
         return doPush(uploader, null, url);
     }
 
-    public HttpAsyncQuery doPush(HttpAsyncQuery.HttpQueryCallBack callback, String url) {
+    public HttpAsyncQuery doPush(HttpAsyncQuery.HttpQueryCallback callback, String url) {
         return doPush(null, callback, url);
     }
 
-    public HttpAsyncQuery doPush(HttpAsyncQuery.HttpUploadHandler<?> uploader, HttpAsyncQuery.HttpQueryCallBack callback, String url) {
+    public HttpAsyncQuery doPush(HttpAsyncQuery.HttpUploadHandler<?> uploader, HttpAsyncQuery.HttpQueryCallback callback, String url) {
         this.mAsyncQuery.type = HttpAsyncQuery.TYPE_POST;
         this.mAsyncQuery.setUploadHandler(uploader);
         this.mAsyncQuery.mHttpCallBack = callback;
@@ -153,7 +153,7 @@ public final class HttpAsyncQueryBuilder {
         return this.mAsyncQuery;
     }
 
-    public HttpAsyncQuery doQuery(int method, UpLoadHandler handler, HttpAsyncQuery.HttpQueryCallBack callback, String url) {
+    public HttpAsyncQuery doQuery(int method, UpLoadHandler handler, HttpAsyncQuery.HttpQueryCallback callback, String url) {
         this.mAsyncQuery.type = method;
         this.mAsyncQuery.mHttpCallBack = callback;
         this.mAsyncQuery.executeURLs(url);
@@ -166,7 +166,7 @@ public final class HttpAsyncQueryBuilder {
         return this;
     }
 
-    public HttpAsyncQueryBuilder setQueryCallBack(HttpAsyncQuery.HttpQueryCallBack callback) {
+    public HttpAsyncQueryBuilder setQueryCallBack(HttpAsyncQuery.HttpQueryCallback callback) {
         this.mAsyncQuery.mHttpCallBack = callback;
         return this;
     }
