@@ -57,26 +57,13 @@ public final class HttpAsyncQuery extends
     private long endTimeStamp = 0;
     static final ConcurrentHashMap<Object, HttpAsyncQuery> taskQueue = new ConcurrentHashMap<Object, HttpAsyncQuery>();
 
-    private HttpAsyncQuery(HttpQuery<?> http) {
+    HttpAsyncQuery(HttpQuery<?> http) {
         this.mHttp = http;
     }
 
     private HttpAsyncQuery(HttpQuery<?> http, HttpQueryCallback callBack) {
         this.mHttpCallBack = callBack;
         this.mHttp = http;
-//        Log.e("HttpAsyncQuery", "build:" + callBack.getClass());
-//        if (callBack != null && callBack.getClass().isAssignableFrom(CancelListener.class)) {
-//            this.setCancelListener((CancelListener) callBack);
-//            Log.e("HttpAsyncQuery", "build:instanceofCancellable" + callBack.getClass());
-//        }
-//        try {
-//            Log.e("HttpAsyncQuery", "build:try" + callBack.getClass());
-//            CancelListener cancelListener = (CancelListener) callBack;
-//            boolean added = this.setCancelListener(cancelListener);
-//            Log.e("HttpAsyncQuery", "build:try" + cancelListener + ", cancelAdded=" + added);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
     }
 
     @Override
@@ -754,18 +741,37 @@ public final class HttpAsyncQuery extends
         }
     };
 
-    public final static HttpAsyncQueryBuilder from(HttpQuery<?> http) {
-        return new HttpAsyncQueryBuilder(new HttpAsyncQuery(http));
+    /**
+     * use {@link AsyncHttp#from(HttpQuery)} instead.
+     *
+     * @param http
+     * @return
+     */
+    @Deprecated
+    public final static AsyncHttp from(HttpQuery<?> http) {
+        return new AsyncHttp(new HttpAsyncQuery(http));
     }
 
-    public final static HttpAsyncQueryBuilder fromDefaultHttp() {
+    /**
+     * * use {@link AsyncHttp#fromDefaultHttp()} instead.
+     *
+     * @return
+     */
+    @Deprecated
+    public final static AsyncHttp fromDefaultHttp() {
         SimpleHttpQuery http = new SimpleHttpQuery();
-        return new HttpAsyncQueryBuilder(new HttpAsyncQuery(http));
+        return new AsyncHttp(new HttpAsyncQuery(http));
     }
 
-    public final static HttpAsyncQueryBuilder fromMultipartHttp() {
+    /**
+     * * use {@link AsyncHttp#fromMultipartHttp()} instead.
+     *
+     * @return
+     */
+    @Deprecated
+    public final static AsyncHttp fromMultipartHttp() {
         MultipartHttpQuery http = new MultipartHttpQuery();
-        return new HttpAsyncQueryBuilder(new HttpAsyncQuery(http));
+        return new AsyncHttp(new HttpAsyncQuery(http));
     }
 
     public class HttpPromise {

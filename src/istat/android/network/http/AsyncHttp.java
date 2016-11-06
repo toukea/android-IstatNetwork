@@ -11,26 +11,41 @@ import istat.android.network.http.interfaces.UpLoadHandler;
  * Created by istat on 16/10/16.
  */
 
-public final class HttpAsyncQueryBuilder {
+public final class AsyncHttp {
     HttpAsyncQuery mAsyncQuery;
 
-    HttpAsyncQueryBuilder(HttpAsyncQuery asycQuery) {
+    public final static AsyncHttp from(HttpQuery http) {
+        HttpAsyncQuery asycQ = new HttpAsyncQuery(http);
+        return new AsyncHttp(asycQ);
+    }
+
+    public final static AsyncHttp fromDefaultHttp() {
+        SimpleHttpQuery http = new SimpleHttpQuery();
+        return new AsyncHttp(new HttpAsyncQuery(http));
+    }
+
+    public final static AsyncHttp fromMultipartHttp() {
+        MultipartHttpQuery http = new MultipartHttpQuery();
+        return new AsyncHttp(new HttpAsyncQuery(http));
+    }
+
+    AsyncHttp(HttpAsyncQuery asycQuery) {
         this.mAsyncQuery = asycQuery;
     }
 
     String encoding;
 
-    public HttpAsyncQueryBuilder useEncoding(String encoding) {
+    public AsyncHttp useEncoding(String encoding) {
         this.encoding = encoding;
         return this;
     }
 
-    public HttpAsyncQueryBuilder addHttpParam(String name, String value) {
+    public AsyncHttp addHttpParam(String name, String value) {
         this.mAsyncQuery.mHttp.addParam(name, value);
         return this;
     }
 
-    public HttpAsyncQueryBuilder addHttpHeader(String name, String value) {
+    public AsyncHttp addHttpHeader(String name, String value) {
         this.mAsyncQuery.mHttp.addHeader(name, value);
         return this;
     }
@@ -39,17 +54,17 @@ public final class HttpAsyncQueryBuilder {
         return this.mAsyncQuery.mHttp;
     }
 
-    public HttpAsyncQueryBuilder useExecutor(Executor executor) {
+    public AsyncHttp useExecutor(Executor executor) {
         this.mAsyncQuery.mExecutor = executor;
         return this;
     }
 
-    public HttpAsyncQueryBuilder useDownloader(HttpAsyncQuery.HttpDownloadHandler downloader) {
+    public AsyncHttp useDownloader(HttpAsyncQuery.HttpDownloadHandler downloader) {
         this.mAsyncQuery.downloadHandler = downloader;
         return this;
     }
 
-    public HttpAsyncQueryBuilder useDownloader(final DownloadHandler downloader) {
+    public AsyncHttp useDownloader(final DownloadHandler downloader) {
         this.mAsyncQuery.downloadHandler = new HttpAsyncQuery.HttpDownloadHandler<Integer>() {
             @Override
             public void onDownloadProgress(HttpAsyncQuery query, Integer... integers) {
@@ -69,7 +84,7 @@ public final class HttpAsyncQueryBuilder {
         return this;
     }
 
-    public HttpAsyncQueryBuilder useBufferSize(int bufferSize) {
+    public AsyncHttp useBufferSize(int bufferSize) {
         this.mAsyncQuery.bufferSize = bufferSize;
         return this;
     }
@@ -161,12 +176,12 @@ public final class HttpAsyncQueryBuilder {
     }
 
 
-    public HttpAsyncQueryBuilder setCancelListener(HttpAsyncQuery.CancelListener listener) {
+    public AsyncHttp setCancelListener(HttpAsyncQuery.CancelListener listener) {
         this.mAsyncQuery.mCancelListener = listener;
         return this;
     }
 
-    public HttpAsyncQueryBuilder setQueryCallBack(HttpAsyncQuery.HttpQueryCallback callback) {
+    public AsyncHttp setQueryCallBack(HttpAsyncQuery.HttpQueryCallback callback) {
         this.mAsyncQuery.mHttpCallBack = callback;
         return this;
     }
