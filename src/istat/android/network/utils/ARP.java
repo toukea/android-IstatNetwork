@@ -1,6 +1,6 @@
-package istat.android.network.util;
+package istat.android.network.utils;
 
-import istat.android.network.util.ToolKits.Stream;
+import istat.android.network.utils.ToolKits.Stream;
 
 import java.util.ArrayList;
 import java.util.List;

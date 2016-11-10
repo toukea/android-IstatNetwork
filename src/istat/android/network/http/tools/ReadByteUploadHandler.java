@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 
 import istat.android.network.http.HttpAsyncQuery;
-import istat.android.network.util.ToolKits.Stream;
+import istat.android.network.utils.ToolKits.Stream;
 
 public abstract class ReadByteUploadHandler extends
         HttpAsyncQuery.HttpDownloadHandler<Integer> {

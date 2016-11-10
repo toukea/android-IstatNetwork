@@ -1,7 +1,7 @@
 //
 // by Stephane
 
-package istat.android.network.util;
+package istat.android.network.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;

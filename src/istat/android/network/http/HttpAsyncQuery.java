@@ -1,7 +1,8 @@
 package istat.android.network.http;
 
-import istat.android.network.util.StreamOperationTools;
-import istat.android.network.util.ToolKits.Stream;
+import istat.android.network.http.interfaces.DownloadHandler;
+import istat.android.network.utils.StreamOperationTools;
+import istat.android.network.utils.ToolKits.Stream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
 import istat.android.network.http.interfaces.UpLoadHandler;
@@ -25,26 +27,27 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 
+
 public final class HttpAsyncQuery extends
         AsyncTask<String, HttpQueryResponse, Void> {
     public final static int TYPE_GET = 1, TYPE_POST = 2, TYPE_PUT = 3,
             TYPE_HEAD = 4, TYPE_DELETE = 5, TYPE_COPY = 6, TYPE_PATCH = 7,
             TYPE_RENAME = 8, TYPE_MOVE = 9, DEFAULT_BUFFER_SIZE = 16384;
-    final static HashMap<Integer, String> METHOD_MAP = new HashMap<Integer, String>() {
-        {
-            put(TYPE_COPY, "COPY");
-            put(TYPE_MOVE, "MOVE");
-            put(TYPE_GET, "GET");
-            put(TYPE_POST, "POST");
-            put(TYPE_PATCH, "PATCH");
-            put(TYPE_HEAD, "HEAD");
-            put(TYPE_PUT, "PUT");
-            put(TYPE_DELETE, "DELETE");
-
-        }
-    };
+    //    final static HashMap<Integer, String> METHOD_MAP = new HashMap<Integer, String>() {
+//        {
+//            put(TYPE_COPY, "COPY");
+//            put(TYPE_MOVE, "MOVE");
+//            put(TYPE_GET, "GET");
+//            put(TYPE_POST, "POST");
+//            put(TYPE_PATCH, "PATCH");
+//            put(TYPE_HEAD, "HEAD");
+//            put(TYPE_PUT, "PUT");
+//            put(TYPE_DELETE, "DELETE");
+//
+//        }
+//    };
     public final static String DEFAULT_ENCODING = "UTF-8";
-    HttpQueryCallBack mHttpCallBack;
+    HttpQueryCallback mHttpCallBack;
     CancelListener mCancelListener;
     HttpQuery<?> mHttp;
     int type = TYPE_GET;
@@ -54,26 +57,13 @@ public final class HttpAsyncQuery extends
     private long endTimeStamp = 0;
     static final ConcurrentHashMap<Object, HttpAsyncQuery> taskQueue = new ConcurrentHashMap<Object, HttpAsyncQuery>();
 
-    private HttpAsyncQuery(HttpQuery<?> http) {
+    HttpAsyncQuery(HttpQuery<?> http) {
         this.mHttp = http;
     }
 
-    private HttpAsyncQuery(HttpQuery<?> http, HttpQueryCallBack callBack) {
+    private HttpAsyncQuery(HttpQuery<?> http, HttpQueryCallback callBack) {
         this.mHttpCallBack = callBack;
         this.mHttp = http;
-//        Log.e("HttpAsyncQuery", "build:" + callBack.getClass());
-//        if (callBack != null && callBack.getClass().isAssignableFrom(CancelListener.class)) {
-//            this.setCancelListener((CancelListener) callBack);
-//            Log.e("HttpAsyncQuery", "build:instanceofCancellable" + callBack.getClass());
-//        }
-//        try {
-//            Log.e("HttpAsyncQuery", "build:try" + callBack.getClass());
-//            CancelListener cancelListener = (CancelListener) callBack;
-//            boolean added = this.setCancelListener(cancelListener);
-//            Log.e("HttpAsyncQuery", "build:try" + cancelListener + ", cancelAdded=" + added);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
     }
 
     @Override
@@ -147,8 +137,21 @@ public final class HttpAsyncQuery extends
     protected void onProgressUpdate(HttpQueryResponse... values) {
         HttpQueryResponse response = values.length > 0 ? values[0] : null;
         if (mHttpCallBack != null && !mHttp.isAborted() && !isCancelled()) {
-            mHttpCallBack.onHttRequestComplete(response);
+            dispatchQueryResponse(response);
         }
+    }
+
+    private void dispatchQueryResponse(HttpQueryResponse resp) {
+        if (resp.isAccepted()) {
+            if (resp.isSuccess()) {
+                mHttpCallBack.onHttpRequestSuccess(resp);
+            } else {
+                mHttpCallBack.onHttpRequestError(resp, new HttpQueryException(resp.getError()));
+            }
+        } else {
+            mHttpCallBack.onHttpRequestFail(resp.getError());
+        }
+        mHttpCallBack.onHttRequestComplete(resp);
     }
 
     @Override
@@ -163,7 +166,7 @@ public final class HttpAsyncQuery extends
         Log.i("HttpAsyncQuery", "onCancelled::httpCallback::" + mHttpCallBack);
         try {
             // if (mHttpCallBack != null && mHttpCallBack instanceof OnHttpQueryComplete) {
-            ((OnHttpQueryComplete) mHttpCallBack).onHttpAborted();
+            mHttpCallBack.onHttpAborted();
             Log.i("HttpAsyncQuery", "onCancelled::abort-callaed::" + mHttpCallBack);
             //
         } catch (Exception e) {
@@ -183,53 +186,53 @@ public final class HttpAsyncQuery extends
         }
     };
 
-    public static HttpAsyncQuery doAsyncGet(HttpQuery<?> http, String... urls) {
+    public static HttpAsyncQuery doAsyncGet(HttpQuery<?> http, String url) {
         return doAsyncQuery(http, TYPE_GET, DEFAULT_BUFFER_SIZE,
-                http.mOptions.encoding, null, urls);
+                http.mOptions.encoding, null, url);
     }
 
     public static HttpAsyncQuery doAsyncGet(HttpQuery<?> http,
-                                            HttpQueryCallBack callBack, String... urls) {
+                                            HttpQueryCallback callBack, String url) {
         return doAsyncQuery(http, TYPE_GET, DEFAULT_BUFFER_SIZE,
-                http.mOptions.encoding, callBack, urls);
+                http.mOptions.encoding, callBack, url);
     }
 
     public static HttpAsyncQuery doAsyncQuery(HttpQuery<?> http, int queryType,
-                                              int bufferSize, String encoding, HttpQueryCallBack callBack,
-                                              HttpDownloadHandler<?> processCallBack, String... urls) {
+                                              int bufferSize, String encoding, HttpQueryCallback callBack,
+                                              HttpDownloadHandler<?> processCallBack, String url) {
         return doAsyncQuery(http, queryType, bufferSize, encoding, callBack,
-                processCallBack, null, urls);
+                processCallBack, null, url);
     }
 
     public static HttpAsyncQuery doAsyncQuery(HttpQuery<?> http, int queryType,
-                                              int bufferSize, String encoding, HttpQueryCallBack callBack,
-                                              String... urls) {
+                                              int bufferSize, String encoding, HttpQueryCallback callBack,
+                                              String url) {
         return doAsyncQuery(http, queryType, bufferSize, encoding, callBack,
-                null, null, urls);
+                null, null, url);
     }
 
-    public static HttpAsyncQuery doAsyncPost(HttpQuery<?> http, String... urls) {
+    public static HttpAsyncQuery doAsyncPost(HttpQuery<?> http, String url) {
         return doAsyncQuery(http, TYPE_POST, DEFAULT_BUFFER_SIZE,
-                http.mOptions.encoding, null, urls);
+                http.mOptions.encoding, null, url);
     }
 
     public static HttpAsyncQuery doAsyncPost(HttpQuery<?> http,
-                                             HttpQueryCallBack callBack, String... urls) {
+                                             HttpQueryCallback callBack, String url) {
         return doAsyncQuery(http, TYPE_POST, DEFAULT_BUFFER_SIZE,
-                http.mOptions.encoding, callBack, urls);
+                http.mOptions.encoding, callBack, url);
     }
 
     public static HttpAsyncQuery doAsyncPost(HttpQuery<?> http,
-                                             HttpQueryCallBack callBack,
-                                             HttpUploadHandler<?> uploadCallback, String... urls) {
+                                             HttpQueryCallback callBack,
+                                             HttpUploadHandler<?> uploadCallback, String url) {
         HttpAsyncQuery query = doAsyncQuery(http, TYPE_POST,
-                DEFAULT_BUFFER_SIZE, http.mOptions.encoding, callBack, urls);
+                DEFAULT_BUFFER_SIZE, http.mOptions.encoding, callBack, url);
         query.setUploadHandler(uploadCallback);
         return query;
     }
 
     public static HttpAsyncQuery doAsyncPost(MultipartHttpQuery http,
-                                             int bufferSize, String encoding, HttpQueryCallBack callBack,
+                                             int bufferSize, String encoding, HttpQueryCallback callBack,
                                              HttpDownloadHandler<?> processCallBack,
                                              CancelListener cancelCallback,
                                              HttpUploadHandler<?> uploadCallBack, String... urls) {
@@ -255,7 +258,7 @@ public final class HttpAsyncQuery extends
     }
 
     public static HttpAsyncQuery doAsyncQuery(HttpQuery<?> http, int queryType,
-                                              int bufferSize, String encoding, HttpQueryCallBack callBack,
+                                              int bufferSize, String encoding, HttpQueryCallback callBack,
                                               HttpDownloadHandler<?> processCallBack,
                                               CancelListener cancelListener, String... urls) {
         HttpAsyncQuery query = new HttpAsyncQuery(http, callBack);
@@ -268,16 +271,21 @@ public final class HttpAsyncQuery extends
         return query;
     }
 
+    Executor mExecutor;
+
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     void executeURLs(String... urls) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, urls);
+            if (mExecutor == null) {
+                mExecutor = AsyncTask.THREAD_POOL_EXECUTOR;
+            }
+            executeOnExecutor(mExecutor, urls);
         } else {
             execute(urls);
         }
     }
 
-    public boolean isComplete() {
+    public boolean isCompleted() {
         if (isCancelled())
             return false;
         return this.getStatus().equals(AsyncTask.Status.FINISHED);
@@ -354,6 +362,10 @@ public final class HttpAsyncQuery extends
 
     public void pause() {
         executionController.pause();
+    }
+
+    public static class HttpQueryError extends RuntimeException {
+
     }
 
     public static class HttpQueryResponse {
@@ -507,16 +519,12 @@ public final class HttpAsyncQuery extends
         }
     }
 
-    public static interface HttpQueryCallBack {
-        public abstract void onHttRequestComplete(HttpQueryResponse result);
-    }
 
     public static interface CancelListener {
         public abstract void onCancelled(HttpAsyncQuery asyncQ);
     }
 
-    public static interface OnHttpQueryComplete extends HttpQueryCallBack {
-
+    public static interface HttpQueryCallback {
         public abstract void onHttpRequestSuccess(HttpQueryResponse result);
 
         public abstract void onHttpRequestError(HttpQueryResponse result,
@@ -527,31 +535,6 @@ public final class HttpAsyncQuery extends
         public abstract void onHttRequestComplete(HttpQueryResponse result);
 
         public abstract void onHttpAborted();
-    }
-
-    public static abstract class HttpCallBack implements OnHttpQueryComplete/*,
-            CancelListener*/ {
-        public final void onHttRequestComplete(HttpQueryResponse resp) {
-            if (resp.isAccepted()) {
-                if (resp.isSuccess()) {
-                    onHttpRequestSuccess(resp);
-                } else {
-                    onHttpRequestError(resp,
-                            new HttpQueryException(resp.getError()));
-                }
-            } else {
-                onHttpRequestFail(resp.getError());
-            }
-            onHttRequestCompleted(resp);
-        }
-
-//        @Override
-//        public final void onCancelled(HttpAsyncQuery asyncQ) {
-//            onHttpAborted();
-//        }
-
-        public abstract void onHttRequestCompleted(HttpQueryResponse result);
-
     }
 
     public boolean setCancelListener(CancelListener listener) {
@@ -566,7 +549,7 @@ public final class HttpAsyncQuery extends
         taskQueue.put(uniqueToken, this);
     }
 
-    public static HttpAsyncQuery getTask(HttpQueryCallBack callback) {
+    public static HttpAsyncQuery getTask(HttpQueryCallback callback) {
         return taskQueue.get(callback);
     }
 
@@ -645,7 +628,7 @@ public final class HttpAsyncQuery extends
         }
 
         @Override
-        public final void onProceedStreamUpload(MultipartHttpQuery httpQuery,
+        public final void onProceedStreamUpload(HttpQuery httpQuery,
                                                 OutputStream request, InputStream stream)
                 throws IOException {
             try {
@@ -665,14 +648,14 @@ public final class HttpAsyncQuery extends
         }
 
         public abstract void onProceedStreamUpload(
-                MultipartHttpQuery httpQuery, OutputStream request,
+                HttpQuery httpQuery, OutputStream request,
                 InputStream stream, HttpAsyncQuery asyc) throws IOException;
 
         public abstract void onUploadProgress(HttpAsyncQuery query,
                                               ProgressVar... vars);
     }
 
-    public static abstract class HttpDownloadHandler<ProgressVar> {
+    public static abstract class HttpDownloadHandler<ProgressVar> implements DownloadHandler {
         Handler handler;
         HttpAsyncQuery query;
 
@@ -733,8 +716,8 @@ public final class HttpAsyncQuery extends
                         }
                     });
                 }
+                throw new RuntimeException(e);
             }
-            return null;
         }
 
         public void publishProgression(final ProgressVar... vars) {
@@ -746,8 +729,6 @@ public final class HttpAsyncQuery extends
             });
         }
 
-        public abstract Object onBuildResponseBody(HttpURLConnection connexion,
-                                                   InputStream stream, HttpAsyncQuery query);
 
         public abstract void onDownloadProgress(HttpAsyncQuery query,
                                                 ProgressVar... vars);
@@ -760,9 +741,48 @@ public final class HttpAsyncQuery extends
         }
     };
 
-    public final static HttpAsyncQueryBuilder from(HttpQuery<?> http) {
-        return new HttpAsyncQueryBuilder(new HttpAsyncQuery(http));
+    /**
+     * use {@link AsyncHttp#from(HttpQuery)} instead.
+     *
+     * @param http
+     * @return
+     */
+    @Deprecated
+    public final static AsyncHttp from(HttpQuery<?> http) {
+        return new AsyncHttp(new HttpAsyncQuery(http));
     }
 
+    /**
+     * * use {@link AsyncHttp#fromDefaultHttp()} instead.
+     *
+     * @return
+     */
+    @Deprecated
+    public final static AsyncHttp fromDefaultHttp() {
+        SimpleHttpQuery http = new SimpleHttpQuery();
+        return new AsyncHttp(new HttpAsyncQuery(http));
+    }
+
+    /**
+     * * use {@link AsyncHttp#fromMultipartHttp()} instead.
+     *
+     * @return
+     */
+    @Deprecated
+    public final static AsyncHttp fromMultipartHttp() {
+        MultipartHttpQuery http = new MultipartHttpQuery();
+        return new AsyncHttp(new HttpAsyncQuery(http));
+    }
+
+    public class HttpPromise {
+        public final static int WHEN_ANAWAY = 0;
+        public final static int WHEN_SUCCED = 0;
+        public final static int WHEN_ERROR = 0;
+        public final static int WHEN_FAILED = 0;
+
+        public HttpPromise runWhen(Runnable runnable, int... when) {
+            return this;
+        }
+    }
 
 }

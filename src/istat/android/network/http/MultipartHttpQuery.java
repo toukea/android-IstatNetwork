@@ -1,8 +1,10 @@
 package istat.android.network.http;
 
+import android.text.TextUtils;
+
 import istat.android.network.http.interfaces.UpLoadHandler;
-import istat.android.network.util.ToolKits.Stream;
-import istat.android.network.util.ToolKits.Text;
+import istat.android.network.utils.ToolKits.Stream;
+import istat.android.network.utils.ToolKits.Text;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -127,20 +129,22 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         HttpURLConnection conn = prepareConnexion(url, method);
         conn.setDoOutput(true);
         conn.setRequestMethod(method);
-        String data = "";
-        if (parameterHandler != null) {
-            data = parameterHandler.onStringifyQueryParams(method, parameters,
-                    mOptions.encoding);
-        }
-        if (!Text.isEmpty(data)) {
-            url += (url.contains("?") ? "" : "?") + data;
-        }
+        String data;
+//        if (parameterHandler != null) {
+//            data = parameterHandler.onStringifyQueryParams(method, parameters,
+//                    mOptions.encoding);
+//        }
+//        if (!Text.isEmpty(data)) {
+//            url += (url.contains("?") ? "" : "?") + data;
+//        }
         if (!parameters.isEmpty() || !fileParts.isEmpty()) {
             String boundary = createBoundary();
 
             conn.addRequestProperty("Content-Type",
                     "multipart/form-data, boundary=" + boundary);
-            conn.addRequestProperty("User-Agent", "istat_java_agent");
+            if (TextUtils.isEmpty(conn.getRequestProperty("User-Agent"))) {
+                conn.addRequestProperty("User-Agent", "istat_java_agent");
+            }
             // int dataLength = 0; conn.addRequestProperty("Content-Length", ""
             // + dataLength);
             OutputStream os = conn.getOutputStream();
@@ -237,7 +241,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         return "===" + System.currentTimeMillis() + "===";
     }
 
-    public final MultipartHttpQuery addParams(HashMap<String, Object> nameValues) {
+    public final MultipartHttpQuery addParams(HashMap<?, ?> nameValues) {
         if (!nameValues.keySet().isEmpty()) {
             String[] table = new String[nameValues.size()];
             table = nameValues.keySet().toArray(table);
@@ -268,7 +272,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
     UpLoadHandler uploadHandler = new UpLoadHandler() {
         @Override
-        public void onProceedStreamUpload(MultipartHttpQuery httpQuery,
+        public void onProceedStreamUpload(HttpQuery httpQuery,
                                           OutputStream request, InputStream stream)
                 throws IOException {
             byte[] b = new byte[uploadBufferSize];

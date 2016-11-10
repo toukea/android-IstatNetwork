@@ -1,4 +1,4 @@
-package istat.android.network.util;
+package istat.android.network.utils;
 
 import istat.android.network.http.HttpAsyncQuery;
 import istat.android.network.http.HttpQuery;

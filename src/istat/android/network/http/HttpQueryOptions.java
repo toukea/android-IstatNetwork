@@ -1,6 +1,6 @@
 package istat.android.network.http;
 
-import istat.android.network.util.ToolKits.Stream;
+import istat.android.network.utils.ToolKits.Stream;
 
 public class HttpQueryOptions {
 	int connexionTimeOut = -1;
