@@ -1,6 +1,6 @@
 package istat.android.network.http;
 
-public class HttpQueryException extends RuntimeException {
+public class HttpQueryError extends RuntimeException {
     /**
      *
      */
@@ -11,15 +11,15 @@ public class HttpQueryException extends RuntimeException {
         return code;
     }
 
-    public HttpQueryException(int code, String message) {
+    public HttpQueryError(int code, String message) {
         super(message);
         this.code = code;
     }
 
-    public HttpQueryException(Exception e) {
+    public HttpQueryError(Exception e) {
         super(e);
-        if (e instanceof HttpQueryException) {
-            this.code = ((HttpQueryException) e).getCode();
+        if (e instanceof HttpQueryError) {
+            this.code = ((HttpQueryError) e).getCode();
         }
     }
 

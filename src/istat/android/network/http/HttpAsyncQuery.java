@@ -146,7 +146,7 @@ public final class HttpAsyncQuery extends
             if (resp.isSuccess()) {
                 mHttpCallBack.onHttpRequestSuccess(resp);
             } else {
-                mHttpCallBack.onHttpRequestError(resp, new HttpQueryException(resp.getError()));
+                mHttpCallBack.onHttpRequestError(resp, new istat.android.network.http.HttpQueryError(resp.getError()));
             }
         } else {
             mHttpCallBack.onHttpRequestFail(resp.getError());
@@ -423,7 +423,7 @@ public final class HttpAsyncQuery extends
             }
             if (e == null && !isSuccess() && !TextUtils.isEmpty(message)
                     && code > 0) {
-                this.error = new HttpQueryException(code, message);
+                this.error = new istat.android.network.http.HttpQueryError(code, message);
             }
         }
 
@@ -528,7 +528,7 @@ public final class HttpAsyncQuery extends
         public abstract void onHttpRequestSuccess(HttpQueryResponse result);
 
         public abstract void onHttpRequestError(HttpQueryResponse result,
-                                                HttpQueryException e);
+                                                istat.android.network.http.HttpQueryError e);
 
         public abstract void onHttpRequestFail(Exception e);
 
@@ -734,7 +734,7 @@ public final class HttpAsyncQuery extends
                                                 ProgressVar... vars);
     }
 
-    private StreamOperationTools.OperationController executionController = new StreamOperationTools.OperationController() {
+    public final StreamOperationTools.OperationController executionController = new StreamOperationTools.OperationController() {
         @Override
         public boolean isStopped() {
             return !isRunning();
