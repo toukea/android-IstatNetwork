@@ -12,7 +12,7 @@ import istat.android.network.http.MultipartHttpQuery;
  */
 
 public interface UpLoadHandler {
-    public void onProceedStreamUpload(HttpQuery httpQuery,
-                                      OutputStream request, InputStream stream)
+    void onProceedStreamUpload(HttpQuery httpQuery,
+                               OutputStream request, InputStream stream)
             throws IOException;
 }

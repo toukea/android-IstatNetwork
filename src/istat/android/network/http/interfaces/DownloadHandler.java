@@ -10,6 +10,6 @@ import istat.android.network.http.HttpAsyncQuery;
  */
 
 public interface DownloadHandler {
-    public Object onBuildResponseBody(HttpURLConnection connexion,
-                                      InputStream stream, HttpAsyncQuery query);
+    Object onBuildResponseBody(HttpURLConnection connexion,
+                               InputStream stream, HttpAsyncQuery query);
 }
