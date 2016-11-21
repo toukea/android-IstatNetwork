@@ -1,5 +1,6 @@
 package istat.android.network.http.interfaces;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 
@@ -11,5 +12,5 @@ import istat.android.network.http.HttpAsyncQuery;
 
 public interface DownloadHandler {
     Object onBuildResponseBody(HttpURLConnection connexion,
-                               InputStream stream, HttpAsyncQuery query);
+                               InputStream stream, HttpAsyncQuery query) throws Exception;
 }

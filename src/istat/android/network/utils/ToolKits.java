@@ -10,6 +10,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import android.app.ActivityManager;
@@ -61,17 +66,19 @@ public final class ToolKits {
 
         public static Boolean isActivityRunning(Context context,
                                                 Class<?> activityClass) {
-            ActivityManager activityManager = (ActivityManager) context
-                    .getSystemService(Context.ACTIVITY_SERVICE);
-            List<ActivityManager.RunningTaskInfo> tasks = activityManager
-                    .getRunningTasks(Integer.MAX_VALUE);
+            try {
+                ActivityManager activityManager = (ActivityManager) context
+                        .getSystemService(Context.ACTIVITY_SERVICE);
+                List<ActivityManager.RunningTaskInfo> tasks = activityManager
+                        .getRunningTasks(Integer.MAX_VALUE);
 
-            for (ActivityManager.RunningTaskInfo task : tasks) {
-                if (activityClass.getCanonicalName().equalsIgnoreCase(
-                        task.baseActivity.getClassName()))
-                    return true;
+                for (ActivityManager.RunningTaskInfo task : tasks) {
+                    if (activityClass.getCanonicalName().equalsIgnoreCase(
+                            task.baseActivity.getClassName()))
+                        return true;
+                }
+            } catch (Exception e) {
             }
-
             return false;
         }
 
@@ -384,6 +391,59 @@ public final class ToolKits {
             }
             return oss;
         }
+    }
+
+    public static final <T> HashMap<Object, Object> toHashMap(T obj, boolean privateAndSuper) {
+        return toHashMap(obj, privateAndSuper, new String[0]);
+    }
+
+    public static final <T> void filterPut(T obj, HashMap<Object, Object> map, String fieldName) {
+        filterPut(obj, map, fieldName, false);
+    }
+
+    public static final <T> void filterPut(T obj, HashMap<Object, Object> map, String fieldName, boolean nullable) {
+        try {
+            Field field = obj.getClass().getField(fieldName);
+            Object value = field.get(obj);
+            if (nullable || (value != null && !"".equals(value + ""))) {
+                map.put(fieldName, value);
+            }
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static final <T> HashMap<Object, Object> toHashMap(T obj,
+                                                              boolean privateAndSuper, String... ignores) {
+        List<String> ignoreList = Arrays.asList(ignores);
+        HashMap<Object, Object> map = new HashMap<Object, Object>();
+        List<Field> fields = new ArrayList<Field>();
+        if (privateAndSuper) {
+            fields.addAll(getAllFieldIncludingPrivateAndSuper(obj.getClass()));
+        } else {
+            Collections.addAll(fields, obj.getClass().getDeclaredFields());
+        }
+        for (Field field : fields) {
+            if (!ignoreList.contains(field.getName())) {
+                try {
+                    map.put(field.getName(), field.get(obj));
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return map;
+    }
+
+    public static List<Field> getAllFieldIncludingPrivateAndSuper(Class<?> cLass) {
+        List<Field> fields = new ArrayList<Field>();
+        while (!cLass.equals(Object.class)) {
+            Collections.addAll(fields, cLass.getDeclaredFields());
+            cLass = cLass.getSuperclass();
+        }
+        return fields;
     }
 
 }

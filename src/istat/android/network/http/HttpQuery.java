@@ -166,7 +166,10 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             table = nameValues.keySet().toArray(table);
             for (String tmp : table) {
                 if (tmp != null) {
-                    addParam(tmp, nameValues.get(tmp).toString());
+                    Object obj = nameValues.get(tmp);
+                    if (obj != null) {
+                        addParam(tmp, obj.toString());
+                    }
                 }
             }
         }
@@ -204,7 +207,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     protected synchronized InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
             throws IOException {
-        Log.d("HttpQuery", "Method=" + method + ", bodyData=" + bodyData + ", holdError=" + holdError + ", url=" + url);
+        Log.d("HttpQuery", "Method=" + method + ", bodyData=" + bodyData + ", holdError=" + holdError + ", url=" + getURL(url));
         long length = 0;
         String data = "";
         if (!bodyData) {

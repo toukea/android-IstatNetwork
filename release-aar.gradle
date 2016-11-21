@@ -34,16 +34,26 @@ uploadArchives {
     }
 }
 
-task zipRelease(type: Zip) {
-    from localReleaseDest
-    destinationDir buildDir
-    archiveName "release-${version}.zip"
-}
-
 task generateRelease << {
     println "Release ${version} can be found at ${localReleaseDest}/"
     println "Release ${version} zipped can be found ${buildDir}/release-${version}.zip"
 }
+//task zipRelease(type: Zip) {
+//    from localReleaseDest
+//    destinationDir buildDir
+//    archiveName "release-${version}.zip"
+//}
+//task clearJar(type: Delete) {
+//    delete "${buildDir}/dist/${artifactId}.jar"
+//}
+//
+//task makeJar(type: Copy) {
+//    from('build/intermediates/bundles/release/')
+//    into("${buildDir}/dist/")
+//    include('classes.jar')
+//    rename('classes.jar', "${artifactId}.jar")
+//}
+//makeJar.dependsOn(clearJar, build)
 
 generateRelease.dependsOn(uploadArchives)
 generateRelease.dependsOn(zipRelease)
