@@ -16,7 +16,7 @@ And Android Library to make Http Query Easy.
         http.addParam("parma1","value1");
         http.addParam("param2","value2");
         //build and call your Async Http Query. for example a GET
-        HttpAsyncQuery.from(http)
+        AsyncHttp.from(http)
                 .useEncoding("UTF-8")//optional default =UTF-8
                 .useBufferSize(1024)//optional default=1024
                 .useDownloader(downloader)//optional default download plain/text.

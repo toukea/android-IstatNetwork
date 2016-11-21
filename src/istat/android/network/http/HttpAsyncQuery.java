@@ -142,16 +142,20 @@ public final class HttpAsyncQuery extends
     }
 
     private void dispatchQueryResponse(HttpQueryResponse resp) {
-        if (resp.isAccepted()) {
-            if (resp.isSuccess()) {
-                mHttpCallBack.onHttpRequestSuccess(resp);
+        try {
+            if (resp.isAccepted()) {
+                if (resp.isSuccess()) {
+                    mHttpCallBack.onHttpRequestSuccess(resp);
+                } else {
+                    mHttpCallBack.onHttpRequestError(resp, new istat.android.network.http.HttpQueryError(resp.getError()));
+                }
             } else {
-                mHttpCallBack.onHttpRequestError(resp, new HttpQueryException(resp.getError()));
+                mHttpCallBack.onHttpRequestFail(resp.getError());
             }
-        } else {
-            mHttpCallBack.onHttpRequestFail(resp.getError());
+            mHttpCallBack.onHttRequestComplete(resp);
+        } catch (Exception e) {
+            mHttpCallBack.onHttpRequestFail(e);
         }
-        mHttpCallBack.onHttRequestComplete(resp);
     }
 
     @Override
@@ -343,11 +347,31 @@ public final class HttpAsyncQuery extends
 
     };
 
-    public boolean setDownloadHandler(HttpDownloadHandler<?> callBack) {
-        if (callBack == null || this.downloadHandler == callBack) {
+    public boolean setDownloadHandler(final DownloadHandler downloader) {
+        HttpAsyncQuery.HttpDownloadHandler<Integer> downloadHandler = new HttpAsyncQuery.HttpDownloadHandler<Integer>() {
+            @Override
+            public void onDownloadProgress(HttpAsyncQuery query, Integer... integers) {
+
+            }
+
+            @Override
+            public Object onBuildResponseBody(HttpURLConnection connexion, InputStream stream, HttpAsyncQuery query) throws Exception {
+                return downloader.onBuildResponseBody(connexion, stream, query);
+            }
+
+            @Override
+            protected void onProcessFail(Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+        return setDownloadHandler(downloadHandler);
+    }
+
+    public boolean setDownloadHandler(HttpDownloadHandler<?> downloader) {
+        if (downloader == null || this.downloadHandler == downloader) {
             return false;
         }
-        this.downloadHandler = callBack;
+        this.downloadHandler = downloader;
         this.downloadHandler.query = this;
         return true;
     }
@@ -423,7 +447,7 @@ public final class HttpAsyncQuery extends
             }
             if (e == null && !isSuccess() && !TextUtils.isEmpty(message)
                     && code > 0) {
-                this.error = new HttpQueryException(code, message);
+                this.error = new istat.android.network.http.HttpQueryError(code, message, body);
             }
         }
 
@@ -492,6 +516,17 @@ public final class HttpAsyncQuery extends
             }
         }
 
+        public <T> T optBody() {
+            if (body == null) {
+                return null;
+            }
+            try {
+                return (T) body;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
         public String getBodyAsString() {
             if (body == null)
                 return null;
@@ -525,16 +560,16 @@ public final class HttpAsyncQuery extends
     }
 
     public static interface HttpQueryCallback {
-        public abstract void onHttpRequestSuccess(HttpQueryResponse result);
+        abstract void onHttpRequestSuccess(HttpQueryResponse result);
 
-        public abstract void onHttpRequestError(HttpQueryResponse result,
-                                                HttpQueryException e);
+        abstract void onHttpRequestError(HttpQueryResponse result,
+                                         istat.android.network.http.HttpQueryError e);
 
-        public abstract void onHttpRequestFail(Exception e);
+        abstract void onHttpRequestFail(Exception e);
 
-        public abstract void onHttRequestComplete(HttpQueryResponse result);
+        abstract void onHttRequestComplete(HttpQueryResponse result);
 
-        public abstract void onHttpAborted();
+        abstract void onHttpAborted();
     }
 
     public boolean setCancelListener(CancelListener listener) {
@@ -702,7 +737,7 @@ public final class HttpAsyncQuery extends
 
         }
 
-        Object buildResponseBody(HttpURLConnection connexion, InputStream stream) {
+        Object buildResponseBody(HttpURLConnection connexion, InputStream stream) throws Exception {
             try {
                 return onBuildResponseBody(connexion, stream, query);
             } catch (final Exception e) {
@@ -734,7 +769,7 @@ public final class HttpAsyncQuery extends
                                                 ProgressVar... vars);
     }
 
-    private StreamOperationTools.OperationController executionController = new StreamOperationTools.OperationController() {
+    public final StreamOperationTools.OperationController executionController = new StreamOperationTools.OperationController() {
         @Override
         public boolean isStopped() {
             return !isRunning();
