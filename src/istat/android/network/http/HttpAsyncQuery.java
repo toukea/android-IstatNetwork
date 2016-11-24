@@ -147,7 +147,9 @@ public final class HttpAsyncQuery extends
                 if (resp.isSuccess()) {
                     mHttpCallBack.onHttpRequestSuccess(resp);
                 } else {
-                    mHttpCallBack.onHttpRequestError(resp, new istat.android.network.http.HttpQueryError(resp.getError()));
+                    HttpQueryError error = new HttpQueryError(resp.getError());
+                    resp.error = error;
+                    mHttpCallBack.onHttpRequestError(resp, error);
                 }
             } else {
                 mHttpCallBack.onHttpRequestFail(resp.getError());
@@ -386,10 +388,6 @@ public final class HttpAsyncQuery extends
 
     public void pause() {
         executionController.pause();
-    }
-
-    public static class HttpQueryError extends RuntimeException {
-
     }
 
     public static class HttpQueryResponse {
