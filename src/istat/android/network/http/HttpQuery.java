@@ -20,6 +20,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
 import istat.android.network.http.interfaces.HttpSendable;
+import istat.android.network.utils.ToolKits;
 import istat.android.network.utils.ToolKits.Text;
 
 import org.apache.http.message.BasicNameValuePair;
@@ -173,6 +174,26 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
                 }
             }
         }
+        return (HttpQ) this;
+    }
+
+    public HttpQ addParams(Object container) {
+        ToolKits.toHashMap(container, true, false, false);
+        return (HttpQ) this;
+    }
+
+    public HttpQ addParams(Object container, boolean privateAndSuper) {
+        ToolKits.toHashMap(container, false, privateAndSuper, false);
+        return (HttpQ) this;
+    }
+
+    public HttpQ addParams(Object container, String... ignoredFields) {
+        ToolKits.toHashMap(container, true, false, false, ignoredFields);
+        return (HttpQ) this;
+    }
+
+    public HttpQ addParams(Object container, boolean privateAndSuper, String... ignoredFields) {
+        ToolKits.toHashMap(container, privateAndSuper, false, false, ignoredFields);
         return (HttpQ) this;
     }
 

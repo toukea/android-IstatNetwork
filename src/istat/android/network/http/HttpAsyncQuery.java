@@ -818,4 +818,10 @@ public final class HttpAsyncQuery extends
         }
     }
 
+    public boolean dismissCallback() {
+        boolean dismiss = mHttpCallBack != null;
+        mHttpCallBack = null;
+        return dismiss;
+    }
+
 }

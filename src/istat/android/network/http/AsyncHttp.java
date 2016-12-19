@@ -19,7 +19,17 @@ public final class AsyncHttp {
         return new AsyncHttp(asycQ);
     }
 
+    /**
+     * deprecated, use {@link #fromSimpleHttp()} instead.
+     *
+     * @return
+     */
+    @Deprecated
     public final static AsyncHttp fromDefaultHttp() {
+        return fromSimpleHttp();
+    }
+
+    public final static AsyncHttp fromSimpleHttp() {
         SimpleHttpQuery http = new SimpleHttpQuery();
         return new AsyncHttp(new HttpAsyncQuery(http));
     }

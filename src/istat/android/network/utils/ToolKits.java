@@ -393,8 +393,8 @@ public final class ToolKits {
         }
     }
 
-    public static final <T> HashMap<Object, Object> toHashMap(T obj, boolean privateAndSuper) {
-        return toHashMap(obj, privateAndSuper, new String[0]);
+    public static final <T> HashMap<Object, Object> toHashMap(T obj, boolean privateAndSuper, boolean acceptStatic, boolean nullable) {
+        return toHashMap(obj, privateAndSuper, acceptStatic, nullable, new String[0]);
     }
 
     public static final <T> void filterPut(T obj, HashMap<Object, Object> map, String fieldName) {
@@ -403,9 +403,10 @@ public final class ToolKits {
 
     public static final <T> void filterPut(T obj, HashMap<Object, Object> map, String fieldName, boolean nullable) {
         try {
-            Field field = obj.getClass().getField(fieldName);
+            Field field = obj.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
             Object value = field.get(obj);
-            if (nullable || (value != null && !"".equals(value + ""))) {
+            if (nullable || value != null) {
                 map.put(fieldName, value);
             }
         } catch (NoSuchFieldException e) {
@@ -416,19 +417,29 @@ public final class ToolKits {
     }
 
     public static final <T> HashMap<Object, Object> toHashMap(T obj,
-                                                              boolean privateAndSuper, String... ignores) {
+                                                              boolean privateAndSuper,
+                                                              boolean acceptStatic,
+                                                              boolean nullable,
+                                                              String... ignores) {
         List<String> ignoreList = Arrays.asList(ignores);
         HashMap<Object, Object> map = new HashMap<Object, Object>();
         List<Field> fields = new ArrayList<Field>();
+        Class<?> clazz = obj.getClass();
         if (privateAndSuper) {
-            fields.addAll(getAllFieldIncludingPrivateAndSuper(obj.getClass()));
+            fields.addAll(getAllFieldIncludingPrivateAndSuper(clazz, acceptStatic));
         } else {
-            Collections.addAll(fields, obj.getClass().getDeclaredFields());
+            Collections.addAll(fields, clazz.getDeclaredFields());
         }
-        for (Field field : fields) {
-            if (!ignoreList.contains(field.getName())) {
+        for (int i = 0; i < fields.size(); i++) {
+            Field field = fields.get(i);
+            String name = field.getName();
+            if (!ignoreList.contains(name)) {
                 try {
-                    map.put(field.getName(), field.get(obj));
+                    field.setAccessible(true);
+                    Object value = field.get(obj);
+                    if (nullable || value != null) {
+                        map.put(name, value);
+                    }
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
@@ -437,10 +448,15 @@ public final class ToolKits {
         return map;
     }
 
-    public static List<Field> getAllFieldIncludingPrivateAndSuper(Class<?> cLass) {
+    public static List<Field> getAllFieldIncludingPrivateAndSuper(Class<?> cLass, boolean acceptStatic) {
         List<Field> fields = new ArrayList<Field>();
         while (!cLass.equals(Object.class)) {
-            Collections.addAll(fields, cLass.getDeclaredFields());
+            for (Field field : cLass.getDeclaredFields()) {
+                if (field != null && (field.toString().contains("static") && !acceptStatic)) {
+                    continue;
+                }
+                fields.add(field);
+            }
             cLass = cLass.getSuperclass();
         }
         return fields;
