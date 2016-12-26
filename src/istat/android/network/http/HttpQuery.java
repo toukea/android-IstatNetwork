@@ -24,6 +24,7 @@ import istat.android.network.utils.ToolKits;
 import istat.android.network.utils.ToolKits.Text;
 
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
 
 import android.text.TextUtils;
 import android.util.Log;
@@ -585,11 +586,13 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             throws IOException {
         int eval = 0;
         InputStream stream = null;
+        int responseCode = 500;
         if (conn != null) {
+            responseCode = conn.getResponseCode();
             eval = conn.getContentLength();
         }
 
-        if (HttpQueryResponse.isSuccessCode(conn.getResponseCode())) {
+        if (HttpQueryResponse.isSuccessCode(responseCode)) {
             stream = conn.getInputStream();
         } else if (handleError) {
             stream = conn.getErrorStream();

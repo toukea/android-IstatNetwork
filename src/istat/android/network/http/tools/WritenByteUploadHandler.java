@@ -41,7 +41,7 @@ public class WritenByteUploadHandler extends HttpUploadHandler<Integer> {
         int uploadSize = stream.available();
         while ((write = stream.read(b)) > -1) {
             if (httpQuery.isAborted() || !httpQuery.hasRunningRequest()) {
-                Log.i("Uploader", "onProceedStreamUpload::Aborted");
+                Log.i("Uploader", "onStreamUpload::Aborted");
                 stream.close();
                 return;
             }
