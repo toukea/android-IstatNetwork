@@ -487,8 +487,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     public boolean hasRunningRequest() {
-        Log.i("HttpQuery", "hasRunningRequest::currentInputStream=" + currentInputStream);
-        Log.i("HttpQuery", "hasRunningRequest::currentOutputStream=" + currentOutputStream);
         return /* querying && */currentConnection != null && (currentInputStream != null || currentOutputStream != null);
     }
 
