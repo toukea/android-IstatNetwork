@@ -8,10 +8,12 @@ import istat.android.network.utils.ToolKits.Stream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URLConnection;
 import java.util.HashMap;
 
 /*
@@ -128,7 +130,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         conn.setRequestMethod(method);
         String data;
         if (!fileParts.isEmpty()) {
-            conn.setChunkedStreamingMode(1024);
+            conn.setChunkedStreamingMode(mOptions.chunkedStreamingMode);
         }
         if (!parameters.isEmpty() || !fileParts.isEmpty()) {
             String boundary = createBoundary();
@@ -136,10 +138,8 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
             conn.addRequestProperty("Content-Type",
                     "multipart/form-data, boundary=" + boundary);
             if (TextUtils.isEmpty(conn.getRequestProperty("User-Agent"))) {
-                conn.addRequestProperty("User-Agent", "istat_java_agent");
+                conn.addRequestProperty("User-Agent", "istat.android.network.V2.4.0");
             }
-            // int dataLength = 0; conn.addRequestProperty("Content-Length", ""
-            // + dataLength);
             OutputStream os = conn.getOutputStream();
             DataOutputStream request = new DataOutputStream(os);
             this.currentOutputStream = request;
@@ -156,6 +156,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
             try {
                 request.flush();
                 request.close();
+                os.flush();
                 os.close();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -198,7 +199,8 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         if (!params.keySet().isEmpty()) {
             String[] table = new String[params.size()];
             table = params.keySet().toArray(table);
-            for (String tmp : table) {
+            for (int i = 0; i < table.length; i++) {
+                String tmp = table[i];
                 if (isAborted()) {
                     currentConnection.disconnect();
                     break;
@@ -206,9 +208,14 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
                 if (tmp != null) {
                     File file = params.get(tmp);
                     String data = boundary;
+                    String contentType = URLConnection
+                            .guessContentTypeFromName(file.getAbsolutePath());
+                    if (TextUtils.isEmpty(contentType)) {
+                        contentType = "application/octets-stream";
+                    }
                     data += "Content-Disposition: form-data; name=\"" + tmp
                             + "\"; filename=\"" + file.getName() + "\"\n";
-                    data += "Content-Type: application/data\n";
+                    data += "Content-Type: " + contentType + "\n";
                     data += "Content-Transfer-Encoding: binary\n\n";
                     request.writeBytes(data);
                     InputStream stream = new FileInputStream(file);
@@ -218,9 +225,12 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
                         uHandler.onStreamUpload(this, stream, request);
                     }
                     request.writeBytes("\n");
+                    if (i < table.length - 1) {
+                        request.writeBytes(boundary);
+                    }
                 }
             }
-            request.writeBytes(boundary);
+
         }
     }
 
