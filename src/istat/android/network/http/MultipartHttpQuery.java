@@ -8,7 +8,6 @@ import istat.android.network.utils.ToolKits.Stream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -222,7 +221,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
                     UpLoadHandler uHandler = getUploadHandler();
                     if (uHandler != null) {
                         currentInputStream = stream;
-                        uHandler.onStreamUpload(this, stream, request);
+                        uHandler.onUploadStream(this, stream, request);
                     }
                     request.writeBytes("\n");
                     if (i < table.length - 1) {
@@ -277,7 +276,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
     UpLoadHandler uploadHandler = new UpLoadHandler() {
         @Override
-        public void onStreamUpload(HttpQuery httpQuery,
+        public void onUploadStream(HttpQuery httpQuery,
                                    InputStream stream, OutputStream request)
                 throws IOException {
             byte[] b = new byte[uploadBufferSize];

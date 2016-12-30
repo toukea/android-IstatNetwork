@@ -661,7 +661,7 @@ public final class HttpAsyncQuery extends
         }
 
         @Override
-        public final void onStreamUpload(HttpQuery httpQuery,
+        public final void onUploadStream(HttpQuery httpQuery,
                                          InputStream stream, OutputStream request)
                 throws IOException {
             try {
