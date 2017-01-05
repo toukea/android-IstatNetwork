@@ -145,18 +145,18 @@ public final class HttpAsyncQuery extends
         try {
             if (resp.isAccepted()) {
                 if (resp.isSuccess()) {
-                    mHttpCallBack.onHttpRequestSuccess(resp);
+                    mHttpCallBack.onHttpSuccess(resp);
                 } else {
                     HttpQueryError error = new HttpQueryError(resp.getError());
                     resp.error = error;
-                    mHttpCallBack.onHttpRequestError(resp, error);
+                    mHttpCallBack.onHttpError(resp, error);
                 }
             } else {
-                mHttpCallBack.onHttpRequestFail(resp.getError());
+                mHttpCallBack.onHttpFail(resp.getError());
             }
-            mHttpCallBack.onHttRequestComplete(resp);
+            mHttpCallBack.onHttComplete(resp);
         } catch (Exception e) {
-            mHttpCallBack.onHttpRequestFail(e);
+            mHttpCallBack.onHttpFail(e);
         }
     }
 
@@ -558,14 +558,14 @@ public final class HttpAsyncQuery extends
     }
 
     public static interface HttpQueryCallback {
-        abstract void onHttpRequestSuccess(HttpQueryResponse result);
+        abstract void onHttpSuccess(HttpQueryResponse result);
 
-        abstract void onHttpRequestError(HttpQueryResponse result,
-                                         istat.android.network.http.HttpQueryError e);
+        abstract void onHttpError(HttpQueryResponse result,
+                                  istat.android.network.http.HttpQueryError e);
 
-        abstract void onHttpRequestFail(Exception e);
+        abstract void onHttpFail(Exception e);
 
-        abstract void onHttRequestComplete(HttpQueryResponse result);
+        abstract void onHttComplete(HttpQueryResponse result);
 
         abstract void onHttpAborted();
     }
