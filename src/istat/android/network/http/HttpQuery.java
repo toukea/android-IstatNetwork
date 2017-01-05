@@ -24,7 +24,6 @@ import istat.android.network.utils.ToolKits;
 import istat.android.network.utils.ToolKits.Text;
 
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
 
 import android.text.TextUtils;
 import android.util.Log;
@@ -346,7 +345,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             public String onStringifyQueryParams(String method,
                                                  HashMap<String, String> params, String encoding) {
                 try {
-                    return createStringularQueryableData(params, encoding);
+                    return createStringularQueryAbleData(params, encoding);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -464,7 +463,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     public String getURL(String address) throws IOException {
         // --------------------------
-        String paramString = createStringularQueryableData(parameters,
+        String paramString = createStringularQueryAbleData(parameters,
                 mOptions.encoding);
         return address
                 + (paramString == null || paramString.equals("") ? "" : "?"
@@ -519,7 +518,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         this.mOptions.autoClearRequestParams = autoClearParams;
     }
 
-    public static String createStringularQueryableData(
+    public static String createStringularQueryAbleData(
             HashMap<String, String> params, String encoding)
             throws UnsupportedEncodingException {
         StringBuilder result = new StringBuilder();

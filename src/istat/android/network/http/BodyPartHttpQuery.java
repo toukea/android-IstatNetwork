@@ -128,7 +128,7 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
         public void onUploadStream(HttpQuery httpQuery,
                                    InputStream stream, OutputStream request)
                 throws IOException {
-            byte[] b = new byte[1024];
+            byte[] b = new byte[mOptions.bufferSize];
             int read;
             while ((read = stream.read(b)) > -1) {
                 boolean isAborted = httpQuery.isAborted();
