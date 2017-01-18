@@ -23,3 +23,31 @@ And Android Library to make Http Query Easy.
             .setQueryCallBack(callback)//add a callback to call when request completed
             .doGet("http://www.google.com");
             //.doGet(callback, "http://www.google.com"); //make a GET Request with a specific callback
+```
+
+Usage
+-----
+Just add the dependency to your `build.gradle`:
+
+```groovy
+dependencies {
+   compile 'istat.android.network.http:istat-network:2.4.0'
+}
+```
+
+minSdkVersion = 10
+------------------
+Library is compatible with Android 2.3 and newer.
+
+Download
+--------
+add the dependency to your pom.xml:
+
+```xml
+<dependency>
+  <groupId>istat.android.network.http</groupId>
+  <artifactId>istat-network</artifactId>
+  <version>2.4.0</version>
+  <type>pom</type>
+</dependency>
+```
