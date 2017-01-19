@@ -139,6 +139,24 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return (HttpQ) this;
     }
 
+    @SuppressWarnings("unchecked")
+    public HttpQ setContentType(String name) {
+        addHeader("Content-Type", name);
+        return (HttpQ) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public HttpQ setAccept(String name) {
+        addHeader("Accept", name);
+        return (HttpQ) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public HttpQ setUserAgent(String name) {
+        addHeader("User-Agent", name);
+        return (HttpQ) this;
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     public HttpQ addSendable(HttpSendable sendable) {
         sendable.onFillHttpQuery(this);
@@ -446,7 +464,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     public InputStream doDelete(String url) throws IOException {
-        return doQuery(url, "DELETE", true, true);
+        return doQuery(url, "DELETE", false, true);
     }
 
     public InputStream doCopy(String url) throws IOException {
