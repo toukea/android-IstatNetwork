@@ -196,23 +196,19 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     public HttpQ addParams(Object container) {
-        ToolKits.toHashMap(container, true, false, false);
-        return (HttpQ) this;
+        return addParams(ToolKits.toHashMap(container, true, false, false));
     }
 
     public HttpQ addParams(Object container, boolean privateAndSuper) {
-        ToolKits.toHashMap(container, false, privateAndSuper, false);
-        return (HttpQ) this;
+        return addParams(ToolKits.toHashMap(container, false, privateAndSuper, false));
     }
 
     public HttpQ addParams(Object container, String... ignoredFields) {
-        ToolKits.toHashMap(container, true, false, false, ignoredFields);
-        return (HttpQ) this;
+        return addParams(ToolKits.toHashMap(container, true, false, false, ignoredFields));
     }
 
     public HttpQ addParams(Object container, boolean privateAndSuper, String... ignoredFields) {
-        ToolKits.toHashMap(container, privateAndSuper, false, false, ignoredFields);
-        return (HttpQ) this;
+        return addParams(ToolKits.toHashMap(container, privateAndSuper, false, false, ignoredFields));
     }
 
     public void removeParam(String name) {

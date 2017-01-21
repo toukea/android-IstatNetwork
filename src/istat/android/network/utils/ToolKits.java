@@ -393,7 +393,7 @@ public final class ToolKits {
         }
     }
 
-    public static final <T> HashMap<Object, Object> toHashMap(T obj, boolean privateAndSuper, boolean acceptStatic, boolean nullable) {
+    public static final <T> HashMap<String, Object> toHashMap(T obj, boolean privateAndSuper, boolean acceptStatic, boolean nullable) {
         return toHashMap(obj, privateAndSuper, acceptStatic, nullable, new String[0]);
     }
 
@@ -416,13 +416,13 @@ public final class ToolKits {
         }
     }
 
-    public static final <T> HashMap<Object, Object> toHashMap(T obj,
+    public static final <T> HashMap<String, Object> toHashMap(T obj,
                                                               boolean privateAndSuper,
                                                               boolean acceptStatic,
                                                               boolean nullable,
                                                               String... ignores) {
         List<String> ignoreList = Arrays.asList(ignores);
-        HashMap<Object, Object> map = new HashMap<Object, Object>();
+        HashMap<String, Object> map = new HashMap<String, Object>();
         List<Field> fields = new ArrayList<Field>();
         Class<?> clazz = obj.getClass();
         if (privateAndSuper) {

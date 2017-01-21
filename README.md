@@ -6,12 +6,19 @@ And Android Library to make Http Query Easy.
     HttpAsyncQuery.HttpQueryCallBack callback = new HttpAsyncQuery.HttpQueryCallBack (){
     //Your own implementation
     };
-    //create your downloader. optional, (it exist default one). it allow to specify how the queryer would read and build body response. default read and return plain text
+    /*
+        create your downloader. optional, (it exist default one).
+        It allow to specify how the queryer would read and build body response.
+        Default read and return plain text
+     */
     HttpAsyncQuery.HttpDownloadHandler<Integer> downloader = new HttpAsyncQuery.HttpDownloadHandler<Integer> (){
     //Your own implementation
     };
-    //create an Http Query
-    SimpleHttpQuery http = new SimpleHttpQuery();//can also use MutipartHttpQuery or your own HttpQuery<?> child instance
+    /*
+        create an Http Query
+        can also use MutipartHttpQuery or your own HttpQuery<?> child instance
+     */
+    SimpleHttpQuery http = new SimpleHttpQuery();
     //add http parm to your http query
     http.addParam("parma1","value1");
     http.addParam("param2","value2");
