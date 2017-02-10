@@ -49,7 +49,7 @@ import android.util.Log;
  */
 public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     protected HttpQueryOptions mOptions = new HttpQueryOptions();
-    protected HashMap<String, String> urlParameters = new HashMap<String, String>();
+    protected List<String> urlPramNames = new ArrayList<String>();
     protected HashMap<String, String> parameters = new HashMap<String, String>();
     protected HashMap<String, String> headers = new HashMap<String, String>();
     private volatile boolean aborted = false;
@@ -124,9 +124,18 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     public HttpQ addParam(String Name, String Value, boolean urlParam) {
         addParam(Name, Value);
         if (urlParam) {
-            urlParameters.put(Name, Value);
+            urlPramNames.add(Name);
         }
         return (HttpQ) this;
+    }
+
+    private HashMap<String, String> getUrlParameters() {
+        HashMap<String, String> urlParameters = new HashMap<String, String>();
+        for (String tmp : urlPramNames) {
+            if (parameters.containsKey(tmp))
+                urlParameters.put(tmp, parameters.get(tmp));
+        }
+        return urlParameters;
     }
 
     /**
@@ -234,7 +243,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     public void removeParam(String name) {
         parameters.remove(name);
-        urlParameters.remove(name);
+        urlPramNames.remove(name);
     }
 
     public void removeHeder(String name) {
@@ -244,7 +253,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     @SuppressWarnings("unchecked")
     public HttpQ clearParams() {
         parameters.clear();
-        urlParameters.clear();
+        urlPramNames.clear();
         return (HttpQ) this;
 
     }
@@ -268,14 +277,15 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         Log.d("HttpQuery", "Method=" + method + ", bodyData=" + bodyData + ", holdError=" + holdError + ", url=" + getURL(url));
         long length = 0;
         String data = "";
-        if (!bodyData || !urlParameters.isEmpty()) {
+        if (!bodyData || !urlPramNames.isEmpty()) {
+            HashMap<String, String> urlParameters = getUrlParameters();
             HashMap<String, String> parameters = new HashMap<String, String>();
-            if (!urlParameters.isEmpty()) {//hasUrl param enable
-                parameters.putAll(urlParameters);
-            }
             if (!bodyData) { //pas de body Data
                 parameters.putAll(this.parameters);
+            } else if (!urlParameters.isEmpty()) {//hasUrl param enable
+                parameters.putAll(urlParameters);
             }
+
             if (parameterHandler != null) {
                 data = parameterHandler.onStringifyQueryParams(method, parameters,
                         mOptions.encoding);
