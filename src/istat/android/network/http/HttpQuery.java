@@ -49,6 +49,7 @@ import android.util.Log;
  */
 public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     protected HttpQueryOptions mOptions = new HttpQueryOptions();
+    protected HashMap<String, String> urlParameters = new HashMap<String, String>();
     protected HashMap<String, String> parameters = new HashMap<String, String>();
     protected HashMap<String, String> headers = new HashMap<String, String>();
     private volatile boolean aborted = false;
@@ -68,7 +69,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         }
 
     };
-    static HashMap<String, List<Long>> historics = new HashMap<String, List<Long>>() {
+    static HashMap<String, List<Long>> histories = new HashMap<String, List<Long>>() {
 
         /**
          *
@@ -119,6 +120,26 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         parameters.put(Name, Value);
         return (HttpQ) this;
     }
+
+    public HttpQ addParam(String Name, String Value, boolean urlParam) {
+        addParam(Name, Value);
+        if (urlParam) {
+            urlParameters.put(Name, Value);
+        }
+        return (HttpQ) this;
+    }
+
+    /**
+     * add param as URL parameter. eg: ?name=hello&pseudo=world
+     *
+     * @param Name
+     * @param Value
+     * @return
+     */
+    public HttpQ addURLParam(String Name, String Value) {
+        return addParam(Name, Value, true);
+    }
+
 
     @SuppressWarnings("unchecked")
     public HttpQ addParam(String Name, String... values) {
@@ -213,6 +234,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     public void removeParam(String name) {
         parameters.remove(name);
+        urlParameters.remove(name);
     }
 
     public void removeHeder(String name) {
@@ -222,6 +244,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     @SuppressWarnings("unchecked")
     public HttpQ clearParams() {
         parameters.clear();
+        urlParameters.clear();
         return (HttpQ) this;
 
     }
@@ -245,7 +268,14 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         Log.d("HttpQuery", "Method=" + method + ", bodyData=" + bodyData + ", holdError=" + holdError + ", url=" + getURL(url));
         long length = 0;
         String data = "";
-        if (!bodyData) {
+        if (!bodyData || !urlParameters.isEmpty()) {
+            HashMap<String, String> parameters = new HashMap<String, String>();
+            if (!urlParameters.isEmpty()) {//hasUrl param enable
+                parameters.putAll(urlParameters);
+            }
+            if (!bodyData) { //pas de body Data
+                parameters.putAll(this.parameters);
+            }
             if (parameterHandler != null) {
                 data = parameterHandler.onStringifyQueryParams(method, parameters,
                         mOptions.encoding);
@@ -572,7 +602,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     void addToInputHistoric(long input) {
         historic.get(TAG_INPUT).add(input);
-        historics.get(TAG_INPUT).add(input);
+        histories.get(TAG_INPUT).add(input);
         Long elapsed = System.currentTimeMillis() - lastConnectionTime;
         timeHistoric.get(TAG_INPUT).add(elapsed);
         timeHistories.get(TAG_INPUT).add(elapsed);
@@ -580,7 +610,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     void addToOutputHistoric(long input) {
         historic.get(TAG_OUTPUT).add(input);
-        historics.get(TAG_OUTPUT).add(input);
+        histories.get(TAG_OUTPUT).add(input);
         Long elapsed = System.currentTimeMillis() - lastConnectionTime;
         timeHistoric.get(TAG_OUTPUT).add(elapsed);
         timeHistories.get(TAG_OUTPUT).add(elapsed);
@@ -722,16 +752,16 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     public static List<Long> getOutputContentLegthHistoric() {
-        return historics.get(TAG_OUTPUT);
+        return histories.get(TAG_OUTPUT);
     }
 
     public static List<Long> getInputContentLegthHistoric() {
-        return historics.get(TAG_INPUT);
+        return histories.get(TAG_INPUT);
     }
 
     public static long getOutputContentLegth() {
         long out = 0;
-        for (long i : historics.get(TAG_OUTPUT)) {
+        for (long i : histories.get(TAG_OUTPUT)) {
             out += i;
         }
         return out;
@@ -739,7 +769,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     public static long getInputContentLegth() {
         long out = 0;
-        for (long i : historics.get(TAG_INPUT)) {
+        for (long i : histories.get(TAG_INPUT)) {
             out += i;
         }
         return out;
