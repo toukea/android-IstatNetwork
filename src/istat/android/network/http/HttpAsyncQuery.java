@@ -558,14 +558,14 @@ public final class HttpAsyncQuery extends
     }
 
     public static interface HttpQueryCallback {
-        abstract void onHttpSuccess(HttpQueryResponse result);
+        abstract void onHttpSuccess(HttpQueryResponse resp);
 
-        abstract void onHttpError(HttpQueryResponse result,
+        abstract void onHttpError(HttpQueryResponse resp,
                                   istat.android.network.http.HttpQueryError e);
 
         abstract void onHttpFail(Exception e);
 
-        abstract void onHttComplete(HttpQueryResponse result);
+        abstract void onHttComplete(HttpQueryResponse resp);
 
         abstract void onHttpAborted();
     }

@@ -460,7 +460,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     public InputStream doDelete(String url) throws IOException {
-        return doQuery(url, "DELETE", false, true);
+        return doQuery(url, "DELETE", true, true);
     }
 
     public InputStream doCopy(String url) throws IOException {
