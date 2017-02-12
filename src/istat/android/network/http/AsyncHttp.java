@@ -74,6 +74,11 @@ public final class AsyncHttp {
         return this;
     }
 
+    public AsyncHttp useUploader(HttpAsyncQuery.HttpUploadHandler<?> uploader) {
+        this.mAsyncQuery.setUploadHandler(uploader);
+        return this;
+    }
+
     public AsyncHttp useDownloader(final DownloadHandler downloader) {
         this.mAsyncQuery.downloadHandler = new HttpAsyncQuery.HttpDownloadHandler<Integer>() {
             @Override

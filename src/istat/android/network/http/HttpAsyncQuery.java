@@ -254,11 +254,17 @@ public final class HttpAsyncQuery extends
     }
 
     boolean setUploadHandler(HttpUploadHandler<?> uploader) {
-        if (uploader != null && mHttp instanceof MultipartHttpQuery) {
-            uploader.query = this;
-            MultipartHttpQuery multipartHttp = (MultipartHttpQuery) mHttp;
-            multipartHttp.setUploadHandler(uploader);
-            return true;
+        if (uploader != null) {
+            if (mHttp instanceof MultipartHttpQuery) {
+                uploader.query = this;
+                MultipartHttpQuery http = (MultipartHttpQuery) mHttp;
+                http.setUploadHandler(uploader);
+                return true;
+            } else if (mHttp instanceof BodyPartHttpQuery) {
+                uploader.query = this;
+                BodyPartHttpQuery http = (BodyPartHttpQuery) mHttp;
+                http.setUploadHandler(uploader);
+            }
         }
         return false;
     }

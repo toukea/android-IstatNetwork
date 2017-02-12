@@ -22,6 +22,10 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
         this.part = obj;
     }
 
+    public BodyPartHttpQuery(File obj) {
+        this((Object) obj);
+    }
+
     public BodyPartHttpQuery(Object obj, UpLoadHandler handler) {
         this.part = obj;
         if (handler != null) {
@@ -121,6 +125,10 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
 
     protected UpLoadHandler getUploadHandler() {
         return uploadHandler;
+    }
+
+    public void setUploadHandler(UpLoadHandler uploadHandler) {
+        this.uploadHandler = uploadHandler;
     }
 
     UpLoadHandler uploadHandler = new UpLoadHandler() {
