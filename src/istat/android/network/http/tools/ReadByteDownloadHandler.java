@@ -6,16 +6,16 @@ import java.net.HttpURLConnection;
 import istat.android.network.http.HttpAsyncQuery;
 import istat.android.network.utils.ToolKits.Stream;
 
-public abstract class ReadByteUploadHandler extends
+public abstract class ReadByteDownloadHandler extends
         HttpAsyncQuery.HttpDownloadHandler<Integer> {
     int buffer = Stream.DEFAULT_BUFFER_SIZE;
     String encoding = Stream.DEFAULT_ENCODING;
 
-    public ReadByteUploadHandler() {
+    public ReadByteDownloadHandler() {
 
     }
 
-    public ReadByteUploadHandler(String encoding, int bufferSize) {
+    public ReadByteDownloadHandler(String encoding, int bufferSize) {
         this.encoding = encoding;
         this.buffer = bufferSize;
     }
@@ -42,9 +42,6 @@ public abstract class ReadByteUploadHandler extends
 //	 *            vars[0]=nombre de byte deja lu, vars[1]=nobre total de byte a
 //	 *            lire, vars[2] le pourcentage deja lue
 //	 */
-//	@Override
-//	public abstract void onDownloadProgress(HttpAsyncQuery query,
-//			Integer... vars);
 
     @Override
     public String onBuildResponseBody(HttpURLConnection currentConnexion,
