@@ -393,7 +393,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     public interface ParameterHandler {
-        public static ParameterHandler DEFAULT_HANDLER = new ParameterHandler() {
+        final public static ParameterHandler DEFAULT_HANDLER = new ParameterHandler() {
 
             @Override
             public String onStringifyQueryParams(String method,

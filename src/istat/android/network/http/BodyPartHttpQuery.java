@@ -69,7 +69,8 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
     }
 
     public static InputStream doPost(Object object, String url) throws IOException {
-        return doPost(object, null);
+        BodyPartHttpQuery http = new BodyPartHttpQuery(object, null);
+        return http.doPost(url);
     }
 
     public static InputStream doPut(Object object, String url) throws IOException {
@@ -101,9 +102,8 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
         if (part instanceof File) {
             onWriteFileToOutputStream((File) this.part, dataOutputStream);
         } else {
-            InputStream stream = new ByteArrayInputStream(part.toString().getBytes());
-            getUploadHandler().onUploadStream(this, stream, dataOutputStream);
-
+            InputStream inputStream = new ByteArrayInputStream(part.toString().getBytes());
+            getUploadHandler().onUploadStream(this, inputStream, dataOutputStream);
         }
         return size;
     }

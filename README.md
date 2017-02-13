@@ -3,7 +3,7 @@ And Android Library to make Http Query Easy.
 
 ```java
     //Create a callback for your Async Query: HttpQueryCallback.
-    HttpAsyncQuery.HttpQueryCallBack callback = new HttpAsyncQuery.HttpQueryCallBack (){
+    HttpAsyncQuery.HttpQueryCallback callback = new HttpAsyncQuery.HttpQueryCallback (){
     //Your own implementation
     };
     /*

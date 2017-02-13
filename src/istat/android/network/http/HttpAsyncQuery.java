@@ -628,15 +628,19 @@ public final class HttpAsyncQuery extends
         HttpAsyncQuery query;
 
         public HttpUploadHandler(Handler handler) {
-            this.handler = handler;
+            if (handler == null) {
+                try {
+                    this.handler = getHandler();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                this.handler = handler;
+            }
         }
 
         public HttpUploadHandler() {
-            try {
-                this.handler = getHandler();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            this(null);
         }
 
         private Handler getHandler() {
