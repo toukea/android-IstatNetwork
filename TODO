@@ -1,1 +1,2 @@
 -provide uploadHandler for all HttpQuery<?> child
+-make uploader variable local to HttpAsyncQuery

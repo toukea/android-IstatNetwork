@@ -20,6 +20,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
 import istat.android.network.http.interfaces.HttpSendable;
+import istat.android.network.http.interfaces.UpLoadHandler;
 import istat.android.network.utils.ToolKits;
 import istat.android.network.utils.ToolKits.Text;
 
@@ -271,6 +272,41 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return (HttpQ) this;
     }
 
+    public void setUploadHandler(UpLoadHandler uploadHandler) {
+        if (uploadHandler != null) {
+            this.uploadHandler = uploadHandler;
+        }
+    }
+
+    int uploadBufferSize = ToolKits.Stream.DEFAULT_BUFFER_SIZE;
+
+    public void setUploadBufferSize(int uploadBufferSize) {
+        this.uploadBufferSize = uploadBufferSize;
+    }
+
+    protected UpLoadHandler getUploadHandler() {
+        return uploadHandler;
+    }
+
+    UpLoadHandler uploadHandler = new UpLoadHandler() {
+        @Override
+        public void onUploadStream(HttpQuery httpQuery,
+                                   InputStream stream, OutputStream request)
+                throws IOException {
+            byte[] b = new byte[uploadBufferSize];
+            int read;
+            while ((read = stream.read(b)) > -1) {
+                boolean isAborted = httpQuery.isAborted();
+                boolean running = httpQuery.hasRunningRequest();
+                if (isAborted || !running) {
+                    stream.close();
+                    return;
+                }
+                request.write(b, 0, read);
+            }
+            stream.close();
+        }
+    };
 
     protected synchronized InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
             throws IOException {

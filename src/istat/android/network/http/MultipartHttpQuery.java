@@ -37,14 +37,7 @@ import java.util.HashMap;
 public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
     HashMap<String, File> fileParts = new HashMap<String, File>();
-    protected HashMap<String, String> URLParameters = new HashMap<String, String>();
-    int uploadBufferSize = Stream.DEFAULT_BUFFER_SIZE;
     private static final String LINE_FEED = "\n";
-
-    public MultipartHttpQuery addURLParam(String Name, String Value) {
-        URLParameters.put(Name, Value);
-        return this;
-    }
 
     public MultipartHttpQuery addURLParam(String Name, String[] values) {
         for (int i = 0; i < values.length; i++) {
@@ -64,14 +57,6 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
             }
         }
         return this;
-    }
-
-    @Override
-    public void removeParam(String name) {
-        super.removeParam(name);
-        if (URLParameters != null && URLParameters.containsKey(name)) {
-            URLParameters.clear();
-        }
     }
 
     @Override
@@ -103,17 +88,12 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
     public MultipartHttpQuery clearParams() {
         super.clearParams();
         clearParts();
-        URLParameters.clear();
         return this;
     }
 
     public MultipartHttpQuery clearParts() {
         fileParts.clear();
         return this;
-    }
-
-    public void setUploadBufferSize(int uploadBufferSize) {
-        this.uploadBufferSize = uploadBufferSize;
     }
 
     @Override
@@ -264,35 +244,6 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         return this;
     }
 
-    public void setUploadHandler(UpLoadHandler uploadHandler) {
-        if (uploadHandler != null) {
-            this.uploadHandler = uploadHandler;
-        }
-    }
-
-    protected UpLoadHandler getUploadHandler() {
-        return uploadHandler;
-    }
-
-    UpLoadHandler uploadHandler = new UpLoadHandler() {
-        @Override
-        public void onUploadStream(HttpQuery httpQuery,
-                                   InputStream stream, OutputStream request)
-                throws IOException {
-            byte[] b = new byte[uploadBufferSize];
-            int read;
-            while ((read = stream.read(b)) > -1) {
-                boolean isAborted = httpQuery.isAborted();
-                boolean running = httpQuery.hasRunningRequest();
-                if (isAborted || !running) {
-                    stream.close();
-                    return;
-                }
-                request.write(b, 0, read);
-            }
-            stream.close();
-        }
-    };
 
     @Override
     public boolean hasRunningRequest() {

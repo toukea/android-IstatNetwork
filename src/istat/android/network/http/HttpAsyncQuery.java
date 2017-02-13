@@ -47,6 +47,7 @@ public final class HttpAsyncQuery extends
 //        }
 //    };
     public final static String DEFAULT_ENCODING = "UTF-8";
+    UpLoadHandler uploadHandler;
     HttpQueryCallback mHttpCallBack;
     CancelListener mCancelListener;
     HttpQuery<?> mHttp;
@@ -253,20 +254,19 @@ public final class HttpAsyncQuery extends
         return query;
     }
 
-    boolean setUploadHandler(HttpUploadHandler<?> uploader) {
-        if (uploader != null) {
-            if (mHttp instanceof MultipartHttpQuery) {
-                uploader.query = this;
-                MultipartHttpQuery http = (MultipartHttpQuery) mHttp;
-                http.setUploadHandler(uploader);
-                return true;
-            } else if (mHttp instanceof BodyPartHttpQuery) {
-                uploader.query = this;
-                BodyPartHttpQuery http = (BodyPartHttpQuery) mHttp;
-                http.setUploadHandler(uploader);
+    boolean prepareQuery() {
+        if (uploadHandler != null) {
+            mHttp.setUploadHandler(uploadHandler);
+            if (uploadHandler instanceof HttpUploadHandler) {
+                ((HttpUploadHandler) uploadHandler).query = this;
             }
+            return true;
         }
         return false;
+    }
+
+    void setUploadHandler(UpLoadHandler uploader) {
+        this.uploadHandler = uploader;
     }
 
     public static HttpAsyncQuery doAsyncQuery(HttpQuery<?> http, int queryType,
@@ -287,6 +287,7 @@ public final class HttpAsyncQuery extends
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     void executeURLs(String... urls) {
+        prepareQuery();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             if (mExecutor == null) {
                 mExecutor = AsyncTask.THREAD_POOL_EXECUTOR;
