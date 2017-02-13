@@ -44,7 +44,7 @@ public abstract class ReadByteDownloadHandler extends
 //	 */
 
     @Override
-    public String onBuildResponseBody(HttpURLConnection currentConnexion,
+    public Object onBuildResponseBody(HttpURLConnection currentConnexion,
                                       InputStream inp, HttpAsyncQuery query) {
         String out = "";
         byte[] b = new byte[buffer];
@@ -71,5 +71,50 @@ public abstract class ReadByteDownloadHandler extends
 
         return out;
     }
+    /*
+    byte[] b = new byte[this.buffer];
+        int write;
+        long totalWrite = 0;
+        long uploadSize = getFileToUpload().length();
+        long writePercentage;
+        long time = System.currentTimeMillis();
+        long debit = -1;
+        long writeLastSec = 0;
+        long newTimeRight = -1;
+        long oldTimeRight = -1;
+        long timeRight = -1;
+        long timeDiff;
+        while ((write = stream.read(b)) > -1) {
+            executePauseControl(asyc);
+            if (httpQuery.isAborted() || !httpQuery.hasRunningRequest()) {
+                Log.i("UploadManager", "onProceedStreamUpload::Aborted");
+                stream.close();
+                return;
+            }
+            request.write(b, 0, write);
+            totalWrite += write;
+            writeLastSec += write;
+            writePercentage = uploadSize > 0 ? (100 * totalWrite / uploadSize) : 0;
+            if (oldTimeRight > 0 && newTimeRight > 0) {
+                double avg = (newTimeRight + oldTimeRight) / 2;
+                if (avg < timeRight) {
+                    timeRight = (int) Math.max(newTimeRight, oldTimeRight);
+                } else if (timeRight <= 0) {
+                    timeRight = newTimeRight;
+                }
+            }
+            callback.publishProgression(totalWrite, uploadSize, writePercentage, debit, timeRight);
+            timeDiff = System.currentTimeMillis() - time;
+            if (timeDiff >= 1000) {
+                debit = writeLastSec;
+                oldTimeRight = newTimeRight;
+                newTimeRight = ((uploadSize - totalWrite) * 1000) / debit;
+                time = System.currentTimeMillis();
+                writeLastSec = 0;
+            }
+        }
+        stream.close();
+        request.close();
+     */
 
 }

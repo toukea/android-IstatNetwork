@@ -39,26 +39,6 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
     HashMap<String, File> fileParts = new HashMap<String, File>();
     private static final String LINE_FEED = "\n";
 
-    public MultipartHttpQuery addURLParam(String Name, String[] values) {
-        for (int i = 0; i < values.length; i++) {
-            addURLParam(Name + "[" + i + "]", values[i]);
-        }
-        return this;
-    }
-
-    public MultipartHttpQuery addURLParams(HashMap<String, Object> nameValues) {
-        if (!nameValues.keySet().isEmpty()) {
-            String[] table = new String[nameValues.size()];
-            table = nameValues.keySet().toArray(table);
-            for (String tmp : table) {
-                if (tmp != null) {
-                    addURLParam(tmp, nameValues.get(tmp).toString());
-                }
-            }
-        }
-        return this;
-    }
-
     @Override
     public InputStream doPost(String url) throws IOException {
         return POST(url, true);
@@ -94,11 +74,6 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
     public MultipartHttpQuery clearParts() {
         fileParts.clear();
         return this;
-    }
-
-    @Override
-    public void setParameterHandler(ParameterHandler parameterHandler) {
-        super.setParameterHandler(parameterHandler);
     }
 
     private HttpURLConnection sendMultipartData(String url)

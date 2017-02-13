@@ -150,6 +150,26 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return addParam(Name, Value, true);
     }
 
+    public HttpQ addURLParam(String Name, String[] values) {
+        for (int i = 0; i < values.length; i++) {
+            addURLParam(Name + "[" + i + "]", values[i]);
+        }
+        return (HttpQ) this;
+    }
+
+    public HttpQ addURLParams(HashMap<String, Object> nameValues) {
+        if (!nameValues.keySet().isEmpty()) {
+            String[] table = new String[nameValues.size()];
+            table = nameValues.keySet().toArray(table);
+            for (String tmp : table) {
+                if (tmp != null) {
+                    addURLParam(tmp, nameValues.get(tmp).toString());
+                }
+            }
+        }
+        return (HttpQ) this;
+    }
+
 
     @SuppressWarnings("unchecked")
     public HttpQ addParam(String Name, String... values) {
@@ -448,7 +468,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     ParameterHandler parameterHandler = ParameterHandler.DEFAULT_HANDLER;
 
-    void setParameterHandler(ParameterHandler parameterHandler) {
+    public void setParameterHandler(ParameterHandler parameterHandler) {
         if (parameterHandler != null) {
             this.parameterHandler = parameterHandler;
         }
