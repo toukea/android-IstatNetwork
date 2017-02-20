@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.util.LinkedHashMap;
 
 
 /**
@@ -154,10 +155,8 @@ public class StreamOperationTools {
     public static RandomAccessFile copyStream(OperationController controller, byte[] prefix, byte[] suffix,
                                               InputStream inp, RandomAccessFile os, int buffer_size,
                                               int startByte) throws IOException {
-
-
         byte[] bytes = new byte[buffer_size];
-        int read = 0;
+        int read;
         inp.skip(startByte);
         os.seek(startByte);
         if (prefix != null && prefix.length > 0)
@@ -173,7 +172,6 @@ public class StreamOperationTools {
         if (suffix != null && suffix.length > 0)
             os.write(suffix);
         os.close();
-
         return os;
     }
 
@@ -194,6 +192,7 @@ public class StreamOperationTools {
     public static class OperationController {
         boolean paused = false;
         boolean stopped = false;
+        final public LinkedHashMap<String, Object> vars = new LinkedHashMap<String, Object>();
 
         public void pause() {
             paused = true;

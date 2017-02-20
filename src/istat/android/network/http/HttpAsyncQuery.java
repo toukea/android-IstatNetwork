@@ -521,6 +521,17 @@ public final class HttpAsyncQuery extends
             }
         }
 
+        public <T> T getBodyAs(Class<T> cLass) {
+            if (body == null) {
+                return null;
+            }
+            try {
+                return (T) body;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
         public <T> T optBody() {
             if (body == null) {
                 return null;
