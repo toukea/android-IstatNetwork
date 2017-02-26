@@ -316,17 +316,52 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             byte[] b = new byte[uploadBufferSize];
             int read;
             while ((read = stream.read(b)) > -1) {
-                boolean isAborted = httpQuery.isAborted();
-                boolean running = httpQuery.hasRunningRequest();
-                if (isAborted || !running) {
-                    stream.close();
-                    return;
-                }
                 request.write(b, 0, read);
             }
             stream.close();
         }
     };
+
+    public InputStream doGet(String url) throws IOException {
+        return doGet(url, true);
+    }
+
+    public InputStream doPut(String url) throws IOException {
+        String method = "PUT";
+        return doQuery(url, method, true, true);
+    }
+
+    public InputStream doHead(String url) throws IOException {
+        return doQuery(url, "HEAD");
+    }
+
+    public InputStream doDelete(String url) throws IOException {
+        return doQuery(url, "DELETE", true, true);
+    }
+
+    public InputStream doCopy(String url) throws IOException {
+        return doQuery(url, "COPY", true, true);
+    }
+
+    public InputStream doPatch(String url) throws IOException {
+        return doQuery(url, "PATCH", true, true);
+    }
+
+    public InputStream doGet(String url, boolean handleError)
+            throws IOException {
+        // ---------------------------
+        String method = "GET";
+        return doQuery(url, method, false, handleError);
+    }
+
+    public InputStream doQuery(String url, String method) throws IOException {
+        return doQuery(url, method, true);
+    }
+
+    public InputStream doQuery(String url, String method, boolean holdError)
+            throws IOException {
+        return doQuery(url, method, false, holdError);
+    }
 
     protected synchronized InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
             throws IOException {
@@ -351,68 +386,29 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
                 length = data.length();
             }
         }
-        HttpURLConnection conn = prepareConnexion(url, method);
-        if (bodyData) {
-            conn.setDoOutput(true);
-            OutputStream os = conn.getOutputStream();
-            length = writeDataToOutputStream(method, os);
-            os.close();
+        try {
+            HttpURLConnection connection = prepareConnection(url, method);
+            if (bodyData) {//data uploading
+                connection.setDoOutput(true);
+                OutputStream os = connection.getOutputStream();
+                length = writeDataToOutputStream(method, os);
+                os.close();
+            }
+            InputStream stream = eval(connection, holdError);
+            addToOutputHistoric(length);
+            onQueryComplete();
+            return stream;
+        } catch (IOException e) {
+            if (isAborted()) {
+                throw new AbortionException(this);
+            } else {
+                throw e;
+            }
         }
-        InputStream stream = eval(conn, holdError);
-        addToOutputHistoric(length);
-        onQueryComplete();
-        return stream;
     }
 
-//    protected synchronized InputStream POST(String url, boolean holdError)
-//            throws IOException {
-//        String method = "POST";
-//        HttpURLConnection conn = prepareConnexion(url, method);
-//        conn.setDoOutput(true);
-//        OutputStream os = conn.getOutputStream();
-//        long length = writeDataToOutputStream(method, os);
-//        os.close();
-//        InputStream stream = eval(conn, holdError);
-//        addToOutputHistoric(length);
-//        onQueryComplete();
-//        return stream;
-//    }
-//
-//    protected synchronized InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
-//            throws IOException {
-////        if (method.equalsIgnoreCase("POST")) {
-////            return POST(url, holdError);
-////        }
-//        Log.d("HttpQuery", "Method=" + method);
-//        long length = 0;
-//        String data = "";
-//        if (!bodyData) {
-//            if (parameterHandler != null) {
-//                data = parameterHandler.onStringifyQueryParams(method, parameters,
-//                        mOptions.encoding);
-//            }
-//            if (!Text.isEmpty(data)) {
-//                url += (url.contains("?") ? "" : "?") + data;
-//                length = data.length();
-//            }
-//        }
-//        HttpURLConnection conn = prepareConnexion(url, method);
-//        if (bodyData) {
-//            conn.setDoOutput(true);
-//            if (parameters != null && parameters.size() > 0) {
-//                OutputStream os = conn.getOutputStream();
-//                length = writeDataToOutputStream(method, os);
-//                os.close();
-//            }
-//        }
-//        InputStream stream = eval(conn, holdError);
-//        addToOutputHistoric(length);
-//        onQueryComplete();
-//        return stream;
-//    }
-
-    protected HttpURLConnection prepareConnexion(final String url,
-                                                 String method) throws IOException {
+    protected HttpURLConnection prepareConnection(final String url,
+                                                  String method) throws IOException {
         onQueryStarting();
         URL Url = new URL(url);
         URLConnection urlConnexion = Url.openConnection();
@@ -503,18 +499,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         }
     }
 
-    public InputStream doGet(String url, boolean handleerrror)
-            throws IOException {
-        // ---------------------------
-        String method = "GET";
-        return doQuery(url, method, false, true);
-    }
-
-    public InputStream doQuery(String url, String method, boolean holdError)
-            throws IOException {
-        return doQuery(url, method, false, holdError);
-    }
-
     protected final long writeDataToOutputStream(String method,
                                                  OutputStream os) throws IOException {
         currentOutputStream = os;
@@ -540,35 +524,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         } else {
             return 0;
         }
-    }
-
-    public InputStream doGet(String url) throws IOException {
-        return doGet(url, true);
-    }
-
-    public InputStream doPut(String url) throws IOException {
-        String method = "PUT";
-        return doQuery(url, method, true, true);
-    }
-
-    public InputStream doHead(String url) throws IOException {
-        return doQuery(url, "HEAD");
-    }
-
-    public InputStream doDelete(String url) throws IOException {
-        return doQuery(url, "DELETE", true, true);
-    }
-
-    public InputStream doCopy(String url) throws IOException {
-        return doQuery(url, "COPY", true, true);
-    }
-
-    public InputStream doPatch(String url) throws IOException {
-        return doQuery(url, "PATCH", true, true);
-    }
-
-    public InputStream doQuery(String url, String method) throws IOException {
-        return doQuery(url, method, true);
     }
 
     public String getURL(String address) throws IOException {
@@ -682,10 +637,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         timeHistories.get(TAG_OUTPUT).add(elapsed);
     }
 
-    InputStream eval(HttpURLConnection conn) throws IOException {
-        return eval(conn, true);
-    }
-
     protected volatile InputStream currentInputStream;
     protected volatile OutputStream currentOutputStream;
 
@@ -746,6 +697,20 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
                 currentConnection.disconnect();
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+            if (currentOutputStream != null) {
+                try {
+                    currentOutputStream.close();
+                } catch (Exception e) {
+
+                }
+            }
+            if (currentInputStream != null) {
+                try {
+                    currentInputStream.close();
+                } catch (Exception e) {
+
+                }
             }
             onQueryComplete();
         }
@@ -871,5 +836,11 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             getCurrentConnection().disconnect();
         }
         return out;
+    }
+
+    public static class AbortionException extends IOException {
+        AbortionException(HttpQuery http) {
+            super("HttpQuery defined by: " + http + ", has been aborted.");
+        }
     }
 }

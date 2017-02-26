@@ -123,32 +123,9 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
         return size;
     }
 
-    protected UpLoadHandler getUploadHandler() {
-        return uploadHandler;
-    }
 
     public void setUploadHandler(UpLoadHandler uploadHandler) {
         this.uploadHandler = uploadHandler;
     }
-
-    UpLoadHandler uploadHandler = new UpLoadHandler() {
-        @Override
-        public void onUploadStream(HttpQuery httpQuery,
-                                   InputStream stream, OutputStream request)
-                throws IOException {
-            byte[] b = new byte[mOptions.bufferSize];
-            int read;
-            while ((read = stream.read(b)) > -1) {
-                boolean isAborted = httpQuery.isAborted();
-                boolean running = httpQuery.hasRunningRequest();
-                if (isAborted || !running) {
-                    stream.close();
-                    return;
-                }
-                request.write(b, 0, read);
-            }
-            stream.close();
-        }
-    };
 
 }

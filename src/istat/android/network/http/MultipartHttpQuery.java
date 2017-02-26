@@ -3,7 +3,6 @@ package istat.android.network.http;
 import android.text.TextUtils;
 
 import istat.android.network.http.interfaces.UpLoadHandler;
-import istat.android.network.utils.ToolKits.Stream;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -79,7 +78,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
     private HttpURLConnection sendMultipartData(String url)
             throws IOException {
         String method = "POST";
-        HttpURLConnection conn = prepareConnexion(url, method);
+        HttpURLConnection conn = prepareConnection(url, method);
         conn.setDoOutput(true);
         conn.setRequestMethod(method);
         String data;

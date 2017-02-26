@@ -144,7 +144,8 @@ public final class HttpAsyncQuery extends
 
     private void dispatchQueryResponse(HttpQueryResponse resp) {
         try {
-            if (resp.isAccepted()) {
+            boolean aborted = isAborted();
+            if (resp.isAccepted() && !aborted) {
                 if (resp.isSuccess()) {
                     mHttpCallBack.onHttpSuccess(resp);
                 } else {
@@ -153,12 +154,24 @@ public final class HttpAsyncQuery extends
                     mHttpCallBack.onHttpError(resp, error);
                 }
             } else {
-                mHttpCallBack.onHttpFail(resp.getError());
+                notifyQueryFailed(resp.getError());
             }
-            mHttpCallBack.onHttComplete(resp);
+            if (!aborted) {
+                mHttpCallBack.onHttComplete(resp);
+            }
         } catch (Exception e) {
+            notifyQueryFailed(e);
+        }
+    }
+
+    private void notifyQueryFailed(Exception e) {
+        if (!isAborted()) {
             mHttpCallBack.onHttpFail(e);
         }
+    }
+
+    public boolean isAborted() {
+        return isCancelled() || mHttp.isAborted();
     }
 
     @Override
@@ -837,10 +850,14 @@ public final class HttpAsyncQuery extends
             return handler;
         }
 
-        void notifyProcessFail(Exception e) {
-            if (onFail(e)) {
-                throw new RuntimeException(e);
-            }
+        void notifyProcessFail(final Exception e) {
+            getHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    onFail(e);
+                }
+            });
+            throw new RuntimeException(e);
         }
 
         /**
@@ -858,12 +875,7 @@ public final class HttpAsyncQuery extends
                 e.printStackTrace();
                 Handler tmpHandler = getHandler();
                 if (tmpHandler != null) {
-                    getHandler().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            notifyProcessFail(e);
-                        }
-                    });
+                    notifyProcessFail(e);
                 }
                 throw new RuntimeException(e);
             }
