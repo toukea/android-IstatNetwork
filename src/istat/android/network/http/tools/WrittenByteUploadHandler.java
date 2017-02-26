@@ -32,9 +32,9 @@ public abstract class WrittenByteUploadHandler extends HttpUploadHandler<Integer
     }
 
     @Override
-    public void onProceedStreamUpload(HttpQuery httpQuery,
-                                      OutputStream request, InputStream stream, HttpAsyncQuery asyc)
+    public void onProceedStreamUpload(OutputStream request, InputStream stream, HttpAsyncQuery asyc)
             throws IOException {
+        HttpQuery httpQuery = asyc.getHttpQuery();
         byte[] b = new byte[buffer];
         int write = 0;
         int totalWrite = 0;

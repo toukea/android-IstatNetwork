@@ -50,7 +50,7 @@ public final class HttpAsyncQuery extends
     UpLoadHandler uploadHandler;
     HttpQueryCallback mHttpCallBack;
     CancelListener mCancelListener;
-    HttpQuery<?> mHttp;
+    final HttpQuery<?> mHttp;
     int type = TYPE_GET;
     int bufferSize = DEFAULT_BUFFER_SIZE;
     String encoding = DEFAULT_ENCODING;
@@ -193,17 +193,47 @@ public final class HttpAsyncQuery extends
         }
     };
 
+    /**
+     * Deprecated, unse {@link AsyncHttp} as a Builder instead.
+     *
+     * @param http
+     * @param url
+     * @return
+     */
+    @Deprecated
     public static HttpAsyncQuery doAsyncGet(HttpQuery<?> http, String url) {
         return doAsyncQuery(http, TYPE_GET, DEFAULT_BUFFER_SIZE,
                 http.mOptions.encoding, null, url);
     }
 
+    /**
+     * Deprecated, unse {@link AsyncHttp} as a Builder instead.
+     *
+     * @param http
+     * @param callBack
+     * @param url
+     * @return
+     */
+    @Deprecated
     public static HttpAsyncQuery doAsyncGet(HttpQuery<?> http,
                                             HttpQueryCallback callBack, String url) {
         return doAsyncQuery(http, TYPE_GET, DEFAULT_BUFFER_SIZE,
                 http.mOptions.encoding, callBack, url);
     }
 
+    /**
+     * Deprecated, unse {@link AsyncHttp} as a Builder instead.
+     *
+     * @param http
+     * @param queryType
+     * @param bufferSize
+     * @param encoding
+     * @param callBack
+     * @param processCallBack
+     * @param url
+     * @return
+     */
+    @Deprecated
     public static HttpAsyncQuery doAsyncQuery(HttpQuery<?> http, int queryType,
                                               int bufferSize, String encoding, HttpQueryCallback callBack,
                                               HttpDownloadHandler<?> processCallBack, String url) {
@@ -211,6 +241,18 @@ public final class HttpAsyncQuery extends
                 processCallBack, null, url);
     }
 
+    /**
+     * Deprecated, unse {@link AsyncHttp} as a Builder instead.
+     *
+     * @param http
+     * @param queryType
+     * @param bufferSize
+     * @param encoding
+     * @param callBack
+     * @param url
+     * @return
+     */
+    @Deprecated
     public static HttpAsyncQuery doAsyncQuery(HttpQuery<?> http, int queryType,
                                               int bufferSize, String encoding, HttpQueryCallback callBack,
                                               String url) {
@@ -218,17 +260,44 @@ public final class HttpAsyncQuery extends
                 null, null, url);
     }
 
+    /**
+     * Deprecated, unse {@link AsyncHttp} as a Builder instead.
+     *
+     * @param http
+     * @param url
+     * @return
+     */
+    @Deprecated
     public static HttpAsyncQuery doAsyncPost(HttpQuery<?> http, String url) {
         return doAsyncQuery(http, TYPE_POST, DEFAULT_BUFFER_SIZE,
                 http.mOptions.encoding, null, url);
     }
 
+    /**
+     * Deprecated, unse {@link AsyncHttp} as a Builder instead.
+     *
+     * @param http
+     * @param callBack
+     * @param url
+     * @return
+     */
+    @Deprecated
     public static HttpAsyncQuery doAsyncPost(HttpQuery<?> http,
                                              HttpQueryCallback callBack, String url) {
         return doAsyncQuery(http, TYPE_POST, DEFAULT_BUFFER_SIZE,
                 http.mOptions.encoding, callBack, url);
     }
 
+    /**
+     * Deprecated, unse {@link AsyncHttp} as a Builder instead.
+     *
+     * @param http
+     * @param callBack
+     * @param uploadCallback
+     * @param url
+     * @return
+     */
+    @Deprecated
     public static HttpAsyncQuery doAsyncPost(HttpQuery<?> http,
                                              HttpQueryCallback callBack,
                                              HttpUploadHandler<?> uploadCallback, String url) {
@@ -238,6 +307,20 @@ public final class HttpAsyncQuery extends
         return query;
     }
 
+    /**
+     * Deprecated, unse {@link AsyncHttp} as a Builder instead.
+     *
+     * @param http
+     * @param bufferSize
+     * @param encoding
+     * @param callBack
+     * @param processCallBack
+     * @param cancelCallback
+     * @param uploadCallBack
+     * @param urls
+     * @return
+     */
+    @Deprecated
     public static HttpAsyncQuery doAsyncPost(MultipartHttpQuery http,
                                              int bufferSize, String encoding, HttpQueryCallback callBack,
                                              HttpDownloadHandler<?> processCallBack,
@@ -368,10 +451,6 @@ public final class HttpAsyncQuery extends
                 return downloader.onBuildResponseBody(connexion, stream, query);
             }
 
-            @Override
-            protected void onProcessFail(Exception e) {
-                throw new RuntimeException(e);
-            }
         };
         return setDownloadHandler(downloadHandler);
     }
@@ -662,8 +741,14 @@ public final class HttpAsyncQuery extends
             return handler;
         }
 
-        protected void onProcessFail(Exception e) {
+        void notifyProcessFail(Exception e) {
+            if (onFail(e)) {
+                throw new RuntimeException(e);
+            }
+        }
 
+        protected boolean onFail(Exception e) {
+            return !(this.query.isCancelled() || this.query.mHttp.isAborted());
         }
 
         Runnable publishRunner = new Runnable() {
@@ -687,7 +772,7 @@ public final class HttpAsyncQuery extends
                                          InputStream stream, OutputStream request)
                 throws IOException {
             try {
-                onProceedStreamUpload(httpQuery, request, stream, query);
+                onProceedStreamUpload(request, stream, query);
             } catch (final Exception e) {
                 e.printStackTrace();
                 Handler tmpHandler = getHandler();
@@ -695,16 +780,15 @@ public final class HttpAsyncQuery extends
                     getHandler().post(new Runnable() {
                         @Override
                         public void run() {
-                            onProcessFail(e);
+                            notifyProcessFail(e);
                         }
                     });
                 }
             }
         }
 
-        public abstract void onProceedStreamUpload(
-                HttpQuery httpQuery, OutputStream request,
-                InputStream stream, HttpAsyncQuery asyc) throws IOException;
+        public abstract void onProceedStreamUpload(OutputStream request,
+                                                   InputStream stream, HttpAsyncQuery asyc) throws IOException;
 
         public abstract void onUploadProgress(HttpAsyncQuery query,
                                               ProgressVar... vars);
@@ -753,8 +837,18 @@ public final class HttpAsyncQuery extends
             return handler;
         }
 
-        protected void onProcessFail(Exception e) {
+        void notifyProcessFail(Exception e) {
+            if (onFail(e)) {
+                throw new RuntimeException(e);
+            }
+        }
 
+        /**
+         * @param e
+         * @return whether or not this method should rethrow the Exception.
+         */
+        protected boolean onFail(Exception e) {
+            return !(this.query.isCancelled() || this.query.mHttp.isAborted());
         }
 
         Object buildResponseBody(HttpURLConnection connexion, InputStream stream) throws Exception {
@@ -767,7 +861,7 @@ public final class HttpAsyncQuery extends
                     getHandler().post(new Runnable() {
                         @Override
                         public void run() {
-                            onProcessFail(e);
+                            notifyProcessFail(e);
                         }
                     });
                 }
@@ -829,16 +923,16 @@ public final class HttpAsyncQuery extends
         return new AsyncHttp(new HttpAsyncQuery(http));
     }
 
-    public class HttpPromise {
-        public final static int WHEN_ANAWAY = 0;
-        public final static int WHEN_SUCCED = 0;
-        public final static int WHEN_ERROR = 0;
-        public final static int WHEN_FAILED = 0;
-
-        public HttpPromise runWhen(Runnable runnable, int... when) {
-            return this;
-        }
-    }
+//    public class HttpPromise {
+//        public final static int WHEN_ANAWAY = 0;
+//        public final static int WHEN_SUCCED = 0;
+//        public final static int WHEN_ERROR = 0;
+//        public final static int WHEN_FAILED = 0;
+//
+//        public HttpPromise runWhen(Runnable runnable, int... when) {
+//            return this;
+//        }
+//    }
 
     public boolean dismissCallback() {
         boolean dismiss = mHttpCallBack != null;
@@ -846,4 +940,7 @@ public final class HttpAsyncQuery extends
         return dismiss;
     }
 
+    public HttpQuery<?> getHttpQuery() {
+        return mHttp;
+    }
 }

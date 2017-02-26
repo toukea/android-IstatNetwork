@@ -1,2 +1,3 @@
 -provide uploadHandler for all HttpQuery<?> child
 -make uploader variable local to HttpAsyncQuery
+-find a way to use ProgressionListener with HttpDownloadHandler and HttpUploadHandler

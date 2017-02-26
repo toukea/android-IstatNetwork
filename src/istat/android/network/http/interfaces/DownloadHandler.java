@@ -1,6 +1,5 @@
 package istat.android.network.http.interfaces;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 

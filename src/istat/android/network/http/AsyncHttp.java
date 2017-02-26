@@ -95,11 +95,6 @@ public final class AsyncHttp {
             public Object onBuildResponseBody(HttpURLConnection connexion, InputStream stream, HttpAsyncQuery query) throws Exception {
                 return downloader.onBuildResponseBody(connexion, stream, query);
             }
-
-            @Override
-            protected void onProcessFail(Exception e) {
-                throw new RuntimeException(e);
-            }
         };
         return this;
     }
@@ -203,7 +198,7 @@ public final class AsyncHttp {
     public HttpAsyncQuery doQuery(int method, HttpAsyncQuery.HttpUploadHandler<?> uploader, HttpAsyncQuery.HttpQueryCallback callback, String url) {
         this.mAsyncQuery.type = method;
         this.mAsyncQuery.mHttpCallBack = callback;
-        this.mAsyncQuery.setUploadHandler(this.mAsyncQuery.uploadHandler);
+        this.mAsyncQuery.setUploadHandler(uploader);
         this.mAsyncQuery.executeURLs(url);
         return this.mAsyncQuery;
     }
