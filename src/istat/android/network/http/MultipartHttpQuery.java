@@ -175,7 +175,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
                     UpLoadHandler uHandler = getUploadHandler();
                     if (uHandler != null) {
                         currentInputStream = stream;
-                        uHandler.onUploadStream(this, stream, request);
+                        uHandler.onUploadStream(request, stream, this);
                     }
                     request.writeBytes("\n");
                     if (i < table.length - 1) {

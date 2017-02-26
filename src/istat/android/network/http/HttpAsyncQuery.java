@@ -118,18 +118,23 @@ public final class HttpAsyncQuery extends
                         stream = mHttp.doGet(url);
                         break;
                 }
+            } catch (HttpQuery.AbortionException e) {
+                e.printStackTrace();
+                return null;
             } catch (Exception e) {
                 error = e;
                 e.printStackTrace();
+            } finally {
+                HttpQueryResponse response = new HttpQueryResponse(stream, error,
+                        encoding, bufferSize, this);
+                if (!isAborted()) {
+                    Log.i("HttpAsycQ", "doInBackground::publish_response");
+                    publishProgress(response);
+                } else {
+                    Log.i("HttpAsycQ", "doInBackground::was aborded");
+                }
             }
-            HttpQueryResponse response = new HttpQueryResponse(stream, error,
-                    encoding, bufferSize, this);
-            if (!mHttp.isAborted() && !isCancelled()) {
-                Log.i("HttpAsycQ", "doInBackground::publish_response");
-                publishProgress(response);
-            } else {
-                Log.i("HttpAsycQ", "doInBackground::was aborded");
-            }
+
         }
         return null;
     }
@@ -154,21 +159,16 @@ public final class HttpAsyncQuery extends
                     mHttpCallBack.onHttpError(resp, error);
                 }
             } else {
-                notifyQueryFailed(resp.getError());
+                mHttpCallBack.onHttpFail(resp.getError());
             }
             if (!aborted) {
                 mHttpCallBack.onHttComplete(resp);
             }
         } catch (Exception e) {
-            notifyQueryFailed(e);
-        }
-    }
-
-    private void notifyQueryFailed(Exception e) {
-        if (!isAborted()) {
             mHttpCallBack.onHttpFail(e);
         }
     }
+
 
     public boolean isAborted() {
         return isCancelled() || mHttp.isAborted();
@@ -781,8 +781,7 @@ public final class HttpAsyncQuery extends
         }
 
         @Override
-        public final void onUploadStream(HttpQuery httpQuery,
-                                         InputStream stream, OutputStream request)
+        public final void onUploadStream(OutputStream request, InputStream stream, HttpQuery httpQuery)
                 throws IOException {
             try {
                 onProceedStreamUpload(request, stream, query);

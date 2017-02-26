@@ -310,8 +310,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     UpLoadHandler uploadHandler = new UpLoadHandler() {
         @Override
-        public void onUploadStream(HttpQuery httpQuery,
-                                   InputStream stream, OutputStream request)
+        public void onUploadStream(OutputStream request, InputStream stream, HttpQuery httpQuery)
                 throws IOException {
             byte[] b = new byte[uploadBufferSize];
             int read;
@@ -400,7 +399,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             return stream;
         } catch (IOException e) {
             if (isAborted()) {
-                throw new AbortionException(this);
+                throw new AbortionException(this, e);
             } else {
                 throw e;
             }
@@ -440,7 +439,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return conn;
     }
 
-    public InputStream doPost(String url) throws IOException {
+    public InputStream doPost(String url) throws AbortionException, IOException {
         return doQuery(url, "POST", true, true);
     }
 
@@ -839,8 +838,16 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     public static class AbortionException extends IOException {
-        AbortionException(HttpQuery http) {
-            super("HttpQuery defined by: " + http + ", has been aborted.");
+        HttpQuery httpQuery;
+
+        AbortionException(HttpQuery http, Throwable cause) {
+            super("HttpQuery defined by: " + http + ", has been aborted. None IO action can be done anymore.");
+            this.httpQuery = http;
+            initCause(cause);
+        }
+
+        public HttpQuery getHttpQuery() {
+            return httpQuery;
         }
     }
 }
