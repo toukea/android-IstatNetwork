@@ -11,5 +11,5 @@ import istat.android.network.http.HttpAsyncQuery;
 
 public interface DownloadHandler {
     Object onBuildResponseBody(HttpURLConnection connexion,
-                               InputStream stream, HttpAsyncQuery query) throws Exception;
+                               InputStream stream) throws Exception;
 }

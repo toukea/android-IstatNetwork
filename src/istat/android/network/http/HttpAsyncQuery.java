@@ -435,7 +435,7 @@ public final class HttpAsyncQuery extends
 
         @Override
         public String onBuildResponseBody(HttpURLConnection currentConnexion,
-                                          InputStream stream, HttpAsyncQuery query) {
+                                          InputStream stream) {
             try {
                 return StreamOperationTools.streamToString(executionController,
                         stream, bufferSize, encoding);
@@ -460,8 +460,8 @@ public final class HttpAsyncQuery extends
             }
 
             @Override
-            public Object onBuildResponseBody(HttpURLConnection connexion, InputStream stream, HttpAsyncQuery query) throws Exception {
-                return downloader.onBuildResponseBody(connexion, stream, query);
+            public Object onBuildResponseBody(HttpURLConnection connexion, InputStream stream) throws Exception {
+                return downloader.onBuildResponseBody(connexion, stream);
             }
 
         };
@@ -781,7 +781,7 @@ public final class HttpAsyncQuery extends
         }
 
         @Override
-        public final void onUploadStream(OutputStream request, InputStream stream, HttpQuery httpQuery)
+        public final void onUploadStream(OutputStream request, InputStream stream)
                 throws IOException {
             try {
                 onProceedStreamUpload(request, stream, query);
@@ -869,7 +869,7 @@ public final class HttpAsyncQuery extends
 
         Object buildResponseBody(HttpURLConnection connexion, InputStream stream) throws Exception {
             try {
-                return onBuildResponseBody(connexion, stream, query);
+                return onBuildResponseBody(connexion, stream);
             } catch (final Exception e) {
                 e.printStackTrace();
                 Handler tmpHandler = getHandler();
