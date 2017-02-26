@@ -57,8 +57,7 @@ public class StreamOperationTools {
                                         int buffer, String encoding) throws IOException {
         String out = "";
         byte[] b = new byte[buffer];
-        int read = 0;
-
+        int read;
         while ((read = inp.read(b)) > -1) {
             pauseControl(controller);
             if (controller.isStopped()) {
@@ -73,7 +72,7 @@ public class StreamOperationTools {
         return out;
     }
 
-    private static void pauseControl(OperationController controller) {
+    public static void pauseControl(OperationController controller) {
         if (controller.isPaused()) {
             while (controller.isPaused()) {
                 try {
@@ -192,7 +191,6 @@ public class StreamOperationTools {
     public static class OperationController {
         boolean paused = false;
         boolean stopped = false;
-        final public LinkedHashMap<String, Object> vars = new LinkedHashMap<String, Object>();
 
         public void pause() {
             paused = true;

@@ -351,7 +351,7 @@ public final class HttpAsyncQuery extends
 
         @Override
         public void onDownloadProgress(HttpAsyncQuery query, Integer... vars) {
-            // NOTHIG TO DO
+            // NOTHING TO DO
         }
 
     };

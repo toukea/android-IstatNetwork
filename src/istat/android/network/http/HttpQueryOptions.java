@@ -77,4 +77,48 @@ public class HttpQueryOptions {
         this.useCaches = useCaches;
         return this;
     }
+
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    public int getConnexionTimeOut() {
+        return connexionTimeOut;
+    }
+
+    public int getSoTimeOut() {
+        return soTimeOut;
+    }
+
+    public String getEncoding() {
+        return encoding;
+    }
+
+    public boolean isAutoClearRequestParams() {
+        return autoClearRequestParams;
+    }
+
+    public int getChunkedStreamingMode() {
+        return chunkedStreamingMode;
+    }
+
+    public int getFixedLengthStreamingMode() {
+        return fixedLengthStreamingMode;
+    }
+
+    public boolean isFollowRedirects() {
+        return followRedirects;
+    }
+
+    public boolean isAllowUserInteraction() {
+        return allowUserInteraction;
+    }
+
+    public boolean isUseCaches() {
+        return useCaches;
+    }
+
+    public boolean isInstanceFollowRedirects() {
+        return instanceFollowRedirects;
+    }
 }
