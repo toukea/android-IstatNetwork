@@ -217,11 +217,4 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         }
         return this;
     }
-
-
-    @Override
-    public boolean hasRunningRequest() {
-        super.hasRunningRequest();
-        return true;
-    }
 }

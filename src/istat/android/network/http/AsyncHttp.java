@@ -92,8 +92,8 @@ public final class AsyncHttp {
             }
 
             @Override
-            public Object onBuildResponseBody(HttpURLConnection connexion, InputStream stream, HttpAsyncQuery query) throws Exception {
-                return downloader.onBuildResponseBody(connexion, stream, query);
+            public Object onBuildResponseBody(HttpURLConnection connexion, InputStream stream) throws Exception {
+                return downloader.onBuildResponseBody(connexion, stream);
             }
         };
         return this;

@@ -310,7 +310,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     UpLoadHandler uploadHandler = new UpLoadHandler() {
         @Override
-        public void onUploadStream(OutputStream request, InputStream stream, HttpQuery httpQuery)
+        public void onUploadStream(OutputStream request, InputStream stream)
                 throws IOException {
             byte[] b = new byte[uploadBufferSize];
             int read;
@@ -549,8 +549,13 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return currentConnection;
     }
 
+    public boolean hasPendingRequest() {
+        return currentConnection != null;
+    }
+
     public boolean hasRunningRequest() {
-        return /* querying && */currentConnection != null && (currentInputStream != null || currentOutputStream != null);
+        return hasPendingRequest()
+                && (currentInputStream != null || currentOutputStream != null);
     }
 
     public boolean isAborted() {
@@ -689,7 +694,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     public boolean abortRequest() {
         aborted = true;
-        boolean out = hasRunningRequest();
+        boolean out = hasPendingRequest();
         Log.e("HttQuery", "abortRequest_start::runningRequest=" + out);
         if (out) {
             try {
@@ -830,7 +835,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     public boolean disconnect() {
-        boolean out = hasRunningRequest();
+        boolean out = hasPendingRequest();
         if (getCurrentConnection() != null) {
             getCurrentConnection().disconnect();
         }

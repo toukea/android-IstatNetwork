@@ -36,7 +36,7 @@ public abstract class WrittenByteUploadHandler extends HttpUploadHandler<Integer
             throws IOException {
         HttpQuery httpQuery = asyc.getHttpQuery();
         byte[] b = new byte[buffer];
-        int write = 0;
+        int write;
         int totalWrite = 0;
         int uploadSize = stream.available();
         while ((write = stream.read(b)) > -1) {

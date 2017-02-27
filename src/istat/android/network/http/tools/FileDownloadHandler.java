@@ -29,7 +29,7 @@ public abstract class FileDownloadHandler extends HttpAsyncQuery.HttpDownloadHan
     }
 
     @Override
-    public File onBuildResponseBody(HttpURLConnection connexion, InputStream stream, HttpAsyncQuery query) throws Exception {
+    public File onBuildResponseBody(HttpURLConnection connexion, InputStream stream) throws Exception {
         File file = new File(destinationPath);
         FileOutputStream os = new FileOutputStream(file);
         HttpQueryOptions options = this.getQuery().getOptions();

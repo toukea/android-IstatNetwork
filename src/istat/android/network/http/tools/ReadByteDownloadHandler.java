@@ -45,7 +45,7 @@ public abstract class ReadByteDownloadHandler extends
 
     @Override
     public Object onBuildResponseBody(HttpURLConnection currentConnexion,
-                                      InputStream inp, HttpAsyncQuery query) {
+                                      InputStream inp) {
         String out = "";
         byte[] b = new byte[buffer];
         int read;
@@ -55,10 +55,6 @@ public abstract class ReadByteDownloadHandler extends
         try {
             streamSize = streamSize == 0 ? inp.available() : streamSize;
             while ((read = inp.read(b)) > -1) {
-
-                if (query.isCancelled() || !query.isRunning()) {
-                    return null;
-                }
                 out += (encoding != null ? new String(b, 0, read, encoding)
                         : new String(b, 0, read));
                 totalReade += read;

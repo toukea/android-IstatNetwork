@@ -120,18 +120,24 @@ public final class HttpAsyncQuery extends
                 }
             } catch (HttpQuery.AbortionException e) {
                 e.printStackTrace();
-                return null;
             } catch (Exception e) {
                 error = e;
                 e.printStackTrace();
             } finally {
-                HttpQueryResponse response = new HttpQueryResponse(stream, error,
-                        encoding, bufferSize, this);
                 if (!isAborted()) {
                     Log.i("HttpAsycQ", "doInBackground::publish_response");
+                    HttpQueryResponse response = new HttpQueryResponse(stream, error,
+                            encoding, bufferSize, this);
                     publishProgress(response);
                 } else {
                     Log.i("HttpAsycQ", "doInBackground::was aborded");
+                    if (stream != null) {
+                        try {
+                            stream.close();
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
                 }
             }
 
@@ -184,14 +190,6 @@ public final class HttpAsyncQuery extends
     protected void onCancelled() {
         Log.i("HttpAsyncQuery", "onCancelled::canceListener::" + mCancelListener);
         Log.i("HttpAsyncQuery", "onCancelled::httpCallback::" + mHttpCallBack);
-        try {
-            // if (mHttpCallBack != null && mHttpCallBack instanceof OnHttpQueryComplete) {
-            mHttpCallBack.onHttpAborted();
-            Log.i("HttpAsyncQuery", "onCancelled::abort-callaed::" + mHttpCallBack);
-            //
-        } catch (Exception e) {
-            // e.printStackTrace();
-        }
         endTimeStamp = System.currentTimeMillis();
         if (mCancelListener != null) {
             mCancelListener.onCancelled(this);
@@ -405,7 +403,7 @@ public final class HttpAsyncQuery extends
     }
 
     public boolean isPending() {
-        return this.getStatus().equals(Status.PENDING);
+        return this.getStatus().equals(Status.PENDING) || mHttp.hasPendingRequest();
     }
 
     public long getExecutionTime() {
@@ -415,10 +413,17 @@ public final class HttpAsyncQuery extends
     }
 
     public final boolean cancel() {
-        Log.i("HttAsyncQuery", "cancel_start, running=" + mHttp.hasRunningRequest() + ", aborted=" + mHttp.isAborted());
-        if (mHttp.hasRunningRequest()) {
+        Log.i("HttAsyncQuery", "cancel_start, running=" + mHttp.hasRunningRequest() + ", pending=\" + mHttp.hasPendingRequest() +, aborted=" + mHttp.isAborted());
+        if (mHttp.hasPendingRequest()) {
             Log.i("HttQuery", "cancel_has_running");
             new Thread(httpAbortRunnable).start();
+        }
+        if (mHttpCallBack != null) {
+            mHttpCallBack.onHttpAborted();
+        }
+
+        if (mCancelListener != null) {
+            mCancelListener.onCanceling(this);
         }
         return cancel(true);
     }
@@ -664,6 +669,8 @@ public final class HttpAsyncQuery extends
 
 
     public static interface CancelListener {
+        public abstract void onCanceling(HttpAsyncQuery asyncQ);
+
         public abstract void onCancelled(HttpAsyncQuery asyncQ);
     }
 
