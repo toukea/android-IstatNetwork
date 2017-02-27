@@ -12,3 +12,4 @@ bin/*
 project.properties
 proguard-project.txt
 /build/release/
+*.iml
