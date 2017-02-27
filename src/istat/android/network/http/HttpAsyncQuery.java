@@ -118,27 +118,23 @@ public final class HttpAsyncQuery extends
                         stream = mHttp.doGet(url);
                         break;
                 }
+                if (isAborted()) {
+                    throw new HttpQuery.AbortionException(mHttp);
+                }
+                HttpQueryResponse response = new HttpQueryResponse(stream, error, this);
+                publishProgress(response);
             } catch (HttpQuery.AbortionException e) {
                 e.printStackTrace();
-            } catch (Exception e) {
-                error = e;
-                e.printStackTrace();
-            } finally {
-                if (!isAborted()) {
-                    Log.i("HttpAsycQ", "doInBackground::publish_response");
-                    HttpQueryResponse response = new HttpQueryResponse(stream, error,
-                            encoding, bufferSize, this);
-                    publishProgress(response);
-                } else {
-                    Log.i("HttpAsycQ", "doInBackground::was aborded");
-                    if (stream != null) {
-                        try {
-                            stream.close();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
+                Log.i("HttpAsycQ", "doInBackground::was aborded");
+                if (stream != null) {
+                    try {
+                        stream.close();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
                     }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
         }
@@ -503,9 +499,9 @@ public final class HttpAsyncQuery extends
         HttpURLConnection connexion;
         Map<String, List<String>> headers = new HashMap<String, List<String>>();
 
-        public static HttpQueryResponse getErrorInstance(Exception e) {
-            return new HttpQueryResponse(null, e, null);
-        }
+//        public static HttpQueryResponse getErrorInstance(Exception e) {
+//            return new HttpQueryResponse(null, e, null);
+//        }
 
         public int getCode() {
             return code;
@@ -515,19 +511,12 @@ public final class HttpAsyncQuery extends
             return message;
         }
 
-        HttpQueryResponse(InputStream stream, Exception e, HttpAsyncQuery asyncQ) {
+        HttpQueryResponse(InputStream stream, Exception e, HttpAsyncQuery asyncQ) throws HttpQuery.AbortionException {
             mAsyncQ = asyncQ;
-            init(stream, Stream.DEFAULT_ENCODING, Stream.DEFAULT_BUFFER_SIZE, e);
+            init(stream, e);
         }
 
-        HttpQueryResponse(InputStream stream, Exception e, String encoding,
-                          int bufferSize, HttpAsyncQuery asyncQ) {
-            mAsyncQ = asyncQ;
-            init(stream, encoding, bufferSize, e);
-        }
-
-        private void init(InputStream stream, String encoding, int buffersize,
-                          Exception e) {
+        private void init(InputStream stream, Exception e) throws HttpQuery.AbortionException {
             HttpQuery<?> http = mAsyncQ.mHttp;
             connexion = http.getCurrentConnection();
             this.error = e;
@@ -542,6 +531,9 @@ public final class HttpAsyncQuery extends
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
+                    if (ex instanceof IOException && this.mAsyncQ.isAborted()) {
+                        throw new HttpQuery.AbortionException(this.mAsyncQ.mHttp, e);
+                    }
                     code = 0;
                     this.error = ex;
                 }

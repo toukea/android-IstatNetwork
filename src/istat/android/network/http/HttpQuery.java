@@ -321,6 +321,10 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         }
     };
 
+    public InputStream doPost(String url) throws IOException {
+        return doQuery(url, "POST", true, true);
+    }
+
     public InputStream doGet(String url) throws IOException {
         return doGet(url, true);
     }
@@ -437,10 +441,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         }
         currentConnection = conn;
         return conn;
-    }
-
-    public InputStream doPost(String url) throws AbortionException, IOException {
-        return doQuery(url, "POST", true, true);
     }
 
     public interface ParameterHandler {
@@ -845,9 +845,13 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     public static class AbortionException extends IOException {
         HttpQuery httpQuery;
 
-        AbortionException(HttpQuery http, Throwable cause) {
+        AbortionException(HttpQuery http) {
             super("HttpQuery defined by: " + http + ", has been aborted. None IO action can be done anymore.");
             this.httpQuery = http;
+        }
+
+        AbortionException(HttpQuery http, Throwable cause) {
+            this(http);
             initCause(cause);
         }
 
