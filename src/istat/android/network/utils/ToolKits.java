@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,12 +54,17 @@ public final class ToolKits {
         public static boolean isEmpty(String txt) {
             return txt == null || txt.equals("");
         }
+
+        public static String urlEncode(String url) throws UnsupportedEncodingException {
+            return java.net.URLEncoder.encode(url, "UTF-8").replace("+", "%20")
+                    .replaceAll("%2F", "/");
+        }
     }
 
     public static class Software {
-        public static void installApk(Context context, String apkfile) {
+        public static void installApk(Context context, String apkFile) {
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.fromFile(new File(apkfile)),
+            intent.setDataAndType(Uri.fromFile(new File(apkFile)),
                     "application/vnd.android.package-archive");
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
@@ -224,7 +230,7 @@ public final class ToolKits {
                                             int buffer, String encoding, HttpAsyncQuery asyc) {
             String out = "";
             byte[] b = new byte[buffer];
-            int read = 0;
+            int read;
             try {
                 while ((read = inp.read(b)) > -1) {
                     if (asyc.isPaused()) {

@@ -57,6 +57,7 @@ public final class HttpAsyncQuery extends
     private long startTimeStamp = 0;
     private long endTimeStamp = 0;
     static final ConcurrentHashMap<Object, HttpAsyncQuery> taskQueue = new ConcurrentHashMap<Object, HttpAsyncQuery>();
+    Executor mExecutor;
 
     HttpAsyncQuery(HttpQuery<?> http) {
         this.mHttp = http;
@@ -149,7 +150,20 @@ public final class HttpAsyncQuery extends
         }
     }
 
+    public HttpQueryResponse getResult() throws IllegalAccessException {
+        if (result != null) {
+            return result;
+        }
+        if (!isPending()) {
+            throw new IllegalAccessException("Current query can't has result for now. it is still pending.");
+        }
+        throw new IllegalAccessException("Current query has not response for now.");
+    }
+
+    HttpQueryResponse result;
+
     private void dispatchQueryResponse(HttpQueryResponse resp) {
+        result = resp;
         try {
             boolean aborted = isAborted();
             if (resp.isAccepted() && !aborted) {
@@ -372,8 +386,6 @@ public final class HttpAsyncQuery extends
         query.executeURLs(urls);
         return query;
     }
-
-    Executor mExecutor;
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     void executeURLs(String... urls) {
@@ -933,16 +945,48 @@ public final class HttpAsyncQuery extends
         return new AsyncHttp(new HttpAsyncQuery(http));
     }
 
-//    public class HttpPromise {
-//        public final static int WHEN_ANAWAY = 0;
-//        public final static int WHEN_SUCCED = 0;
-//        public final static int WHEN_ERROR = 0;
-//        public final static int WHEN_FAILED = 0;
-//
-//        public HttpPromise runWhen(Runnable runnable, int... when) {
-//            return this;
-//        }
-//    }
+    public HttpPromise then(Runnable runnable) {
+        HttpPromise promise = new HttpPromise(this);
+
+        return promise;
+    }
+
+    public HttpPromise error(Runnable runnable) {
+        HttpPromise promise = new HttpPromise(this);
+
+        return promise;
+    }
+
+    public HttpAsyncQuery runWhen(Runnable runnable, int... when) {
+
+        return this;
+    }
+
+    public final static class HttpPromise {
+        public final static int WHEN_BEGIN = -1;
+        public final static int WHEN_ANYWAY = 0;
+        public final static int WHEN_SUCCEED = 1;
+        public final static int WHEN_ERROR = 2;
+        public final static int WHEN_ABORTION = 3;
+        public final static int WHEN_FAILED = 4;
+        HttpAsyncQuery query;
+
+        public HttpAsyncQuery getQuery() {
+            return query;
+        }
+
+        public HttpPromise(HttpAsyncQuery query) {
+            this.query = query;
+        }
+
+        public HttpPromise then(Runnable runnable) {
+            return this;
+        }
+
+        public HttpPromise error(Runnable runnable) {
+            return this;
+        }
+    }
 
     public boolean dismissCallback() {
         boolean dismiss = mHttpCallBack != null;

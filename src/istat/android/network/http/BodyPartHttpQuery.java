@@ -37,7 +37,7 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
      * @param Name
      * @param Value
      * @return
-     * @throws RuntimeException when called due to addParam not supported for BodyPart.
+     * @throws RuntimeException then called due to addParam not supported for BodyPart.
      */
     @Override
     public BodyPartHttpQuery addParam(String Name, String Value) throws RuntimeException {

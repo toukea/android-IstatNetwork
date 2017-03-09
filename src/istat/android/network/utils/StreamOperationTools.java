@@ -29,7 +29,13 @@ public class StreamOperationTools {
         BufferedReader r = new BufferedReader(new InputStreamReader(
                 inp, encoding));
         while ((line = r.readLine()) != null) {
-            pauseControl(controller);
+            if (controller != null) {
+                pauseControl(controller);
+                if (controller.isStopped()) {
+                    Log.i("HttpQuery", "streamToString::aborted");
+                    break;
+                }
+            }
             total.append(line);
         }
         out = total.toString();
@@ -59,10 +65,12 @@ public class StreamOperationTools {
         byte[] b = new byte[buffer];
         int read;
         while ((read = inp.read(b)) > -1) {
-            pauseControl(controller);
-            if (controller.isStopped()) {
-                Log.i("HttpQuery", "streamToString::aborted");
-                break;
+            if (controller != null) {
+                pauseControl(controller);
+                if (controller.isStopped()) {
+                    Log.i("HttpQuery", "streamToString::aborted");
+                    break;
+                }
             }
             out = out
                     + (encoding != null ? new String(b, 0, read,
@@ -86,8 +94,6 @@ public class StreamOperationTools {
 
     //------------------------------------------------------------
     public static OperationController copyStream(InputStream is, OutputStream os) throws IOException {
-
-
         return copyStream(is, os, DEFAULT_BUFFER_SIZE, 0);
     }
 
@@ -138,10 +144,12 @@ public class StreamOperationTools {
         if (prefix != null && prefix.length > 0)
             os.write(prefix);
         while ((read = inp.read(b)) > -1) {
-            pauseControl(controller);
-            if (controller.isStopped()) {
-                Log.i("HttpQuery", "streamToString::aborted");
-                break;
+            if (controller != null) {
+                pauseControl(controller);
+                if (controller.isStopped()) {
+                    Log.i("HttpQuery", "streamToString::aborted");
+                    break;
+                }
             }
             os.write(b, 0, read);
         }
@@ -161,10 +169,12 @@ public class StreamOperationTools {
         if (prefix != null && prefix.length > 0)
             os.write(prefix);
         while ((read = inp.read(bytes)) > -1) {
-            pauseControl(controller);
-            if (controller.isStopped()) {
-                Log.i("HttpQuery", "streamToString::aborted");
-                break;
+            if (controller != null) {
+                pauseControl(controller);
+                if (controller.isStopped()) {
+                    Log.i("HttpQuery", "streamToString::aborted");
+                    break;
+                }
             }
             os.write(bytes, 0, read);
         }
@@ -172,6 +182,10 @@ public class StreamOperationTools {
             os.write(suffix);
         os.close();
         return os;
+    }
+
+    public static OutputStream[] dispatch(int buffer_size, InputStream is, OutputStream... oss) throws IOException {
+        return dispatch(buffer_size, is, oss);
     }
 
     public static OutputStream[] dispatch(OperationController controller, int buffer_size, InputStream is, OutputStream... oss) throws IOException {
@@ -182,6 +196,13 @@ public class StreamOperationTools {
             if (count == -1)
                 break;
             for (OutputStream os : oss) {
+                if (controller != null) {
+                    pauseControl(controller);
+                    if (controller.isStopped()) {
+                        Log.i("HttpQuery", "streamToString::aborted");
+                        break;
+                    }
+                }
                 os.write(bytes, 0, count);
             }
         }
