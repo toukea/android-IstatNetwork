@@ -1,8 +1,8 @@
 package istat.android.network.http;
 
 import istat.android.network.http.interfaces.DownloadHandler;
+import istat.android.network.http.interfaces.ProgressionListener;
 import istat.android.network.utils.StreamOperationTools;
-import istat.android.network.utils.ToolKits.Stream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
 import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
@@ -71,10 +72,10 @@ public final class HttpAsyncQuery extends
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        // running = true;
+        notifyStarting();
         startTimeStamp = System.currentTimeMillis();
-        taskQueue.put(mHttpCallBack != null ? mHttpCallBack : Math.random()
-                + "", this);
+        this.id = createQueryId();
+        taskQueue.put(this.id, this);
     }
 
     @Override
@@ -164,27 +165,87 @@ public final class HttpAsyncQuery extends
 
     private void dispatchQueryResponse(HttpQueryResponse resp) {
         result = resp;
+        executedRunnable.clear();
         try {
             boolean aborted = isAborted();
             if (resp.isAccepted() && !aborted) {
                 if (resp.isSuccess()) {
-                    mHttpCallBack.onHttpSuccess(resp);
+                    notifySuccess(resp);
                 } else {
-                    HttpQueryError error = new HttpQueryError(resp.getError());
+                    HttpQueryError error;
+                    if (resp.hasError() && resp.getError() instanceof HttpQueryError) {
+                        error = (HttpQueryError) resp.getError();
+                    } else {
+                        error = new HttpQueryError(resp.getError());
+                    }
                     resp.error = error;
-                    mHttpCallBack.onHttpError(resp, error);
+                    notifyError(resp, error);
                 }
-            } else {
-                mHttpCallBack.onHttpFail(resp.getError());
-            }
-            if (!aborted) {
-                mHttpCallBack.onHttComplete(resp);
             }
         } catch (Exception e) {
-            mHttpCallBack.onHttpFail(e);
+            notifyFail(e);
         }
     }
 
+    private void notifyStarting() {
+        int when = WHEN_BEGIN;
+        ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
+        executeWhen(runnableList, when);
+    }
+
+    private void notifySuccess(HttpQueryResponse resp) {
+        int when = WHEN_BEGIN;
+        if (mHttpCallBack != null) {
+            mHttpCallBack.onHttpSuccess(resp);
+        }
+        notifyCompleted(resp);
+        ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
+        executeWhen(runnableList, when);
+    }
+
+    private void notifyError(HttpQueryResponse resp, HttpQueryError error) {
+        int when = WHEN_BEGIN;
+        if (mHttpCallBack != null) {
+            mHttpCallBack.onHttpError(resp, error);
+        }
+        notifyCompleted(resp);
+        ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
+        executeWhen(runnableList, when);
+    }
+
+    private void notifyCompleted(HttpQueryResponse resp) {
+        int when = WHEN_BEGIN;
+        if (mHttpCallBack != null) {
+            mHttpCallBack.onHttComplete(resp);
+        }
+        ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
+        executeWhen(runnableList, when);
+    }
+
+    private void notifyFail(Exception e) {
+        int when = WHEN_FAILED;
+        if (mHttpCallBack != null) {
+            mHttpCallBack.onHttpFail(e);
+        }
+        ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
+        executeWhen(runnableList, when);
+    }
+
+    private void notifyAborted() {
+        int when = WHEN_ABORTION;
+        if (mHttpCallBack != null) {
+            mHttpCallBack.onHttpAborted();
+        }
+
+        if (mCancelListener != null) {
+            mCancelListener.onCanceling(this);
+        }
+        result = HttpQueryResponse.getErrorInstance(new HttpQuery.AbortionException(this.mHttp));
+        ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
+        ConcurrentLinkedQueue<Runnable> runnableAnywayList = runnableTask.get(WHEN_ANYWAY);
+        runnableList.addAll(runnableAnywayList);
+        executeWhen(runnableList, when);
+    }
 
     public boolean isAborted() {
         return isCancelled() || mHttp.isAborted();
@@ -426,13 +487,7 @@ public final class HttpAsyncQuery extends
             Log.i("HttQuery", "cancel_has_running");
             new Thread(httpAbortRunnable).start();
         }
-        if (mHttpCallBack != null) {
-            mHttpCallBack.onHttpAborted();
-        }
-
-        if (mCancelListener != null) {
-            mCancelListener.onCanceling(this);
-        }
+        notifyAborted();
         return cancel(true);
     }
 
@@ -459,7 +514,7 @@ public final class HttpAsyncQuery extends
         }
 
         @Override
-        public void onDownloadProgress(HttpAsyncQuery query, Integer... vars) {
+        public void onProgress(HttpAsyncQuery query, Integer... vars) {
             // NOTHING TO DO
         }
 
@@ -468,7 +523,7 @@ public final class HttpAsyncQuery extends
     public boolean setDownloadHandler(final DownloadHandler downloader) {
         HttpAsyncQuery.HttpDownloadHandler<Integer> downloadHandler = new HttpAsyncQuery.HttpDownloadHandler<Integer>() {
             @Override
-            public void onDownloadProgress(HttpAsyncQuery query, Integer... integers) {
+            public void onProgress(HttpAsyncQuery query, Integer... integers) {
 
             }
 
@@ -511,9 +566,14 @@ public final class HttpAsyncQuery extends
         HttpURLConnection connexion;
         Map<String, List<String>> headers = new HashMap<String, List<String>>();
 
-//        public static HttpQueryResponse getErrorInstance(Exception e) {
-//            return new HttpQueryResponse(null, e, null);
-//        }
+        static HttpQueryResponse getErrorInstance(Exception e) {
+            try {
+                return new HttpQueryResponse(null, e, null);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return null;
+            }
+        }
 
         public int getCode() {
             return code;
@@ -728,17 +788,8 @@ public final class HttpAsyncQuery extends
         }
     }
 
-    <K, V> K getKeyByValue(Map<K, V> map, V value) {
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            if (value.equals(entry.getValue())) {
-                return entry.getKey();
-            }
-        }
-        return null;
-    }
-
     public static abstract class HttpUploadHandler<ProgressVar> implements
-            UpLoadHandler {
+            UpLoadHandler, ProgressionListener<ProgressVar> {
         Handler handler;
         HttpAsyncQuery query;
 
@@ -778,6 +829,7 @@ public final class HttpAsyncQuery extends
         Runnable publishRunner = new Runnable() {
             @Override
             public void run() {
+                onProgress(query, processVars);
                 onUploadProgress(query, processVars);
             }
         };
@@ -813,11 +865,17 @@ public final class HttpAsyncQuery extends
         public abstract void onProceedStreamUpload(OutputStream request,
                                                    InputStream stream, HttpAsyncQuery asyc) throws IOException;
 
-        public abstract void onUploadProgress(HttpAsyncQuery query,
-                                              ProgressVar... vars);
+        public abstract void onProgress(HttpAsyncQuery query,
+                                        ProgressVar... vars);
+
+        @Deprecated
+        protected void onUploadProgress(HttpAsyncQuery query,
+                                        ProgressVar... vars) {
+
+        }
     }
 
-    public static abstract class HttpDownloadHandler<ProgressVar> implements DownloadHandler {
+    public static abstract class HttpDownloadHandler<ProgressVar> implements DownloadHandler, ProgressionListener<ProgressVar> {
         Handler handler;
         HttpAsyncQuery query;
 
@@ -895,14 +953,21 @@ public final class HttpAsyncQuery extends
             getHandler().post(new Runnable() {
                 @Override
                 public void run() {
+                    onProgress(query, vars);
                     onDownloadProgress(query, vars);
                 }
             });
         }
 
 
-        public abstract void onDownloadProgress(HttpAsyncQuery query,
-                                                ProgressVar... vars);
+        public abstract void onProgress(HttpAsyncQuery query,
+                                        ProgressVar... vars);
+
+        @Deprecated
+        protected void onDownloadProgress(HttpAsyncQuery query,
+                                          ProgressVar... vars) {
+
+        }
     }
 
     public final StreamOperationTools.OperationController executionController = new StreamOperationTools.OperationController() {
@@ -957,41 +1022,196 @@ public final class HttpAsyncQuery extends
         return promise;
     }
 
-    public HttpAsyncQuery runWhen(Runnable runnable, int... when) {
+    public final static int WHEN_BEGIN = -1;
+    public final static int WHEN_ANYWAY = 0;
+    public final static int WHEN_SUCCEED = 1;
+    public final static int WHEN_ERROR = 2;
+    public final static int WHEN_ABORTION = 3;
+    public final static int WHEN_FAILED = 4;
 
+    public static interface WhenCallback {
+        public void onWhen(HttpQueryResponse resp, HttpAsyncQuery query, int when);
+    }
+
+    public static interface PromiseCallback {
+        public void onPromise(HttpQueryResponse resp, HttpAsyncQuery query);
+    }
+
+    final ConcurrentHashMap<Runnable, Integer> executedRunnable = new ConcurrentHashMap<Runnable, Integer>();
+    final ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Runnable>> runnableTask = new ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Runnable>>();
+
+    public HttpAsyncQuery runWhen(final WhenCallback callback, final int... when) {
+        if (callback == null)
+            return this;
+        return runWhen(new Runnable() {
+            @Override
+            public void run() {
+                HttpQueryResponse resp = null;
+                int when = WHEN_ANYWAY;
+                try {
+                    resp = getResult();
+                    when = executedRunnable.get(this);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                callback.onWhen(resp, HttpAsyncQuery.this, when);
+            }
+        }, when);
+    }
+
+    public HttpAsyncQuery runWhen(Runnable runnable, int... when) {
+        if (runnable == null) {
+            return this;
+        }
+        for (int value : when) {
+            addWhen(runnable, value);
+        }
         return this;
     }
 
+    private void addWhen(Runnable runnable, int conditionTime) {
+        if (!isWhenContain(runnable, conditionTime)) {
+            ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(conditionTime);
+            if (runnableList == null) {
+                runnableList = new ConcurrentLinkedQueue<Runnable>();
+            }
+            runnableList.add(runnable);
+            runnableTask.put(conditionTime, runnableList);
+        }
+    }
+
+    private boolean isWhenContain(Runnable run, int conditionTime) {
+        ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(conditionTime);
+        if (runnableList == null || runnableList.isEmpty()) {
+            return false;
+        }
+        return runnableList.contains(run);
+    }
+
+    private void executeWhen(ConcurrentLinkedQueue<Runnable> runnableList, int when) {
+        if (runnableList != null && runnableList.size() > 0) {
+            for (Runnable runnable : runnableList) {
+                if (!executedRunnable.contains(runnable)) {
+                    runnable.run();
+                    executedRunnable.put(runnable, when);
+                }
+            }
+        }
+    }
+
     public final static class HttpPromise {
-        public final static int WHEN_BEGIN = -1;
-        public final static int WHEN_ANYWAY = 0;
-        public final static int WHEN_SUCCEED = 1;
-        public final static int WHEN_ERROR = 2;
-        public final static int WHEN_ABORTION = 3;
-        public final static int WHEN_FAILED = 4;
+
         HttpAsyncQuery query;
 
         public HttpAsyncQuery getQuery() {
             return query;
         }
 
-        public HttpPromise(HttpAsyncQuery query) {
+        HttpPromise(HttpAsyncQuery query) {
             this.query = query;
         }
 
-        public HttpPromise then(Runnable runnable) {
+        public HttpPromise then(final PromiseCallback callback) {
+            if (callback == null) {
+                return this;
+            }
+            query.runWhen(new WhenCallback() {
+                @Override
+                public void onWhen(HttpQueryResponse resp, HttpAsyncQuery query, int when) {
+                    callback.onPromise(resp, query);
+                }
+            }, WHEN_SUCCEED);
             return this;
         }
 
-        public HttpPromise error(Runnable runnable) {
+        public HttpPromise then(Runnable runnable) {
+            if (runnable == null) {
+                return this;
+            }
+            query.runWhen(runnable, WHEN_SUCCEED);
             return this;
         }
+
+        public HttpPromise error(final PromiseCallback pCallback, int when) {
+            if (pCallback == null) {
+                return this;
+            }
+            WhenCallback callback = new WhenCallback() {
+                @Override
+                public void onWhen(HttpQueryResponse resp, HttpAsyncQuery query, int when) {
+                    pCallback.onPromise(resp, query);
+                }
+            };
+            if (when != WHEN_FAILED && when != WHEN_ERROR && when != WHEN_ABORTION) {
+                query.runWhen(callback, WHEN_FAILED, WHEN_ERROR, WHEN_FAILED, WHEN_ABORTION);
+            } else {
+                query.runWhen(callback, when);
+            }
+            return this;
+        }
+
+        public void error(WhenCallback callback) {
+            if (callback == null) {
+                return;
+            }
+            query.runWhen(callback, WHEN_FAILED, WHEN_ERROR, WHEN_FAILED, WHEN_ABORTION);
+        }
+
+        public HttpPromise error(Runnable runnable) {
+            if (runnable == null) {
+                return this;
+            }
+            query.runWhen(runnable, WHEN_FAILED, WHEN_ERROR, WHEN_FAILED, WHEN_ABORTION);
+            return this;
+        }
+    }
+
+    public boolean dismissAllRunWhen() {
+        boolean isEmpty = runnableTask.isEmpty();
+        runnableTask.clear();
+        return !isEmpty;
+    }
+
+    public boolean dismissRunWhen(int... when) {
+        boolean isEmpty = false;
+        for (int i : when) {
+            ConcurrentLinkedQueue<Runnable> runnables = runnableTask.get(i);
+            if (runnables != null) {
+                isEmpty &= runnables.isEmpty();
+                runnables.clear();
+            }
+        }
+        return !isEmpty;
     }
 
     public boolean dismissCallback() {
         boolean dismiss = mHttpCallBack != null;
         mHttpCallBack = null;
         return dismiss;
+    }
+
+    public long getStartTimeStamp() {
+        return startTimeStamp;
+    }
+
+    public long getEndTimeStamp() {
+        return endTimeStamp;
+    }
+
+    String id;
+
+    static String createQueryId() {
+        long time = System.currentTimeMillis();
+        while (taskQueue.contains(time + "")) {
+            if (taskQueue.contains(time)) {
+                time++;
+            }
+        }
+        return time + "";
+    }
+
+    public String getID() {
+        return this.id;
     }
 
     public HttpQuery<?> getHttpQuery() {

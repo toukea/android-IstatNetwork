@@ -2,10 +2,9 @@ apply plugin: 'com.android.library'
 ext {
     PUBLISH_GROUP_ID = 'istat.android.network.http'
     PUBLISH_ARTIFACT_ID = 'istat-network'
-    PUBLISH_VERSION = '2.4.2'
+    PUBLISH_VERSION = '2.5.0'
 }
 apply from: 'release-jar.gradle'
-//apply from: 'release-aar.gradle'
 dependencies {
     // compile fileTree(dir: 'libs', include: '*.jar')
 }

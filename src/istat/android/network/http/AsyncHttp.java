@@ -87,7 +87,7 @@ public final class AsyncHttp {
     public AsyncHttp useDownloader(final DownloadHandler downloader) {
         this.mAsyncQuery.downloadHandler = new HttpAsyncQuery.HttpDownloadHandler<Integer>() {
             @Override
-            public void onDownloadProgress(HttpAsyncQuery query, Integer... integers) {
+            public void onProgress(HttpAsyncQuery query, Integer... integers) {
 
             }
 

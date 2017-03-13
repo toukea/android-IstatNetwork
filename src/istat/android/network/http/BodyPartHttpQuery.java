@@ -1,6 +1,8 @@
 package istat.android.network.http;
 
 
+import org.json.JSONObject;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +26,11 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
 
     public BodyPartHttpQuery(File obj) {
         this((Object) obj);
+    }
+
+    public BodyPartHttpQuery(JSONObject jsonObject) {
+        this((Object) jsonObject);
+        this.setContentType("Application/json");
     }
 
     public BodyPartHttpQuery(Object obj, UpLoadHandler handler) {
@@ -98,11 +105,17 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
 
     @Override
     protected long onWriteDataToOutputStream(String method, OutputStream dataOutputStream) throws IOException {
-        long size = 0;
-        if (part instanceof File) {
-            onWriteFileToOutputStream((File) this.part, dataOutputStream);
+        long size;
+        if (part instanceof InputStream) {
+            InputStream inputStream = (InputStream) part;
+            size = inputStream.available();
+            getUploadHandler().onUploadStream(dataOutputStream, inputStream);
+        } else if (part instanceof File) {
+            size = onWriteFileToOutputStream((File) this.part, dataOutputStream);
         } else {
-            InputStream inputStream = new ByteArrayInputStream(part.toString().getBytes());
+            String sendable = part.toString();
+            size = sendable.length();
+            InputStream inputStream = new ByteArrayInputStream(sendable.getBytes());
             getUploadHandler().onUploadStream(dataOutputStream, inputStream);
         }
         return size;
@@ -121,11 +134,6 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
         }
         getUploadHandler().onUploadStream(dataOutputStream, stream);
         return size;
-    }
-
-
-    public void setUploadHandler(UpLoadHandler uploadHandler) {
-        this.uploadHandler = uploadHandler;
     }
 
 }

@@ -26,7 +26,9 @@ public class HttpQueryError extends RuntimeException {
     public HttpQueryError(Exception e) {
         super(e);
         if (e instanceof HttpQueryError) {
-            this.code = ((HttpQueryError) e).getCode();
+            HttpQueryError error = ((HttpQueryError) e);
+            this.code = error.getCode();
+            this.body = error.getBody();
         }
     }
 
