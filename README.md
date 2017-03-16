@@ -16,7 +16,7 @@ And Android Library to make Http Query Easy.
     };
     /*
         create an Http Query
-        can also use MutipartHttpQuery or your own HttpQuery<?> child class instance
+        can also use MutipartHttpQuery, BodyPartHttpQuery or your own HttpQuery<?> child class instance
      */
     SimpleHttpQuery http = new SimpleHttpQuery();
     //add http parm to your http query
