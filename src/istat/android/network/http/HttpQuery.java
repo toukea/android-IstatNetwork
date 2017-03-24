@@ -659,6 +659,9 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         } else if (handleError) {
             stream = conn.getErrorStream();
         }
+        if (isAborted()) {
+            throw new AbortionException(this);
+        }
         if (stream != null) {
             eval = stream.available();
         }

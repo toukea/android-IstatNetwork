@@ -120,9 +120,6 @@ public final class HttpAsyncQuery extends
                         stream = mHttp.doGet(url);
                         break;
                 }
-                if (isAborted()) {
-                    throw new HttpQuery.AbortionException(mHttp);
-                }
                 HttpQueryResponse response = new HttpQueryResponse(stream, error, this);
                 publishProgress(response);
             } catch (HttpQuery.AbortionException e) {
@@ -137,6 +134,8 @@ public final class HttpAsyncQuery extends
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                HttpQueryResponse errorResponse = HttpQueryResponse.getErrorInstance(e);
+                publishProgress(errorResponse);
             }
 
         }
@@ -1012,13 +1011,31 @@ public final class HttpAsyncQuery extends
 
     public HttpPromise then(Runnable runnable) {
         HttpPromise promise = new HttpPromise(this);
+        promise.then(runnable);
+        return promise;
+    }
 
+    public HttpPromise then(PromiseCallback callback) {
+        HttpPromise promise = new HttpPromise(this);
+        promise.then(callback);
         return promise;
     }
 
     public HttpPromise error(Runnable runnable) {
         HttpPromise promise = new HttpPromise(this);
+        promise.error(runnable);
+        return promise;
+    }
 
+    public HttpPromise error(WhenCallback callback) {
+        HttpPromise promise = new HttpPromise(this);
+        promise.error(callback);
+        return promise;
+    }
+
+    public HttpPromise error(PromiseCallback callback, int when) {
+        HttpPromise promise = new HttpPromise(this);
+        promise.error(callback, when);
         return promise;
     }
 
@@ -1143,7 +1160,7 @@ public final class HttpAsyncQuery extends
                 }
             };
             if (when != WHEN_FAILED && when != WHEN_ERROR && when != WHEN_ABORTION) {
-                query.runWhen(callback, WHEN_FAILED, WHEN_ERROR, WHEN_FAILED, WHEN_ABORTION);
+                query.runWhen(callback, WHEN_FAILED, WHEN_ERROR, WHEN_ABORTION);
             } else {
                 query.runWhen(callback, when);
             }
@@ -1154,14 +1171,14 @@ public final class HttpAsyncQuery extends
             if (callback == null) {
                 return;
             }
-            query.runWhen(callback, WHEN_FAILED, WHEN_ERROR, WHEN_FAILED, WHEN_ABORTION);
+            query.runWhen(callback, WHEN_FAILED, WHEN_ERROR, WHEN_ABORTION);
         }
 
         public HttpPromise error(Runnable runnable) {
             if (runnable == null) {
                 return this;
             }
-            query.runWhen(runnable, WHEN_FAILED, WHEN_ERROR, WHEN_FAILED, WHEN_ABORTION);
+            query.runWhen(runnable, WHEN_FAILED, WHEN_ERROR,  WHEN_ABORTION);
             return this;
         }
     }

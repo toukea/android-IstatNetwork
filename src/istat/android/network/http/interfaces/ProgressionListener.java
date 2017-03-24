@@ -7,6 +7,6 @@ import istat.android.network.http.HttpAsyncQuery;
  */
 
 public interface ProgressionListener<ProgressVar> {
-    public void onProgress(HttpAsyncQuery query,
-                           ProgressVar... vars);
+    void onProgress(HttpAsyncQuery query,
+                    ProgressVar... vars);
 }

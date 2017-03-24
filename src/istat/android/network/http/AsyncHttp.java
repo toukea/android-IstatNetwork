@@ -209,7 +209,19 @@ public final class AsyncHttp {
         return this;
     }
 
+    /**
+     * use {@link #setQueryCallback(HttpAsyncQuery.HttpQueryCallback)} instead.
+     *
+     * @param callback
+     * @return
+     */
+    @Deprecated
     public AsyncHttp setQueryCallBack(HttpAsyncQuery.HttpQueryCallback callback) {
+        this.mAsyncQuery.mHttpCallBack = callback;
+        return this;
+    }
+
+    public AsyncHttp setQueryCallback(HttpAsyncQuery.HttpQueryCallback callback) {
         this.mAsyncQuery.mHttpCallBack = callback;
         return this;
     }
