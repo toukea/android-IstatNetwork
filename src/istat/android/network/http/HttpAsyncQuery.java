@@ -34,19 +34,19 @@ public final class HttpAsyncQuery extends
     public final static int TYPE_GET = 1, TYPE_POST = 2, TYPE_PUT = 3,
             TYPE_HEAD = 4, TYPE_DELETE = 5, TYPE_COPY = 6, TYPE_PATCH = 7,
             TYPE_RENAME = 8, TYPE_MOVE = 9, DEFAULT_BUFFER_SIZE = 16384;
-    //    final static HashMap<Integer, String> METHOD_MAP = new HashMap<Integer, String>() {
-//        {
-//            put(TYPE_COPY, "COPY");
-//            put(TYPE_MOVE, "MOVE");
-//            put(TYPE_GET, "GET");
-//            put(TYPE_POST, "POST");
-//            put(TYPE_PATCH, "PATCH");
-//            put(TYPE_HEAD, "HEAD");
-//            put(TYPE_PUT, "PUT");
-//            put(TYPE_DELETE, "DELETE");
-//
-//        }
-//    };
+    public final static HashMap<Integer, String> METHOD_TYPE_NAME_MAP = new HashMap<Integer, String>() {
+        {
+            put(TYPE_COPY, "COPY");
+            put(TYPE_MOVE, "MOVE");
+            put(TYPE_GET, "GET");
+            put(TYPE_POST, "POST");
+            put(TYPE_PATCH, "PATCH");
+            put(TYPE_HEAD, "HEAD");
+            put(TYPE_PUT, "PUT");
+            put(TYPE_DELETE, "DELETE");
+
+        }
+    };
     public final static String DEFAULT_ENCODING = "UTF-8";
     UpLoadHandler uploadHandler;
     HttpQueryCallback mHttpCallBack;
@@ -554,6 +554,16 @@ public final class HttpAsyncQuery extends
 
     public void pause() {
         executionController.pause();
+    }
+
+    public boolean isSuccess() {
+        try {
+            HttpQueryResponse result = getResult();
+            return result != null && result.isSuccess();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public static class HttpQueryResponse {
@@ -1178,7 +1188,7 @@ public final class HttpAsyncQuery extends
             if (runnable == null) {
                 return this;
             }
-            query.runWhen(runnable, WHEN_FAILED, WHEN_ERROR,  WHEN_ABORTION);
+            query.runWhen(runnable, WHEN_FAILED, WHEN_ERROR, WHEN_ABORTION);
             return this;
         }
     }
