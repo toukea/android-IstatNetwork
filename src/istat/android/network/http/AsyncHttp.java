@@ -194,8 +194,11 @@ public final class AsyncHttp {
         return this.mAsyncQuery;
     }
 
-    @Deprecated
-    public HttpAsyncQuery doQuery(int method, HttpAsyncQuery.HttpUploadHandler<?> uploader, HttpAsyncQuery.HttpQueryCallback callback, String url) {
+    public HttpAsyncQuery doQuery(int method, HttpAsyncQuery.HttpQueryCallback callback, String url) {
+        return this.doQuery(method, this.mAsyncQuery.uploadHandler, callback, url);
+    }
+
+    public HttpAsyncQuery doQuery(int method, UpLoadHandler uploader, HttpAsyncQuery.HttpQueryCallback callback, String url) {
         this.mAsyncQuery.type = method;
         this.mAsyncQuery.mHttpCallBack = callback;
         this.mAsyncQuery.setUploadHandler(uploader);
