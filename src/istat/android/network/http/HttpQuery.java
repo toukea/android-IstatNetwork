@@ -293,9 +293,10 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     public void setUploadHandler(UpLoadHandler uploadHandler) {
-        if (uploadHandler != null) {
-            this.uploadHandler = uploadHandler;
+        if (uploadHandler == null) {
+            uploadHandler = getDefaultUploader();
         }
+        this.uploadHandler = uploadHandler;
     }
 
     int uploadBufferSize = ToolKits.Stream.DEFAULT_BUFFER_SIZE;
@@ -308,18 +309,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return uploadHandler;
     }
 
-    UpLoadHandler uploadHandler = new UpLoadHandler() {
-        @Override
-        public void onUploadStream(OutputStream request, InputStream stream)
-                throws IOException {
-            byte[] b = new byte[uploadBufferSize];
-            int read;
-            while ((read = stream.read(b)) > -1) {
-                request.write(b, 0, read);
-            }
-            stream.close();
-        }
-    };
+    UpLoadHandler uploadHandler = getDefaultUploader();
 
     public InputStream doPost(String url) throws IOException {
         return doQuery(url, "POST", true, true);
@@ -441,6 +431,21 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         }
         currentConnection = conn;
         return conn;
+    }
+
+    private UpLoadHandler getDefaultUploader() {
+        return new UpLoadHandler() {
+            @Override
+            public void onUploadStream(OutputStream request, InputStream stream)
+                    throws IOException {
+                byte[] b = new byte[uploadBufferSize];
+                int read;
+                while ((read = stream.read(b)) > -1) {
+                    request.write(b, 0, read);
+                }
+                stream.close();
+            }
+        };
     }
 
     public interface ParameterHandler {
