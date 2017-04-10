@@ -186,21 +186,8 @@ public final class AsyncHttp {
         return this.mAsyncQuery;
     }
 
-
     public AsyncHttp setCancelListener(HttpAsyncQuery.CancelListener listener) {
         this.mAsyncQuery.mCancelListener = listener;
-        return this;
-    }
-
-    /**
-     * use {@link #setQueryCallback(HttpAsyncQuery.HttpQueryCallback)} instead.
-     *
-     * @param callback
-     * @return
-     */
-    @Deprecated
-    public AsyncHttp setQueryCallBack(HttpAsyncQuery.HttpQueryCallback callback) {
-        this.mAsyncQuery.mHttpCallBack = callback;
         return this;
     }
 
