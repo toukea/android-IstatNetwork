@@ -12,7 +12,7 @@ import istat.android.network.http.HttpQuery;
 import istat.android.network.http.MultipartHttpQuery;
 import istat.android.network.utils.ToolKits.Stream;
 
-public abstract class WrittenByteUploadHandler extends HttpUploadHandler<Integer> {
+public abstract class WrittenByteUploadHandler extends HttpUploadHandler<Long> {
     int buffer = Stream.DEFAULT_BUFFER_SIZE;
 
     public WrittenByteUploadHandler() {
@@ -37,8 +37,8 @@ public abstract class WrittenByteUploadHandler extends HttpUploadHandler<Integer
         HttpQuery httpQuery = asyc.getHttpQuery();
         byte[] b = new byte[buffer];
         int write;
-        int totalWrite = 0;
-        int uploadSize = stream.available();
+        long totalWrite = 0;
+        long uploadSize = stream.available();
         while ((write = stream.read(b)) > -1) {
             if (httpQuery.isAborted() || !httpQuery.hasRunningRequest()) {
                 Log.i("Uploader", "onUploadStream::Aborted");
@@ -48,7 +48,7 @@ public abstract class WrittenByteUploadHandler extends HttpUploadHandler<Integer
             request.write(b, 0, write);
             request.flush();
             totalWrite += write;
-            int writePercentage = uploadSize > 0 ? (100 * totalWrite / uploadSize) : 0;
+            long writePercentage = uploadSize > 0 ? (100 * totalWrite / uploadSize) : 0;
             publishProgression(totalWrite, uploadSize, writePercentage);
         }
         stream.close();
