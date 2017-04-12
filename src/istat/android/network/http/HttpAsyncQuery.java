@@ -495,31 +495,9 @@ public final class HttpAsyncQuery extends
     }
 
     // DEFAULT PROCESS CALLBACK IF USER DON'T HAS DEFINE it Own
-    HttpDownloadHandler<?> downloadHandler = new HttpDownloadHandler<Integer>() {
-        {
-            this.query = HttpAsyncQuery.this;
-        }
+    HttpDownloadHandler<?> downloadHandler = getDefaultDownloader();
 
-        @Override
-        public String onBuildResponseBody(HttpURLConnection currentConnexion,
-                                          InputStream stream) {
-            try {
-                return StreamOperationTools.streamToString(executionController,
-                        stream, bufferSize, encoding);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return "";
-            }
-        }
-
-        @Override
-        public void onProgress(HttpAsyncQuery query, Integer... vars) {
-            // NOTHING TO DO
-        }
-
-    };
-
-    public boolean setDownloadHandler(final DownloadHandler downloader) {
+    public HttpAsyncQuery setDownloadHandler(final DownloadHandler downloader) {
         HttpAsyncQuery.HttpDownloadHandler<Integer> downloadHandler = new HttpAsyncQuery.HttpDownloadHandler<Integer>() {
             @Override
             public void onProgress(HttpAsyncQuery query, Integer... integers) {
@@ -528,20 +506,21 @@ public final class HttpAsyncQuery extends
 
             @Override
             public Object onBuildResponseBody(HttpURLConnection connexion, InputStream stream) throws Exception {
-                return downloader.onBuildResponseBody(connexion, stream);
+                DownloadHandler handler = downloader != null ? downloader : getDefaultDownloader();
+                return handler.onBuildResponseBody(connexion, stream);
             }
 
         };
         return setDownloadHandler(downloadHandler);
     }
 
-    public boolean setDownloadHandler(HttpDownloadHandler<?> downloader) {
-        if (downloader == null || this.downloadHandler == downloader) {
-            return false;
+    public HttpAsyncQuery setDownloadHandler(HttpDownloadHandler<?> downloader) {
+        if (downloader == null) {
+            downloader = getDefaultDownloader();
         }
+        downloader.query = this;
         this.downloadHandler = downloader;
-        this.downloadHandler.query = this;
-        return true;
+        return this;
     }
 
     public boolean isPaused() {
@@ -564,6 +543,32 @@ public final class HttpAsyncQuery extends
             e.printStackTrace();
             return false;
         }
+    }
+
+    HttpDownloadHandler<?> getDefaultDownloader() {
+        return new HttpDownloadHandler<Integer>() {
+            {
+                this.query = HttpAsyncQuery.this;
+            }
+
+            @Override
+            public String onBuildResponseBody(HttpURLConnection currentConnexion,
+                                              InputStream stream) {
+                try {
+                    return StreamOperationTools.streamToString(executionController,
+                            stream, bufferSize, encoding);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return "";
+                }
+            }
+
+            @Override
+            public void onProgress(HttpAsyncQuery query, Integer... vars) {
+                // NOTHING TO DO
+            }
+
+        };
     }
 
     public static class HttpQueryResponse {
