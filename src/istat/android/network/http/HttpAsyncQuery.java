@@ -30,7 +30,7 @@ import android.util.Log;
 
 
 public final class HttpAsyncQuery extends
-        AsyncTask<String, HttpQueryResponse, Void> {
+        AsyncTask<String, HttpQueryResponse, HttpQueryResponse> {
     public final static int TYPE_GET = 1, TYPE_POST = 2, TYPE_PUT = 3,
             TYPE_HEAD = 4, TYPE_DELETE = 5, TYPE_COPY = 6, TYPE_PATCH = 7,
             TYPE_RENAME = 8, TYPE_MOVE = 9, DEFAULT_BUFFER_SIZE = 16384;
@@ -79,7 +79,7 @@ public final class HttpAsyncQuery extends
     }
 
     @Override
-    protected Void doInBackground(String... urls) {
+    protected HttpQueryResponse doInBackground(String... urls) {
         for (String url : urls) {
             if (isCancelled()) {
                 break;
@@ -121,7 +121,7 @@ public final class HttpAsyncQuery extends
                         break;
                 }
                 HttpQueryResponse response = new HttpQueryResponse(stream, error, this);
-                publishProgress(response);
+                return response;
             } catch (HttpQuery.AbortionException e) {
                 e.printStackTrace();
                 Log.i("HttpAsycQ", "doInBackground::was aborded");
@@ -134,20 +134,16 @@ public final class HttpAsyncQuery extends
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                HttpQueryResponse errorResponse = HttpQueryResponse.getErrorInstance(e);
-                publishProgress(errorResponse);
+                HttpQueryResponse errorResponse = HttpQueryResponse.getErrorInstance(e, this);
+                return errorResponse;
             }
-
         }
         return null;
     }
 
     @Override
     protected void onProgressUpdate(HttpQueryResponse... values) {
-        HttpQueryResponse response = values.length > 0 ? values[0] : null;
-        if (mHttpCallBack != null && !mHttp.isAborted() && !isCancelled()) {
-            dispatchQueryResponse(response);
-        }
+
     }
 
     public HttpQueryResponse getResult() throws IllegalAccessException {
@@ -239,7 +235,7 @@ public final class HttpAsyncQuery extends
         if (mCancelListener != null) {
             mCancelListener.onCanceling(this);
         }
-        result = HttpQueryResponse.getErrorInstance(new HttpQuery.AbortionException(this.mHttp));
+        result = HttpQueryResponse.getErrorInstance(new HttpQuery.AbortionException(this.mHttp), this);
         ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
         ConcurrentLinkedQueue<Runnable> runnableAnywayList = runnableTask.get(WHEN_ANYWAY);
         runnableList.addAll(runnableAnywayList);
@@ -251,8 +247,14 @@ public final class HttpAsyncQuery extends
     }
 
     @Override
-    protected void onPostExecute(Void result) {
+    protected void onPostExecute(HttpQueryResponse result) {
         super.onPostExecute(result);
+        if (result == null) {
+            return;
+        }
+        if (mHttpCallBack != null && !mHttp.isAborted() && !isCancelled()) {
+            dispatchQueryResponse(result);
+        }
         taskQueue.values().removeAll(Collections.singletonList(this));
     }
 
@@ -580,9 +582,9 @@ public final class HttpAsyncQuery extends
         HttpURLConnection connexion;
         Map<String, List<String>> headers = new HashMap<String, List<String>>();
 
-        static HttpQueryResponse getErrorInstance(Exception e) {
+        static HttpQueryResponse getErrorInstance(Exception e, HttpAsyncQuery asycQ) {
             try {
-                return new HttpQueryResponse(null, e, null);
+                return new HttpQueryResponse(null, e, asycQ);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 return null;
@@ -844,7 +846,6 @@ public final class HttpAsyncQuery extends
             @Override
             public void run() {
                 onProgress(query, processVars);
-                onUploadProgress(query, processVars);
             }
         };
         ProgressVar[] processVars;
@@ -881,12 +882,6 @@ public final class HttpAsyncQuery extends
 
         public abstract void onProgress(HttpAsyncQuery query,
                                         ProgressVar... vars);
-
-        @Deprecated
-        protected void onUploadProgress(HttpAsyncQuery query,
-                                        ProgressVar... vars) {
-
-        }
     }
 
     public static abstract class HttpDownloadHandler<ProgressVar> implements DownloadHandler, ProgressionListener<ProgressVar> {
@@ -968,7 +963,6 @@ public final class HttpAsyncQuery extends
                 @Override
                 public void run() {
                     onProgress(query, vars);
-                    onDownloadProgress(query, vars);
                 }
             });
         }
@@ -977,11 +971,6 @@ public final class HttpAsyncQuery extends
         public abstract void onProgress(HttpAsyncQuery query,
                                         ProgressVar... vars);
 
-        @Deprecated
-        protected void onDownloadProgress(HttpAsyncQuery query,
-                                          ProgressVar... vars) {
-
-        }
     }
 
     public final StreamOperationTools.OperationController executionController = new StreamOperationTools.OperationController() {
