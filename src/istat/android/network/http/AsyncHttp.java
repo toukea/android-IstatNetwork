@@ -174,6 +174,10 @@ public final class AsyncHttp {
         return doQuery(HttpAsyncQuery.TYPE_PUT, uploader, callback, url);
     }
 
+    public HttpAsyncQuery doPut(String url) {
+        return doPut(this.mAsyncQuery.uploadHandler, this.mAsyncQuery.mHttpCallBack, url);
+    }
+
     public HttpAsyncQuery doQuery(int method, HttpAsyncQuery.HttpQueryCallback callback, String url) {
         return this.doQuery(method, this.mAsyncQuery.uploadHandler, callback, url);
     }
