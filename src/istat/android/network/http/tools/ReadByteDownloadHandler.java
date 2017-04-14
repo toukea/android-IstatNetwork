@@ -7,7 +7,7 @@ import istat.android.network.http.HttpAsyncQuery;
 import istat.android.network.utils.ToolKits.Stream;
 
 public abstract class ReadByteDownloadHandler extends
-        HttpAsyncQuery.HttpDownloadHandler<Integer> {
+        HttpAsyncQuery.HttpDownloadHandler<Long> {
     int buffer = Stream.DEFAULT_BUFFER_SIZE;
     String encoding = Stream.DEFAULT_ENCODING;
 
@@ -49,8 +49,8 @@ public abstract class ReadByteDownloadHandler extends
         String out = "";
         byte[] b = new byte[buffer];
         int read;
-        int totalReade = 0;
-        int streamSize = currentConnexion == null ? 0 : currentConnexion
+        long totalReade = 0;
+        long streamSize = currentConnexion == null ? 0 : currentConnexion
                 .getContentLength();
         try {
             streamSize = streamSize == 0 ? inp.available() : streamSize;
