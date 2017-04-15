@@ -28,6 +28,9 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 public final class HttpAsyncQuery extends
         AsyncTask<String, HttpQueryResponse, HttpQueryResponse> {
@@ -238,7 +241,11 @@ public final class HttpAsyncQuery extends
         result = HttpQueryResponse.getErrorInstance(new HttpQuery.AbortionException(this.mHttp), this);
         ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
         ConcurrentLinkedQueue<Runnable> runnableAnywayList = runnableTask.get(WHEN_ANYWAY);
-        runnableList.addAll(runnableAnywayList);
+        if (runnableList != null && runnableAnywayList != null) {
+            runnableList.addAll(runnableAnywayList);
+        } else {
+            runnableList = runnableAnywayList;
+        }
         executeWhen(runnableList, when);
     }
 
@@ -724,6 +731,12 @@ public final class HttpAsyncQuery extends
             if (body == null)
                 return null;
             return body.toString();
+        }
+
+        public JSONObject getBodyAsJson() throws JSONException {
+            if (body == null)
+                return null;
+            return new JSONObject(body.toString());
         }
 
         public Exception getError() {
