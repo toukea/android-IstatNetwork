@@ -49,6 +49,12 @@ import android.util.Log;
  * @author Toukea Tatsi (Istat)
  */
 public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
+    public final static String METHOD_GET = "GET",
+            METHOD_POST = "POST",
+            METHOD_HEAD = "HEAD",
+            METHOD_PUT = "PUT",
+            METHOD_PATCH = "PATCH",
+            METHOD_DELETE = "DELETE";
     protected HttpQueryOptions mOptions = new HttpQueryOptions();
     protected List<String> urlPramNames = new ArrayList<String>();
     protected HashMap<String, String> parameters = new HashMap<String, String>();

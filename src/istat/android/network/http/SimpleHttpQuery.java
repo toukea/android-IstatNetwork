@@ -34,7 +34,7 @@ public class SimpleHttpQuery extends HttpQuery<SimpleHttpQuery> {
             @Override
             public String onStringifyQueryParams(String method,
                                                  HashMap<String, String> params, String encoding) {
-                if ("GET".equalsIgnoreCase(method) || postHandler == null) {
+                if (METHOD_GET.equalsIgnoreCase(method) || postHandler == null) {
                     return ParameterHandler.DEFAULT_HANDLER
                             .onStringifyQueryParams(method, params, encoding);
                 }
