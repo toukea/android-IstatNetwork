@@ -27,7 +27,7 @@ And Android Library to make Http Query Easy.
             .useEncoding("UTF-8")//optional default =UTF-8
             .useBufferSize(1024)//optional default=1024
             .useDownloader(downloader)//optional default download plain/text.
-            .setQueryCallBack(callback)//add a callback to call when request completed
+            .setQueryCallback(callback)//add a callback to call when request completed
             .doGet("http://www.google.com");
             //.doGet(callback, "http://www.google.com"); //make a GET Request with a specific callback
 ```
