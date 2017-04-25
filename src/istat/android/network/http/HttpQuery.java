@@ -273,7 +273,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         urlPramNames.remove(name);
     }
 
-    public void removeHeder(String name) {
+    public void removeHeader(String name) {
         headers.remove(name);
     }
 
