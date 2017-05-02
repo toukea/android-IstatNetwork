@@ -137,7 +137,7 @@ public final class HttpAsyncQuery extends
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                HttpQueryResponse errorResponse = HttpQueryResponse.getErrorInstance(e, this);
+                HttpQueryResponse errorResponse = HttpQueryResponse.newErrorInstance(e, this);
                 return errorResponse;
             }
         }
@@ -192,7 +192,7 @@ public final class HttpAsyncQuery extends
     }
 
     private void notifySuccess(HttpQueryResponse resp) {
-        int when = WHEN_BEGIN;
+        int when = WHEN_SUCCEED;
         if (mHttpCallBack != null) {
             mHttpCallBack.onHttpSuccess(resp);
         }
@@ -202,7 +202,7 @@ public final class HttpAsyncQuery extends
     }
 
     private void notifyError(HttpQueryResponse resp, HttpQueryError error) {
-        int when = WHEN_BEGIN;
+        int when = WHEN_ERROR;
         if (mHttpCallBack != null) {
             mHttpCallBack.onHttpError(resp, error);
         }
@@ -212,7 +212,7 @@ public final class HttpAsyncQuery extends
     }
 
     private void notifyCompleted(HttpQueryResponse resp) {
-        int when = WHEN_BEGIN;
+        int when = WHEN_ANYWAY;
         if (mHttpCallBack != null) {
             mHttpCallBack.onHttComplete(resp);
         }
@@ -225,6 +225,7 @@ public final class HttpAsyncQuery extends
         if (mHttpCallBack != null) {
             mHttpCallBack.onHttpFail(e);
         }
+        notifyCompleted(HttpQueryResponse.newErrorInstance(e, this));
         ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
         executeWhen(runnableList, when);
     }
@@ -238,7 +239,7 @@ public final class HttpAsyncQuery extends
         if (mCancelListener != null) {
             mCancelListener.onCanceling(this);
         }
-        result = HttpQueryResponse.getErrorInstance(new HttpQuery.AbortionException(this.mHttp), this);
+        result = HttpQueryResponse.newErrorInstance(new HttpQuery.AbortionException(this.mHttp), this);
         ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
         ConcurrentLinkedQueue<Runnable> runnableAnywayList = runnableTask.get(WHEN_ANYWAY);
         if (runnableList != null && runnableAnywayList != null) {
@@ -589,7 +590,7 @@ public final class HttpAsyncQuery extends
         HttpURLConnection connexion;
         Map<String, List<String>> headers = new HashMap<String, List<String>>();
 
-        static HttpQueryResponse getErrorInstance(Exception e, HttpAsyncQuery asycQ) {
+        static HttpQueryResponse newErrorInstance(Exception e, HttpAsyncQuery asycQ) {
             try {
                 return new HttpQueryResponse(null, e, asycQ);
             } catch (Exception ex) {
