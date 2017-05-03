@@ -3,6 +3,7 @@ package istat.android.network.http;
 import android.text.TextUtils;
 
 import istat.android.network.http.interfaces.UpLoadHandler;
+import istat.android.network.utils.ToolKits;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
@@ -14,7 +15,9 @@ import java.io.OutputStream;
 import java.io.SequenceInputStream;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /*
  * Copyright (C) 2014 Istat Dev.
@@ -155,6 +158,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         if (!params.keySet().isEmpty()) {
             String[] table = new String[params.size()];
             table = params.keySet().toArray(table);
+            UpLoadHandler uHandler = getUploadHandler();
             for (int i = 0; i < table.length; i++) {
                 String tmp = table[i];
                 if (isAborted()) {
@@ -173,12 +177,11 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
                             + "\"; filename=\"" + file.getName() + "\"\n";
                     data += "Content-Type: " + contentType + "\n";
                     data += "Content-Transfer-Encoding: binary\n\n";
-                    UpLoadHandler uHandler = getUploadHandler();
                     ByteArrayInputStream dataInputStream = new ByteArrayInputStream(data.getBytes(encoding));
                     InputStream fileInputStream = new FileInputStream(file);
                     SequenceInputStream stream = new SequenceInputStream(dataInputStream, fileInputStream);
                     currentInputStream = stream;
-                    uHandler.onUploadStream(stream, request);
+                    uHandler.onUploadStream(stream.available(), stream, request);
                     request.writeBytes("\n");
                     if (i < table.length - 1) {
                         request.writeBytes(boundary);

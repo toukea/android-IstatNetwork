@@ -12,6 +12,6 @@ import istat.android.network.http.MultipartHttpQuery;
  */
 
 public interface UpLoadHandler {
-    void onUploadStream(InputStream stream, OutputStream request)
+    void onUploadStream(long uploadSize, InputStream stream, OutputStream request)
             throws IOException;
 }
