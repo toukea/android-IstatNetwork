@@ -4,12 +4,14 @@ import android.text.TextUtils;
 
 import istat.android.network.http.interfaces.UpLoadHandler;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.SequenceInputStream;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -148,6 +150,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
     private void handleFileParts(String boundary,
                                  DataOutputStream request, HashMap<String, File> params)
             throws IOException {
+        String encoding = getOptions().getEncoding();
         boundary = "--" + boundary + "\n";
         if (!params.keySet().isEmpty()) {
             String[] table = new String[params.size()];
@@ -170,13 +173,12 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
                             + "\"; filename=\"" + file.getName() + "\"\n";
                     data += "Content-Type: " + contentType + "\n";
                     data += "Content-Transfer-Encoding: binary\n\n";
-                    request.writeBytes(data);
-                    InputStream stream = new FileInputStream(file);
                     UpLoadHandler uHandler = getUploadHandler();
-                    if (uHandler != null) {
-                        currentInputStream = stream;
-                        uHandler.onUploadStream(stream,request);
-                    }
+                    ByteArrayInputStream dataInputStream = new ByteArrayInputStream(data.getBytes(encoding));
+                    InputStream fileInputStream = new FileInputStream(file);
+                    SequenceInputStream stream = new SequenceInputStream(dataInputStream, fileInputStream);
+                    currentInputStream = stream;
+                    uHandler.onUploadStream(stream, request);
                     request.writeBytes("\n");
                     if (i < table.length - 1) {
                         request.writeBytes(boundary);
