@@ -443,7 +443,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     private UpLoadHandler getDefaultUploader() {
         return new UpLoadHandler() {
             @Override
-            public void onUploadStream(InputStream stream, OutputStream request)
+            public void onUploadStream(long uploadSize, InputStream stream, OutputStream request)
                     throws IOException {
                 byte[] b = new byte[uploadBufferSize];
                 int read;
@@ -529,7 +529,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         }
         if (!TextUtils.isEmpty(data)) {
             ByteArrayInputStream stream = new ByteArrayInputStream(data.getBytes(encoding));
-            this.uploadHandler.onUploadStream(stream, dataOutputStream);
+            this.uploadHandler.onUploadStream(data.length(), stream, dataOutputStream);
             return data.length();
         } else {
             return 0;

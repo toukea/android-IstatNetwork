@@ -109,7 +109,7 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
         if (part instanceof InputStream) {
             InputStream inputStream = (InputStream) part;
             size = inputStream.available();
-            getUploadHandler().onUploadStream(inputStream, dataOutputStream);
+            getUploadHandler().onUploadStream(size, inputStream, dataOutputStream);
         } else if (part instanceof File) {
             size = onWriteFileToOutputStream((File) this.part, dataOutputStream);
         } else {
@@ -117,13 +117,13 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
             String sendable = part.toString();
             size = sendable.length();
             InputStream inputStream = new ByteArrayInputStream(sendable.getBytes(encoding));
-            getUploadHandler().onUploadStream(inputStream, dataOutputStream);
+            getUploadHandler().onUploadStream(size, inputStream, dataOutputStream);
         }
         return size;
     }
 
     private long onWriteFileToOutputStream(File file, OutputStream dataOutputStream) throws IOException {
-        long size = 0;
+        long size;
         InputStream stream;
         if (file == null || !file.exists()) {
             if (file == null) {
@@ -131,9 +131,10 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
             }
             throw new IOException("File not found with path=" + file.getAbsolutePath());
         } else {
+            size = file.length();
             stream = new FileInputStream(file);
         }
-        getUploadHandler().onUploadStream(stream, dataOutputStream);
+        getUploadHandler().onUploadStream(size, stream, dataOutputStream);
         return size;
     }
 
