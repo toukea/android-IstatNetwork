@@ -873,7 +873,7 @@ public final class HttpAsyncQuery extends
         }
 
         @Override
-        public final void onUploadStream(OutputStream request, InputStream stream)
+        public final void onUploadStream(InputStream stream, OutputStream request)
                 throws IOException {
             try {
                 onProceedStreamUpload(request, stream, query);

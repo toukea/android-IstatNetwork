@@ -109,14 +109,15 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
         if (part instanceof InputStream) {
             InputStream inputStream = (InputStream) part;
             size = inputStream.available();
-            getUploadHandler().onUploadStream(dataOutputStream, inputStream);
+            getUploadHandler().onUploadStream(inputStream, dataOutputStream);
         } else if (part instanceof File) {
             size = onWriteFileToOutputStream((File) this.part, dataOutputStream);
         } else {
+            String encoding = getOptions().encoding;
             String sendable = part.toString();
             size = sendable.length();
-            InputStream inputStream = new ByteArrayInputStream(sendable.getBytes());
-            getUploadHandler().onUploadStream(dataOutputStream, inputStream);
+            InputStream inputStream = new ByteArrayInputStream(sendable.getBytes(encoding));
+            getUploadHandler().onUploadStream(inputStream, dataOutputStream);
         }
         return size;
     }
@@ -132,7 +133,7 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
         } else {
             stream = new FileInputStream(file);
         }
-        getUploadHandler().onUploadStream(dataOutputStream, stream);
+        getUploadHandler().onUploadStream(stream, dataOutputStream);
         return size;
     }
 
