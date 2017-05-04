@@ -397,6 +397,19 @@ public final class ToolKits {
             }
             return oss;
         }
+
+        public static InputStream repeat(final byte[] sample, final int times) {
+            return new InputStream() {
+                private long pos = 0;
+                private final long total = (long) sample.length * times;
+
+                public int read() throws IOException {
+                    return pos < total ?
+                            sample[(int) (pos++ % sample.length)] :
+                            -1;
+                }
+            };
+        }
     }
 
     public static final <T> HashMap<String, Object> toHashMap(T obj, boolean privateAndSuper, boolean acceptStatic, boolean nullable) {

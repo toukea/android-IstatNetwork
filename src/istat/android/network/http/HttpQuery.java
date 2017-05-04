@@ -455,7 +455,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     public interface ParameterHandler {
-        final public static ParameterHandler DEFAULT_HANDLER = new ParameterHandler() {
+         ParameterHandler DEFAULT_HANDLER = new ParameterHandler() {
 
             @Override
             public String onStringifyQueryParams(String method,
@@ -469,7 +469,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
         };
 
-        public abstract String onStringifyQueryParams(String method, HashMap<String, String> params, String encoding);
+        String onStringifyQueryParams(String method, HashMap<String, String> params, String encoding);
     }
 
     ParameterHandler parameterHandler = ParameterHandler.DEFAULT_HANDLER;
