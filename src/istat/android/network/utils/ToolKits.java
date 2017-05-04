@@ -171,7 +171,11 @@ public final class ToolKits {
                 return inputStream;
             }
             for (int i = 1; i < streams.size(); i++) {
-                inputStream = new SequenceInputStream(inputStream, streams.get(i));
+                InputStream stream = streams.get(i);
+                if (stream == null) {
+                    continue;
+                }
+                inputStream = new SequenceInputStream(inputStream, stream);
             }
             return inputStream;
         }
@@ -185,7 +189,11 @@ public final class ToolKits {
                 return inputStream;
             }
             for (int i = 1; i < streams.length; i++) {
-                inputStream = new SequenceInputStream(inputStream, streams[i]);
+                InputStream stream = streams[i];
+                if (stream == null) {
+                    continue;
+                }
+                inputStream = new SequenceInputStream(inputStream, stream);
             }
             return inputStream;
         }
