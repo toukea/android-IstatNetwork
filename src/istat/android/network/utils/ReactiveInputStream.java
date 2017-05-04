@@ -9,14 +9,20 @@ import java.io.InputStream;
 
 public abstract class ReactiveInputStream extends InputStream {
     InputStream stream;
+    int lastRead = 0;
 
     protected abstract InputStream onCreateInputStream();
 
     @Override
     public int read() throws IOException {
         if (stream == null) {
+            if (lastRead < 1) {
+                return -1;
+            }
             stream = onCreateInputStream();
+            lastRead = -1;
         }
-        return stream.read();
+        lastRead = stream.read();
+        return lastRead;
     }
 }
