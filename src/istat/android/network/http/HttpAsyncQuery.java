@@ -179,6 +179,8 @@ public final class HttpAsyncQuery extends
                     resp.error = error;
                     notifyError(resp, error);
                 }
+            } else {
+                throw resp.getError();
             }
         } catch (Exception e) {
             notifyFail(e);
@@ -660,11 +662,11 @@ public final class HttpAsyncQuery extends
             return getHeaderAsLong(name, 0);
         }
 
-        public long getHeaderAsLong(String name, long deflt) {
+        public long getHeaderAsLong(String name, long defaultValue) {
             if (connexion != null) {
-                return connexion.getHeaderFieldDate(name, deflt);
+                return connexion.getHeaderFieldDate(name, defaultValue);
             }
-            return deflt;
+            return defaultValue;
         }
 
         public int getHeaderAsInt(String name) {
