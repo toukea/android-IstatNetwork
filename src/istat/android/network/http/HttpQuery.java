@@ -123,6 +123,11 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return (HttpQ) this;
     }
 
+    public HttpQ addHeaders(HashMap<String, String> headers) {
+        headers.putAll(headers);
+        return (HttpQ) this;
+    }
+
     @SuppressWarnings("unchecked")
     public HttpQ addParam(String Name, String Value) {
         parameters.put(Name, Value);

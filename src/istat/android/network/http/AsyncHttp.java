@@ -3,6 +3,7 @@ package istat.android.network.http;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.concurrent.Executor;
 
 import istat.android.network.http.interfaces.DownloadHandler;
@@ -57,8 +58,18 @@ public final class AsyncHttp {
         return this;
     }
 
+    public AsyncHttp addHttpParams(HashMap<String, ?> params) {
+        this.mAsyncQuery.mHttp.addParams(params);
+        return this;
+    }
+
     public AsyncHttp addHttpHeader(String name, String value) {
         this.mAsyncQuery.mHttp.addHeader(name, value);
+        return this;
+    }
+
+    public AsyncHttp addHttpHeaders(HashMap<String, String> headers) {
+        this.mAsyncQuery.mHttp.addHeaders(headers);
         return this;
     }
 
@@ -91,6 +102,9 @@ public final class AsyncHttp {
     }
 
     public AsyncHttp useDownloader(final DownloadHandler downloader, final ProgressionListener<Integer> progressionListener) {
+        if (downloader == null && progressionListener == null) {
+            return this;
+        }
         this.mAsyncQuery.downloadHandler = new HttpAsyncQuery.HttpDownloadHandler<Integer>() {
             @Override
             public void onProgress(HttpAsyncQuery query, Integer... integers) {
@@ -201,6 +215,30 @@ public final class AsyncHttp {
         this.mAsyncQuery.executeURLs(url);
         return this.mAsyncQuery;
     }
+
+//    public HttpAsyncQuery doQuery(String method, UpLoadHandler uploader, HttpAsyncQuery.HttpQueryCallback callback, String url) {
+//        int methodInt = HttpAsyncQuery.TYPE_GET;
+//        case "GET":
+//        methodInt = HttpAsyncQuery.TYPE_GET;
+//        break;
+//        case "POST":
+//        methodInt = HttpAsyncQuery.TYPE_POST;
+//        break;
+//        case "PUT":
+//        methodInt = HttpAsyncQuery.TYPE_PUT;
+//        break;
+//        case "HEAD":
+//        methodInt = HttpAsyncQuery.TYPE_HEAD;
+//        break;
+//        case "PATCH":
+//        methodInt = HttpAsyncQuery.TYPE_PATCH;
+//        break;
+//        case "DELETE":
+//        methodInt = HttpAsyncQuery.TYPE_DELETE;
+//        break;
+//
+//        return doQuery(methodInt, uploader, callback, url);
+//    }
 
     public AsyncHttp setCancelListener(HttpAsyncQuery.CancelListener listener) {
         this.mAsyncQuery.mCancelListener = listener;

@@ -710,11 +710,10 @@ public final class HttpAsyncQuery extends
             if (body == null) {
                 return null;
             }
-            try {
+            if (cLass.isAssignableFrom(body.getClass())) {
                 return (T) body;
-            } catch (Exception e) {
-                return null;
             }
+            return null;
         }
 
         public <T> T optBody() {
