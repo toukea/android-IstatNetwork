@@ -897,7 +897,7 @@ public final class HttpAsyncQuery extends
                                         ProgressVar... vars);
     }
 
-    public static abstract class HttpDownloadHandler<ProgressVar> implements DownloadHandler, ProgressionListener<ProgressVar> {
+    public static abstract class HttpDownloadHandler<ProgressVar> implements DownloadHandler<Object>, ProgressionListener<ProgressVar> {
         Handler handler;
         HttpAsyncQuery query;
 

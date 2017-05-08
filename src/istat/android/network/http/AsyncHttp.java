@@ -82,10 +82,6 @@ public final class AsyncHttp {
         return this;
     }
 
-    public AsyncHttp useDownloader(HttpAsyncQuery.HttpDownloadHandler downloader) {
-        this.mAsyncQuery.downloadHandler = downloader;
-        return this;
-    }
 
     public AsyncHttp useUploader(UpLoadHandler uploader) {
         this.mAsyncQuery.setUploadHandler(uploader);
@@ -99,6 +95,11 @@ public final class AsyncHttp {
 
     public AsyncHttp useDownloader(final DownloadHandler downloader) {
         return useDownloader(downloader, null);
+    }
+
+    public AsyncHttp useDownloader(HttpAsyncQuery.HttpDownloadHandler downloader) {
+        this.mAsyncQuery.downloadHandler = downloader;
+        return this;
     }
 
     public AsyncHttp useDownloader(final DownloadHandler downloader, final ProgressionListener<Integer> progressionListener) {
