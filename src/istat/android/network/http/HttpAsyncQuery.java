@@ -418,7 +418,7 @@ public final class HttpAsyncQuery extends
                                              CancelListener cancelCallback,
                                              HttpUploadHandler<?> uploadCallBack, String... urls) {
         HttpAsyncQuery query = new HttpAsyncQuery(http, callBack);
-        query.setDownloadHandler(processCallBack);
+        query.setDownloadHandler(processCallBack, null);
         query.setCancelListener(cancelCallback);
         query.setUploadHandler(uploadCallBack);
         query.type = TYPE_POST;
@@ -448,7 +448,7 @@ public final class HttpAsyncQuery extends
                                               HttpDownloadHandler<?> processCallBack,
                                               CancelListener cancelListener, String... urls) {
         HttpAsyncQuery query = new HttpAsyncQuery(http, callBack);
-        query.setDownloadHandler(processCallBack);
+        query.setDownloadHandler(processCallBack, null);
         query.setCancelListener(cancelListener);
         query.type = queryType;
         query.encoding = encoding;
@@ -505,9 +505,11 @@ public final class HttpAsyncQuery extends
     }
 
     // DEFAULT PROCESS CALLBACK IF USER DON'T HAS DEFINE it Own
-    HttpDownloadHandler<?> downloadHandler = getDefaultDownloader();
+    HttpDownloadHandler<?> defaultDownloader = getDefaultDownloader();
+    HttpDownloadHandler<?> successDownloader = null;
+    HttpDownloadHandler<?> errorDownloader = null;
 
-    public HttpAsyncQuery setDownloadHandler(final DownloadHandler downloader) {
+    HttpAsyncQuery setDownloadHandler(final DownloadHandler downloader, DownloadHandler.WHEN when) {
         HttpAsyncQuery.HttpDownloadHandler<Integer> downloadHandler = new HttpAsyncQuery.HttpDownloadHandler<Integer>() {
             @Override
             public void onProgress(HttpAsyncQuery query, Integer... integers) {
@@ -521,15 +523,20 @@ public final class HttpAsyncQuery extends
             }
 
         };
-        return setDownloadHandler(downloadHandler);
+        return setDownloadHandler(downloadHandler, when);
     }
 
-    public HttpAsyncQuery setDownloadHandler(HttpDownloadHandler<?> downloader) {
+    HttpAsyncQuery setDownloadHandler(HttpDownloadHandler<?> downloader, DownloadHandler.WHEN when) {
         if (downloader == null) {
             downloader = getDefaultDownloader();
         }
         downloader.query = this;
-        this.downloadHandler = downloader;
+        if (when == DownloadHandler.WHEN.SUCCESS)
+            this.successDownloader = downloader;
+        else if (when == DownloadHandler.WHEN.ERROR)
+            this.errorDownloader = downloader;
+        else
+            this.defaultDownloader = downloader;
         return this;
     }
 
@@ -622,7 +629,13 @@ public final class HttpAsyncQuery extends
                 try {
                     this.body = null;
                     if (stream != null) {
-                        this.body = mAsyncQ.downloadHandler.buildResponseBody(
+                        HttpDownloadHandler downloader = this.mAsyncQ.defaultDownloader;
+                        if (isSuccessCode(connexion.getResponseCode()) && this.mAsyncQ.successDownloader != null) {
+                            downloader = this.mAsyncQ.successDownloader;
+                        } else if (this.mAsyncQ.errorDownloader != null) {
+                            downloader = this.mAsyncQ.errorDownloader;
+                        }
+                        this.body = downloader.buildResponseBody(
                                 connexion, stream);
                     }
                 } catch (Exception ex) {

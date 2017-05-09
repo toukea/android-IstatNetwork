@@ -93,20 +93,36 @@ public final class AsyncHttp {
         return this;
     }
 
+
     public AsyncHttp useDownloader(final DownloadHandler downloader) {
-        return useDownloader(downloader, null);
+        DownloadHandler.WHEN when = null;
+        return useDownloader(downloader, when);
     }
 
     public AsyncHttp useDownloader(HttpAsyncQuery.HttpDownloadHandler downloader) {
-        this.mAsyncQuery.downloadHandler = downloader;
-        return this;
+        DownloadHandler.WHEN when = null;
+        return useDownloader(downloader, when);
     }
 
     public AsyncHttp useDownloader(final DownloadHandler downloader, final ProgressionListener<Integer> progressionListener) {
+        DownloadHandler.WHEN when = null;
+        return useDownloader(downloader, when, progressionListener);
+    }
+
+    public AsyncHttp useDownloader(final DownloadHandler downloader, DownloadHandler.WHEN when) {
+        return useDownloader(downloader, when, null);
+    }
+
+    public AsyncHttp useDownloader(HttpAsyncQuery.HttpDownloadHandler downloader, DownloadHandler.WHEN when) {
+        this.mAsyncQuery.setDownloadHandler(downloader, when);
+        return this;
+    }
+
+    public AsyncHttp useDownloader(final DownloadHandler downloader, DownloadHandler.WHEN when, final ProgressionListener<Integer> progressionListener) {
         if (downloader == null && progressionListener == null) {
             return this;
         }
-        this.mAsyncQuery.downloadHandler = new HttpAsyncQuery.HttpDownloadHandler<Integer>() {
+        this.mAsyncQuery.setDownloadHandler(new HttpAsyncQuery.HttpDownloadHandler<Integer>() {
             @Override
             public void onProgress(HttpAsyncQuery query, Integer... integers) {
                 if (progressionListener != null) {
@@ -122,7 +138,7 @@ public final class AsyncHttp {
                     return AsyncHttp.this.mAsyncQuery.getDefaultDownloader();
                 }
             }
-        };
+        }, when);
         return this;
     }
 

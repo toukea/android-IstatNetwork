@@ -15,5 +15,5 @@ public interface DownloadHandler<T> {
     }
 
     T onBuildResponseBody(HttpURLConnection connexion,
-                               InputStream stream) throws Exception;
+                          InputStream stream) throws Exception;
 }
