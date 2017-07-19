@@ -102,7 +102,8 @@ public final class HttpAsyncQuery extends
                         stream = mHttp.doPut(url);
                         break;
                     case TYPE_HEAD:
-                        stream = mHttp.doHead(url);
+                        mHttp.doHead(url);
+                        stream = mHttp.currentInputStream;
                         break;
                     case TYPE_COPY:
                         stream = mHttp.doCopy(url);

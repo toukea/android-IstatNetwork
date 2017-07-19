@@ -330,8 +330,9 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return doQuery(url, method, true, true);
     }
 
-    public InputStream doHead(String url) throws IOException {
-        return doQuery(url, "HEAD");
+    public Map<String, List<String>> doHead(String url) throws IOException {
+        doQuery(url, "HEAD");
+        return currentConnection.getHeaderFields();
     }
 
     public InputStream doDelete(String url) throws IOException {
@@ -364,7 +365,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     protected synchronized InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
             throws IOException {
-        Log.d("HttpQuery", "Method=" + method + ", bodyData=" + bodyData + ", holdError=" + holdError + ", url=" + getURL(url));
+        //       Log.d("HttpQuery", "Method=" + method + ", bodyData=" + bodyData + ", holdError=" + holdError + ", url=" + getURL(url));
         long length = 0;
         String data = "";
         if (!bodyData || !urlPramNames.isEmpty()) {
@@ -455,7 +456,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     public interface ParameterHandler {
-         ParameterHandler DEFAULT_HANDLER = new ParameterHandler() {
+        ParameterHandler DEFAULT_HANDLER = new ParameterHandler() {
 
             @Override
             public String onStringifyQueryParams(String method,
