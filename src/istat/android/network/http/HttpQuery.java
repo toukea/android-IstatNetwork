@@ -1,5 +1,6 @@
 package istat.android.network.http;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -119,6 +120,11 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     @SuppressWarnings("unchecked")
     public HttpQ addHeader(String name, String value) {
         headers.put(name, value);
+        return (HttpQ) this;
+    }
+
+    public HttpQ addHeaders(HashMap<String, String> headers) {
+        headers.putAll(headers);
         return (HttpQ) this;
     }
 
@@ -443,7 +449,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     private UpLoadHandler getDefaultUploader() {
         return new UpLoadHandler() {
             @Override
-            public void onUploadStream(OutputStream request, InputStream stream)
+            public void onUploadStream(long uploadSize, InputStream stream, OutputStream request)
                     throws IOException {
                 byte[] b = new byte[uploadBufferSize];
                 int read;
@@ -523,14 +529,13 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     protected long onWriteDataToOutputStream(String method,
                                              OutputStream dataOutputStream) throws IOException {
         String encoding = getOptions().encoding;
-        OutputStreamWriter writer = new OutputStreamWriter(dataOutputStream, encoding);
         String data = "";
         if (parameterHandler != null) {
             data = parameterHandler.onStringifyQueryParams(method, parameters, encoding);
         }
         if (!TextUtils.isEmpty(data)) {
-            writer.write(data);
-            writer.flush();
+            ByteArrayInputStream stream = new ByteArrayInputStream(data.getBytes(encoding));
+            this.uploadHandler.onUploadStream(data.length(), stream, dataOutputStream);
             return data.length();
         } else {
             return 0;

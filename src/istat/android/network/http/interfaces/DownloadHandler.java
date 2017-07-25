@@ -9,7 +9,11 @@ import istat.android.network.http.HttpAsyncQuery;
  * Created by istat on 05/11/16.
  */
 
-public interface DownloadHandler {
-    Object onBuildResponseBody(HttpURLConnection connexion,
-                               InputStream stream) throws Exception;
+public interface DownloadHandler<T> {
+    enum WHEN {
+        SUCCESS, ERROR
+    }
+
+    T onBuildResponseBody(HttpURLConnection connexion,
+                          InputStream stream) throws Exception;
 }

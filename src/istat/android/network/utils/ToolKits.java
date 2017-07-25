@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.io.SequenceInputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -160,6 +161,42 @@ public final class ToolKits {
     public static class Stream {
         public final static int DEFAULT_BUFFER_SIZE = 16384;
         public final static String DEFAULT_ENCODING = "UTF-8";
+
+        public static InputStream merge(List<InputStream> streams) {
+            if (streams.isEmpty()) {
+                return null;
+            }
+            InputStream inputStream = streams.get(0);
+            if (streams.size() == 1) {
+                return inputStream;
+            }
+            for (int i = 1; i < streams.size(); i++) {
+                InputStream stream = streams.get(i);
+                if (stream == null) {
+                    continue;
+                }
+                inputStream = new SequenceInputStream(inputStream, stream);
+            }
+            return inputStream;
+        }
+
+        public static InputStream merge(InputStream... streams) {
+            if (streams.length == 0) {
+                return null;
+            }
+            InputStream inputStream = streams[0];
+            if (streams.length == 1) {
+                return inputStream;
+            }
+            for (int i = 1; i < streams.length; i++) {
+                InputStream stream = streams[i];
+                if (stream == null) {
+                    continue;
+                }
+                inputStream = new SequenceInputStream(inputStream, stream);
+            }
+            return inputStream;
+        }
 
         public static String streamToLinearisedString(java.io.InputStream inp,
                                                       String encoding) {

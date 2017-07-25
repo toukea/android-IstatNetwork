@@ -1,5 +1,8 @@
 package istat.android.network.http;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class HttpQueryError extends RuntimeException {
     /**
      *
@@ -23,7 +26,7 @@ public class HttpQueryError extends RuntimeException {
         this.body = body;
     }
 
-    public HttpQueryError(Exception e) {
+    HttpQueryError(Exception e) {
         super(e);
         if (e instanceof HttpQueryError) {
             HttpQueryError error = ((HttpQueryError) e);
@@ -42,6 +45,22 @@ public class HttpQueryError extends RuntimeException {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public JSONObject getBodyAsJson() throws JSONException {
+        if (body == null)
+            return null;
+        return new JSONObject(body.toString());
+    }
+
+    public <T> T getBodyAs(Class<T> cLass) {
+        if (body == null) {
+            return null;
+        }
+        if (cLass.isAssignableFrom(body.getClass())) {
+            return (T) body;
+        }
+        return null;
     }
 
     public String getBodyAsString() {

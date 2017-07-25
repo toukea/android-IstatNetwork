@@ -1,5 +1,6 @@
 TODO
 -add  Prepare Logix to AsyncHttp
+-implement success/error downloader
 
 DONE
 -provide uploadHandler for all HttpQuery<?> child
