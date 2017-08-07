@@ -43,7 +43,7 @@ import java.util.Map;
 public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
     HashMap<String, File> fileParts = new HashMap<String, File>();
-    private static final String LINE_FEED = "\n";
+    private static final String LINE_FEED = "\r\n";
 
     @Override
     public InputStream doPost(String url) throws IOException {
@@ -95,21 +95,16 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         }
         if (!parameters.isEmpty() || !fileParts.isEmpty()) {
             String boundary = createBoundary();
-
-            conn.addRequestProperty("Content-Type",
-                    "multipart/form-data; boundary=" + boundary);
+            conn.addRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
             if (TextUtils.isEmpty(conn.getRequestProperty("User-Agent"))) {
                 conn.addRequestProperty("User-Agent", "istat.android.network.V2.4.0");
             }
-            OutputStream os = conn.getOutputStream();
-            DataOutputStream request = new DataOutputStream(os);
-            this.currentOutputStream = request;
             long size = 0;
             InputStream stringDataInputStream = null;
             InputStream filePartInputStream = null;
             if (!parameters.isEmpty()) {
                 data = createBoundaryParamsCanvas(boundary, parameters);
-                stringDataInputStream = new ByteArrayInputStream(data.getBytes());
+                stringDataInputStream = new ByteArrayInputStream(data.getBytes(encoding));
                 size += data.length();
             }
             if (!fileParts.isEmpty()) {
@@ -123,12 +118,12 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
             size += boundary.length();
             ByteArrayInputStream endSegmentDataInputStream = new ByteArrayInputStream(boundary.getBytes(encoding));
             InputStream multipartInputStream = ToolKits.Stream.merge(stringDataInputStream, filePartInputStream, endSegmentDataInputStream);
-            getUploadHandler().onUploadStream(size, multipartInputStream, request);
+            OutputStream os = conn.getOutputStream();
+            this.currentOutputStream = os;
+            getUploadHandler().onUploadStream(size, multipartInputStream, os);
             this.currentInputStream = multipartInputStream;
             addToOutputHistoric(size);
             try {
-                request.flush();
-                request.close();
                 os.flush();
                 os.close();
             } catch (Exception e) {
@@ -152,10 +147,8 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
                 if (name != null) {
                     String value = params.get(name);
                     data += "--" + boundary + LINE_FEED;
-                    data += "content-disposition: form-data; name=\"" + name
-                            + "\"" + LINE_FEED;
-                    data += "Content-Type: text/plain; charset="
-                            + mOptions.encoding + LINE_FEED;
+                    data += "Content-Disposition: form-data; name=\"" + name + "\"" + LINE_FEED;
+                    data += "Content-Type: text/plain; charset=" + mOptions.encoding + LINE_FEED;
                     data += LINE_FEED;
                     data += value + LINE_FEED;
                 }

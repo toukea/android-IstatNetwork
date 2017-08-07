@@ -456,7 +456,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
                 while ((read = stream.read(b)) > -1) {
                     request.write(b, 0, read);
                 }
-                stream.close();
+                //stream.close();
             }
         };
     }
