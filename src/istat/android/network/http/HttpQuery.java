@@ -689,27 +689,24 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     int getCurrentResponseCode() {
         try {
-            if (getCurrentConnection() != null) {
-                return getCurrentConnection().getResponseCode();
-            } else {
-                Log.d("HttpQuery", "getCurrentResponseCode::connexion::"
-                        + getCurrentConnection());
-            }
+            final HttpURLConnection connection = getCurrentConnection();
+            int responseCode = connection.getResponseCode();
+            return responseCode;
         } catch (IOException e) {
-
+            return -1;
         }
-        return -1;
     }
 
     String getCurrentResponseMessage() {
         try {
-            if (getCurrentConnection() != null) {
-                return getCurrentConnection().getResponseMessage();
-            }
+            final HttpURLConnection connection = getCurrentConnection();
+            String responseMessage = connection.getResponseMessage();
+   //         Log.e("HttQuery", "httpMessage=" + responseMessage);
+            return responseMessage;
         } catch (IOException e) {
-
+            e.printStackTrace();
+            return "";
         }
-        return "";
     }
 
     public boolean abortRequest() {

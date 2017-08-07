@@ -11,13 +11,8 @@ public class HttpQueryError extends RuntimeException {
     int code = 0;
     Object body;
 
-    public int getCode() {
-        return code;
-    }
-
-    public HttpQueryError(int code, String message) {
-        super(message);
-        this.code = code;
+    HttpQueryError(HttpAsyncQuery.HttpQueryResponse resp) {
+        this(resp.getCode(), resp.getMessage(), resp.getBody());
     }
 
     HttpQueryError(int code, String message, Object body) {
@@ -25,14 +20,17 @@ public class HttpQueryError extends RuntimeException {
         this.code = code;
         this.body = body;
     }
+//    HttpQueryError(Exception e) {
+//        super(e);
+//        if (e instanceof HttpQueryError) {
+//            HttpQueryError error = ((HttpQueryError) e);
+//            this.code = error.getCode();
+//            this.body = error.getBody();
+//        }
+//    }
 
-    HttpQueryError(Exception e) {
-        super(e);
-        if (e instanceof HttpQueryError) {
-            HttpQueryError error = ((HttpQueryError) e);
-            this.code = error.getCode();
-            this.body = error.getBody();
-        }
+    public int getCode() {
+        return code;
     }
 
     @SuppressWarnings("unchecked")

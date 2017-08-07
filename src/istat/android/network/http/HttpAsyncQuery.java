@@ -174,7 +174,7 @@ public final class HttpAsyncQuery extends
                     if (resp.hasError() && resp.getError() instanceof HttpQueryError) {
                         error = (HttpQueryError) resp.getError();
                     } else {
-                        error = new HttpQueryError(resp.getError());
+                        error = new HttpQueryError(resp);
                     }
                     resp.error = error;
                     notifyError(resp, error);
@@ -652,7 +652,7 @@ public final class HttpAsyncQuery extends
             }
             if (e == null && !isSuccess() && !TextUtils.isEmpty(message)
                     && code > 0) {
-                this.error = new istat.android.network.http.HttpQueryError(code, message, body);
+                this.error = new HttpQueryError(this);
             }
         }
 
@@ -686,11 +686,11 @@ public final class HttpAsyncQuery extends
             return getHeaderAsInt(name, 0);
         }
 
-        public int getHeaderAsInt(String name, int deflt) {
+        public int getHeaderAsInt(String name, int defaultValue) {
             if (connexion != null) {
-                return connexion.getHeaderFieldInt(name, deflt);
+                return connexion.getHeaderFieldInt(name, defaultValue);
             }
-            return deflt;
+            return defaultValue;
         }
 
         public boolean hasError() {
