@@ -1,5 +1,6 @@
 package istat.android.network.http;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -119,6 +120,11 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     @SuppressWarnings("unchecked")
     public HttpQ addHeader(String name, String value) {
         headers.put(name, value);
+        return (HttpQ) this;
+    }
+
+    public HttpQ addHeaders(HashMap<String, String> headers) {
+        headers.putAll(headers);
         return (HttpQ) this;
     }
 
@@ -330,8 +336,9 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return doQuery(url, method, true, true);
     }
 
-    public InputStream doHead(String url) throws IOException {
-        return doQuery(url, "HEAD");
+    public Map<String, List<String>> doHead(String url) throws IOException {
+        doQuery(url, "HEAD");
+        return currentConnection.getHeaderFields();
     }
 
     public InputStream doDelete(String url) throws IOException {
@@ -364,7 +371,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     protected synchronized InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
             throws IOException {
-        Log.d("HttpQuery", "Method=" + method + ", bodyData=" + bodyData + ", holdError=" + holdError + ", url=" + getURL(url));
+        //       Log.d("HttpQuery", "Method=" + method + ", bodyData=" + bodyData + ", holdError=" + holdError + ", url=" + getURL(url));
         long length = 0;
         String data = "";
         if (!bodyData || !urlPramNames.isEmpty()) {
@@ -442,20 +449,20 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     private UpLoadHandler getDefaultUploader() {
         return new UpLoadHandler() {
             @Override
-            public void onUploadStream(OutputStream request, InputStream stream)
+            public void onUploadStream(long uploadSize, InputStream stream, OutputStream request)
                     throws IOException {
                 byte[] b = new byte[uploadBufferSize];
                 int read;
                 while ((read = stream.read(b)) > -1) {
                     request.write(b, 0, read);
                 }
-                stream.close();
+                //stream.close();
             }
         };
     }
 
     public interface ParameterHandler {
-        final public static ParameterHandler DEFAULT_HANDLER = new ParameterHandler() {
+        ParameterHandler DEFAULT_HANDLER = new ParameterHandler() {
 
             @Override
             public String onStringifyQueryParams(String method,
@@ -469,7 +476,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
         };
 
-        public abstract String onStringifyQueryParams(String method, HashMap<String, String> params, String encoding);
+        String onStringifyQueryParams(String method, HashMap<String, String> params, String encoding);
     }
 
     ParameterHandler parameterHandler = ParameterHandler.DEFAULT_HANDLER;
@@ -522,14 +529,13 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     protected long onWriteDataToOutputStream(String method,
                                              OutputStream dataOutputStream) throws IOException {
         String encoding = getOptions().encoding;
-        OutputStreamWriter writer = new OutputStreamWriter(dataOutputStream, encoding);
         String data = "";
         if (parameterHandler != null) {
             data = parameterHandler.onStringifyQueryParams(method, parameters, encoding);
         }
         if (!TextUtils.isEmpty(data)) {
-            writer.write(data);
-            writer.flush();
+            ByteArrayInputStream stream = new ByteArrayInputStream(data.getBytes(encoding));
+            this.uploadHandler.onUploadStream(data.length(), stream, dataOutputStream);
             return data.length();
         } else {
             return 0;
@@ -683,27 +689,24 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     int getCurrentResponseCode() {
         try {
-            if (getCurrentConnection() != null) {
-                return getCurrentConnection().getResponseCode();
-            } else {
-                Log.d("HttpQuery", "getCurrentResponseCode::connexion::"
-                        + getCurrentConnection());
-            }
+            final HttpURLConnection connection = getCurrentConnection();
+            int responseCode = connection.getResponseCode();
+            return responseCode;
         } catch (IOException e) {
-
+            return -1;
         }
-        return -1;
     }
 
     String getCurrentResponseMessage() {
         try {
-            if (getCurrentConnection() != null) {
-                return getCurrentConnection().getResponseMessage();
-            }
+            final HttpURLConnection connection = getCurrentConnection();
+            String responseMessage = connection.getResponseMessage();
+   //         Log.e("HttQuery", "httpMessage=" + responseMessage);
+            return responseMessage;
         } catch (IOException e) {
-
+            e.printStackTrace();
+            return "";
         }
-        return "";
     }
 
     public boolean abortRequest() {

@@ -3,16 +3,23 @@ package istat.android.network.http;
 import android.text.TextUtils;
 
 import istat.android.network.http.interfaces.UpLoadHandler;
+import istat.android.network.utils.ToolKits;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.SequenceInputStream;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /*
  * Copyright (C) 2014 Istat Dev.
@@ -36,7 +43,7 @@ import java.util.HashMap;
 public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
 
     HashMap<String, File> fileParts = new HashMap<String, File>();
-    private static final String LINE_FEED = "\n";
+    private static final String LINE_FEED = "\r\n";
 
     @Override
     public InputStream doPost(String url) throws IOException {
@@ -82,33 +89,43 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
         conn.setDoOutput(true);
         conn.setRequestMethod(method);
         String data;
+        String encoding = getOptions().encoding;
         if (!fileParts.isEmpty()) {
             conn.setChunkedStreamingMode(mOptions.chunkedStreamingMode);
         }
         if (!parameters.isEmpty() || !fileParts.isEmpty()) {
             String boundary = createBoundary();
-
-            conn.addRequestProperty("Content-Type",
-                    "multipart/form-data, boundary=" + boundary);
+            conn.addRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
             if (TextUtils.isEmpty(conn.getRequestProperty("User-Agent"))) {
                 conn.addRequestProperty("User-Agent", "istat.android.network.V2.4.0");
             }
-            OutputStream os = conn.getOutputStream();
-            DataOutputStream request = new DataOutputStream(os);
-            this.currentOutputStream = request;
+            long size = 0;
+            InputStream stringDataInputStream = null;
+            InputStream filePartInputStream = null;
             if (!parameters.isEmpty()) {
                 data = createBoundaryParamsCanvas(boundary, parameters);
-                request.writeBytes(data);
+                stringDataInputStream = new ByteArrayInputStream(data.getBytes(encoding));
+                size += data.length();
             }
             if (!fileParts.isEmpty()) {
-                handleFileParts(boundary, request, fileParts);
+                Map.Entry<Long, InputStream> sizeStream = handleFileParts(boundary, fileParts);
+                if (sizeStream != null) {
+                    size += sizeStream.getKey();
+                    filePartInputStream = sizeStream.getValue();
+                }
             }
             boundary = "--" + boundary + "--" + LINE_FEED;
-            request.writeBytes(boundary);
-            addToOutputHistoric(request.size());
+            size += boundary.length();
+            ByteArrayInputStream endSegmentDataInputStream = new ByteArrayInputStream(boundary.getBytes(encoding));
+            InputStream multipartInputStream = ToolKits.Stream.merge(stringDataInputStream, filePartInputStream, endSegmentDataInputStream);
+      //      String summary = ToolKits.Stream.streamToString(multipartInputStream);
+     //       System.out.println(summary);
+            OutputStream os = conn.getOutputStream();
+            this.currentOutputStream = os;
+            getUploadHandler().onUploadStream(size, multipartInputStream, os);
+            this.currentInputStream = multipartInputStream;
+            addToOutputHistoric(size);
             try {
-                request.flush();
-                request.close();
                 os.flush();
                 os.close();
             } catch (Exception e) {
@@ -132,26 +149,26 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
                 if (name != null) {
                     String value = params.get(name);
                     data += "--" + boundary + LINE_FEED;
-                    data += "content-disposition: form-data; name=\"" + name
-                            + "\"" + LINE_FEED;
-                    data += "Content-Type: text/plain; charset="
-                            + mOptions.encoding + LINE_FEED;
+                    data += "Content-Disposition: form-data; name=\"" + name + "\"" + LINE_FEED;
+                    data += "Content-Type: text/plain; charset=" + mOptions.encoding + LINE_FEED;
                     data += LINE_FEED;
                     data += value + LINE_FEED;
                 }
             }
         }
-        System.out.println(data);
         return data;
     }
 
-    private void handleFileParts(String boundary,
-                                 DataOutputStream request, HashMap<String, File> params)
+    private Map.Entry<Long, InputStream> handleFileParts(String boundary,
+                                                         HashMap<String, File> params)
             throws IOException {
-        boundary = "--" + boundary + "\n";
+        String encoding = getOptions().getEncoding();
+        boundary = "--" + boundary + LINE_FEED;
         if (!params.keySet().isEmpty()) {
             String[] table = new String[params.size()];
             table = params.keySet().toArray(table);
+            InputStream inputStream = null;
+            int size = 0;
             for (int i = 0; i < table.length; i++) {
                 String tmp = table[i];
                 if (isAborted()) {
@@ -166,25 +183,51 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
                     if (TextUtils.isEmpty(contentType)) {
                         contentType = "application/octets-stream";
                     }
-                    data += "Content-Disposition: form-data; name=\"" + tmp
-                            + "\"; filename=\"" + file.getName() + "\"\n";
-                    data += "Content-Type: " + contentType + "\n";
-                    data += "Content-Transfer-Encoding: binary\n\n";
-                    request.writeBytes(data);
-                    InputStream stream = new FileInputStream(file);
-                    UpLoadHandler uHandler = getUploadHandler();
-                    if (uHandler != null) {
-                        currentInputStream = stream;
-                        uHandler.onUploadStream(request, stream);
+                    data += "Content-Disposition: form-data; name=\"" + tmp + "\"; filename=\"" + file.getName() + "\"" + LINE_FEED;
+                    data += "Content-Type: " + contentType + LINE_FEED;
+                    data += "Content-Transfer-Encoding: binary" + LINE_FEED;
+                    data += LINE_FEED;
+                    final ByteArrayInputStream dataInputStream = new ByteArrayInputStream(data.getBytes(encoding));
+                    final InputStream fileInputStream = new FileInputStream(file);
+                    String returnCharSequence = LINE_FEED;
+                    final ByteArrayInputStream returnInputStream = new ByteArrayInputStream(returnCharSequence.getBytes(encoding));
+                    size += data.length();
+                    size += file.length();
+                    size += returnCharSequence.length();
+                    List<InputStream> streams = new ArrayList<InputStream>() {
+                        {
+
+                            add(dataInputStream);
+                            add(fileInputStream);
+                            add(returnInputStream);
+                        }
+                    };
+                    if (inputStream != null) {
+                        streams.add(0, inputStream);
                     }
-                    request.writeBytes("\n");
-                    if (i < table.length - 1) {
-                        request.writeBytes(boundary);
-                    }
+                    inputStream = ToolKits.Stream.merge(streams);
                 }
             }
+            final Long finalSize = new Long(size);
+            final InputStream finalStream = inputStream;
+            return new Map.Entry<Long, InputStream>() {
+                @Override
+                public Long getKey() {
+                    return finalSize;
+                }
 
+                @Override
+                public InputStream getValue() {
+                    return finalStream;
+                }
+
+                @Override
+                public InputStream setValue(InputStream object) {
+                    return null;
+                }
+            };
         }
+        return null;
     }
 
     protected synchronized InputStream POST(String url, boolean holdError) throws IOException {

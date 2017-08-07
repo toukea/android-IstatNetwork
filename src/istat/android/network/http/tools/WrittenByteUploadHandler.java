@@ -32,13 +32,12 @@ public abstract class WrittenByteUploadHandler extends HttpUploadHandler<Long> {
     }
 
     @Override
-    public void onProceedStreamUpload(OutputStream request, InputStream stream, HttpAsyncQuery asyc)
+    public void onProceedStreamUpload(long uploadSize, OutputStream request, InputStream stream, HttpAsyncQuery asyc)
             throws IOException {
         HttpQuery httpQuery = asyc.getHttpQuery();
         byte[] b = new byte[buffer];
         int write;
         long totalWrite = 0;
-        long uploadSize = stream.available();
         while ((write = stream.read(b)) > -1) {
             if (httpQuery.isAborted() || !httpQuery.hasRunningRequest()) {
                 Log.i("Uploader", "onUploadStream::Aborted");

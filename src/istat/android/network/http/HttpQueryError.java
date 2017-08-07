@@ -1,5 +1,8 @@
 package istat.android.network.http;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class HttpQueryError extends RuntimeException {
     /**
      *
@@ -8,13 +11,8 @@ public class HttpQueryError extends RuntimeException {
     int code = 0;
     Object body;
 
-    public int getCode() {
-        return code;
-    }
-
-    public HttpQueryError(int code, String message) {
-        super(message);
-        this.code = code;
+    HttpQueryError(HttpAsyncQuery.HttpQueryResponse resp) {
+        this(resp.getCode(), resp.getMessage(), resp.getBody());
     }
 
     HttpQueryError(int code, String message, Object body) {
@@ -22,14 +20,17 @@ public class HttpQueryError extends RuntimeException {
         this.code = code;
         this.body = body;
     }
+//    HttpQueryError(Exception e) {
+//        super(e);
+//        if (e instanceof HttpQueryError) {
+//            HttpQueryError error = ((HttpQueryError) e);
+//            this.code = error.getCode();
+//            this.body = error.getBody();
+//        }
+//    }
 
-    public HttpQueryError(Exception e) {
-        super(e);
-        if (e instanceof HttpQueryError) {
-            HttpQueryError error = ((HttpQueryError) e);
-            this.code = error.getCode();
-            this.body = error.getBody();
-        }
+    public int getCode() {
+        return code;
     }
 
     @SuppressWarnings("unchecked")
@@ -42,6 +43,22 @@ public class HttpQueryError extends RuntimeException {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public JSONObject getBodyAsJson() throws JSONException {
+        if (body == null)
+            return null;
+        return new JSONObject(body.toString());
+    }
+
+    public <T> T getBodyAs(Class<T> cLass) {
+        if (body == null) {
+            return null;
+        }
+        if (cLass.isAssignableFrom(body.getClass())) {
+            return (T) body;
+        }
+        return null;
     }
 
     public String getBodyAsString() {
@@ -57,6 +74,6 @@ public class HttpQueryError extends RuntimeException {
 
     @Override
     public String toString() {
-        return code + " : " + getMessage();
+        return code + " : " + getMessage() + ", " + this.body;
     }
 }

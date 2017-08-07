@@ -103,26 +103,34 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
         return AsyncHttp.from(http);
     }
 
+    final static long SIZE_1MB = 1024 * 1024 * 1024;
+
     @Override
     protected long onWriteDataToOutputStream(String method, OutputStream dataOutputStream) throws IOException {
         long size;
         if (part instanceof InputStream) {
             InputStream inputStream = (InputStream) part;
             size = inputStream.available();
-            getUploadHandler().onUploadStream(dataOutputStream, inputStream);
+            this.currentConnection.setChunkedStreamingMode(mOptions.chunkedStreamingMode);
+            getUploadHandler().onUploadStream(size, inputStream, dataOutputStream);
         } else if (part instanceof File) {
+            this.currentConnection.setChunkedStreamingMode(mOptions.chunkedStreamingMode);
             size = onWriteFileToOutputStream((File) this.part, dataOutputStream);
         } else {
+            String encoding = getOptions().encoding;
             String sendable = part.toString();
             size = sendable.length();
-            InputStream inputStream = new ByteArrayInputStream(sendable.getBytes());
-            getUploadHandler().onUploadStream(dataOutputStream, inputStream);
+            if (size >= SIZE_1MB) {
+                this.currentConnection.setChunkedStreamingMode(mOptions.chunkedStreamingMode);
+            }
+            InputStream inputStream = new ByteArrayInputStream(sendable.getBytes(encoding));
+            getUploadHandler().onUploadStream(size, inputStream, dataOutputStream);
         }
         return size;
     }
 
     private long onWriteFileToOutputStream(File file, OutputStream dataOutputStream) throws IOException {
-        long size = 0;
+        long size;
         InputStream stream;
         if (file == null || !file.exists()) {
             if (file == null) {
@@ -130,9 +138,10 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
             }
             throw new IOException("File not found with path=" + file.getAbsolutePath());
         } else {
+            size = file.length();
             stream = new FileInputStream(file);
         }
-        getUploadHandler().onUploadStream(dataOutputStream, stream);
+        getUploadHandler().onUploadStream(size, stream, dataOutputStream);
         return size;
     }
 
