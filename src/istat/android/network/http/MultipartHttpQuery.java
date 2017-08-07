@@ -97,7 +97,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
             String boundary = createBoundary();
 
             conn.addRequestProperty("Content-Type",
-                    "multipart/form-data, boundary=" + boundary);
+                    "multipart/form-data; boundary=" + boundary);
             if (TextUtils.isEmpty(conn.getRequestProperty("User-Agent"))) {
                 conn.addRequestProperty("User-Agent", "istat.android.network.V2.4.0");
             }
