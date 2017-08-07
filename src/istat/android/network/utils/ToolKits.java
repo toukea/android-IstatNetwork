@@ -184,11 +184,19 @@ public final class ToolKits {
             if (streams.length == 0) {
                 return null;
             }
-            InputStream inputStream = streams[0];
-            if (streams.length == 1) {
+            int startIndex = 0;
+            InputStream inputStream = null;
+            for (InputStream stream : streams) {
+                inputStream = stream;
+                if (stream != null) {
+                    break;
+                }
+                startIndex++;
+            }
+            if (inputStream == null || streams.length - 1 <= startIndex) {
                 return inputStream;
             }
-            for (int i = 1; i < streams.length; i++) {
+            for (int i = startIndex; i < streams.length; i++) {
                 InputStream stream = streams[i];
                 if (stream == null) {
                     continue;

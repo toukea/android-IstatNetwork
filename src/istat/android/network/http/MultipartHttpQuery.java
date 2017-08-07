@@ -118,6 +118,8 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
             size += boundary.length();
             ByteArrayInputStream endSegmentDataInputStream = new ByteArrayInputStream(boundary.getBytes(encoding));
             InputStream multipartInputStream = ToolKits.Stream.merge(stringDataInputStream, filePartInputStream, endSegmentDataInputStream);
+      //      String summary = ToolKits.Stream.streamToString(multipartInputStream);
+     //       System.out.println(summary);
             OutputStream os = conn.getOutputStream();
             this.currentOutputStream = os;
             getUploadHandler().onUploadStream(size, multipartInputStream, os);
@@ -161,7 +163,7 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
                                                          HashMap<String, File> params)
             throws IOException {
         String encoding = getOptions().getEncoding();
-        boundary = "--" + boundary + "\n";
+        boundary = "--" + boundary + LINE_FEED;
         if (!params.keySet().isEmpty()) {
             String[] table = new String[params.size()];
             table = params.keySet().toArray(table);
@@ -181,16 +183,16 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
                     if (TextUtils.isEmpty(contentType)) {
                         contentType = "application/octets-stream";
                     }
-                    data += "Content-Disposition: form-data; name=\"" + tmp
-                            + "\"; filename=\"" + file.getName() + "\"\n";
-                    data += "Content-Type: " + contentType + "\n";
-                    data += "Content-Transfer-Encoding: binary\n\n";
-                    size += data.length();
-                    size += file.length();
+                    data += "Content-Disposition: form-data; name=\"" + tmp + "\"; filename=\"" + file.getName() + "\"" + LINE_FEED;
+                    data += "Content-Type: " + contentType + LINE_FEED;
+                    data += "Content-Transfer-Encoding: binary" + LINE_FEED;
+                    data += LINE_FEED;
                     final ByteArrayInputStream dataInputStream = new ByteArrayInputStream(data.getBytes(encoding));
                     final InputStream fileInputStream = new FileInputStream(file);
-                    String returnCharSequence = "\n";
+                    String returnCharSequence = LINE_FEED;
                     final ByteArrayInputStream returnInputStream = new ByteArrayInputStream(returnCharSequence.getBytes(encoding));
+                    size += data.length();
+                    size += file.length();
                     size += returnCharSequence.length();
                     List<InputStream> streams = new ArrayList<InputStream>() {
                         {
@@ -200,11 +202,6 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
                             add(returnInputStream);
                         }
                     };
-                    if (i < table.length - 1) {
-                        ByteArrayInputStream boundaryInputStream = new ByteArrayInputStream(boundary.getBytes(encoding));
-                        size += boundary.length();
-                        streams.add(boundaryInputStream);
-                    }
                     if (inputStream != null) {
                         streams.add(0, inputStream);
                     }
