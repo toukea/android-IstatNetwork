@@ -88,7 +88,6 @@ public final class HttpAsyncQuery extends
                 break;
             }
             InputStream stream = null;
-            Exception error = null;
             Log.d("HttpAsyncQuery", "doInBackground::type=" + type);
             try {
                 switch (type) {
@@ -124,7 +123,7 @@ public final class HttpAsyncQuery extends
                         stream = mHttp.doGet(url);
                         break;
                 }
-                HttpQueryResponse response = new HttpQueryResponse(stream, error, this);
+                HttpQueryResponse response = new HttpQueryResponse(stream, null, this);
                 return response;
             } catch (HttpQuery.AbortionException e) {
                 e.printStackTrace();
@@ -695,10 +694,6 @@ public final class HttpAsyncQuery extends
         }
 
         public boolean hasError() {
-            // Log.d("HttpAsyc", "haserror:" + error + ", code=" + code);
-            // if (error != null) {
-            // error.printStackTrace();
-            // }
             return error != null || !isSuccessCode(code);
         }
 
@@ -777,23 +772,23 @@ public final class HttpAsyncQuery extends
     }
 
 
-    public static interface CancelListener {
-        public abstract void onCanceling(HttpAsyncQuery asyncQ);
+    public interface CancelListener {
+        void onCanceling(HttpAsyncQuery asyncQ);
 
-        public abstract void onCancelled(HttpAsyncQuery asyncQ);
+        void onCancelled(HttpAsyncQuery asyncQ);
     }
 
-    public static interface HttpQueryCallback {
-        abstract void onHttpSuccess(HttpQueryResponse resp);
+    public interface HttpQueryCallback {
+        void onHttpSuccess(HttpQueryResponse resp);
 
-        abstract void onHttpError(HttpQueryResponse resp,
-                                  istat.android.network.http.HttpQueryError e);
+        void onHttpError(HttpQueryResponse resp,
+                         istat.android.network.http.HttpQueryError e);
 
-        abstract void onHttpFail(Exception e);
+        void onHttpFail(Exception e);
 
-        abstract void onHttComplete(HttpQueryResponse resp);
+        void onHttComplete(HttpQueryResponse resp);
 
-        abstract void onHttpAborted();
+        void onHttpAborted();
     }
 
     public boolean setCancelListener(CancelListener listener) {

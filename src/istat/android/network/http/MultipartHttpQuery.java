@@ -161,7 +161,6 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
                 }
             }
         }
-        System.out.println(data);
         return data;
     }
 
