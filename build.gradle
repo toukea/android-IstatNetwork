@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 ext {
     PUBLISH_GROUP_ID = 'istat.android.network.http'
     PUBLISH_ARTIFACT_ID = 'istat-network'
-    PUBLISH_VERSION = '2.5.4'
+    PUBLISH_VERSION = '2.5.5'
 }
 apply from: 'release-jar.gradle'
 dependencies {
