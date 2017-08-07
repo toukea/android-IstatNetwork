@@ -74,6 +74,6 @@ public class HttpQueryError extends RuntimeException {
 
     @Override
     public String toString() {
-        return code + " : " + getMessage();
+        return code + " : " + getMessage() + ", " + this.body;
     }
 }
