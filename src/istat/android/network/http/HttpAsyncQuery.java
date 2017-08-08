@@ -875,10 +875,10 @@ public final class HttpAsyncQuery extends
         }
 
         @Override
-        public final void onUploadStream(OutputStream request, InputStream stream)
+        public final void onUploadStream(long uploadSize, InputStream stream, OutputStream request)
                 throws IOException {
             try {
-                onProceedStreamUpload(request, stream, query);
+                onProceedStreamUpload(uploadSize, request, stream, query);
             } catch (final Exception e) {
                 e.printStackTrace();
                 Handler tmpHandler = getHandler();
@@ -893,7 +893,7 @@ public final class HttpAsyncQuery extends
             }
         }
 
-        public abstract void onProceedStreamUpload(OutputStream request,
+        public abstract void onProceedStreamUpload(long uploadSize, OutputStream request,
                                                    InputStream stream, HttpAsyncQuery asyc) throws IOException;
 
         public abstract void onProgress(HttpAsyncQuery query,
