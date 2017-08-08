@@ -103,19 +103,26 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
         return AsyncHttp.from(http);
     }
 
+    final static long SIZE_1MB = 1024 * 1024 * 1024;
+
     @Override
     protected long onWriteDataToOutputStream(String method, OutputStream dataOutputStream) throws IOException {
         long size;
         if (part instanceof InputStream) {
             InputStream inputStream = (InputStream) part;
             size = inputStream.available();
+            this.currentConnection.setChunkedStreamingMode(mOptions.chunkedStreamingMode);
             getUploadHandler().onUploadStream(size, inputStream, dataOutputStream);
         } else if (part instanceof File) {
+            this.currentConnection.setChunkedStreamingMode(mOptions.chunkedStreamingMode);
             size = onWriteFileToOutputStream((File) this.part, dataOutputStream);
         } else {
             String encoding = getOptions().encoding;
             String sendable = part.toString();
             size = sendable.length();
+            if (size >= SIZE_1MB) {
+                this.currentConnection.setChunkedStreamingMode(mOptions.chunkedStreamingMode);
+            }
             InputStream inputStream = new ByteArrayInputStream(sendable.getBytes(encoding));
             getUploadHandler().onUploadStream(size, inputStream, dataOutputStream);
         }
