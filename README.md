@@ -38,7 +38,7 @@ Just add the dependency to your `build.gradle`:
 
 ```groovy
 dependencies {
-   compile 'istat.android.network.http:istat-network:2.5.4'
+   compile 'istat.android.network.http:istat-network:2.5.5'
 }
 ```
 
@@ -54,7 +54,7 @@ add the dependency to your pom.xml:
 <dependency>
   <groupId>istat.android.network.http</groupId>
   <artifactId>istat-network</artifactId>
-  <version>2.5.4</version>
+  <version>2.5.5</version>
   <type>pom</type>
 </dependency>
 ```
