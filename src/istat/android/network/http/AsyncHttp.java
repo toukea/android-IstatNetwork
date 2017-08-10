@@ -104,7 +104,7 @@ public final class AsyncHttp {
         return useDownloader(downloader, when);
     }
 
-    public AsyncHttp useDownloader(final DownloadHandler downloader, final ProgressionListener<Integer> progressionListener) {
+    public AsyncHttp useDownloader(final DownloadHandler downloader, final ProgressionListener<Long> progressionListener) {
         DownloadHandler.WHEN when = null;
         return useDownloader(downloader, when, progressionListener);
     }
@@ -118,13 +118,13 @@ public final class AsyncHttp {
         return this;
     }
 
-    public AsyncHttp useDownloader(final DownloadHandler downloader, DownloadHandler.WHEN when, final ProgressionListener<Integer> progressionListener) {
+    public AsyncHttp useDownloader(final DownloadHandler downloader, DownloadHandler.WHEN when, final ProgressionListener<Long> progressionListener) {
         if (downloader == null && progressionListener == null) {
             return this;
         }
-        this.mAsyncQuery.setDownloadHandler(new HttpAsyncQuery.HttpDownloadHandler<Integer>() {
+        this.mAsyncQuery.setDownloadHandler(new HttpAsyncQuery.HttpDownloadHandler<Long>() {
             @Override
-            public void onProgress(HttpAsyncQuery query, Integer... integers) {
+            public void onProgress(HttpAsyncQuery query, Long... integers) {
                 if (progressionListener != null) {
                     progressionListener.onProgress(query, integers);
                 }
