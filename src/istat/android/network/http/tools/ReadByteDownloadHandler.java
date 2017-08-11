@@ -7,17 +7,27 @@ import istat.android.network.http.HttpAsyncQuery;
 import istat.android.network.utils.ToolKits.Stream;
 
 public abstract class ReadByteDownloadHandler extends
-        HttpAsyncQuery.HttpDownloadHandler<Long> {
+        HttpAsyncQuery.HttpDownloadHandler {
     int buffer = Stream.DEFAULT_BUFFER_SIZE;
     String encoding = Stream.DEFAULT_ENCODING;
+    long publishTimeInterval = -1;
 
     public ReadByteDownloadHandler() {
-
+        this(Stream.DEFAULT_ENCODING, Stream.DEFAULT_BUFFER_SIZE, -1);
     }
 
     public ReadByteDownloadHandler(String encoding, int bufferSize) {
+        this(encoding, bufferSize, -1);
+    }
+
+    public ReadByteDownloadHandler(String encoding, int bufferSize, long publishTimeInterval) {
         this.encoding = encoding;
         this.buffer = bufferSize;
+        this.publishTimeInterval = publishTimeInterval;
+    }
+
+    public void setPublishTimeInterval(int publishTimeInterval) {
+        this.publishTimeInterval = publishTimeInterval;
     }
 
     public String getEncoding() {
@@ -45,26 +55,26 @@ public abstract class ReadByteDownloadHandler extends
 
     @Override
     public Object onBuildResponseBody(HttpURLConnection currentConnexion,
-                                      InputStream inp) {
+                                      InputStream inp) throws Exception {
         String out = "";
+        long lastPublishTime = 0;
         byte[] b = new byte[buffer];
         int read;
         long totalReade = 0;
         long streamSize = currentConnexion == null ? 0 : currentConnexion
                 .getContentLength();
-        try {
-            streamSize = streamSize == 0 ? inp.available() : streamSize;
-            while ((read = inp.read(b)) > -1) {
-                out += (encoding != null ? new String(b, 0, read, encoding)
-                        : new String(b, 0, read));
-                totalReade += read;
+        streamSize = streamSize == 0 ? inp.available() : streamSize;
+        while ((read = inp.read(b)) > -1) {
+            out += (encoding != null ? new String(b, 0, read, encoding)
+                    : new String(b, 0, read));
+            totalReade += read;
+            if (publishTimeInterval > 0 && System.currentTimeMillis() - lastPublishTime > publishTimeInterval) {
                 publishProgression(totalReade, streamSize,
                         streamSize > 0 ? (100 * totalReade / streamSize) : -1);
+                lastPublishTime = System.currentTimeMillis();
             }
-            inp.close();
-        } catch (Exception e) {
         }
-
+        inp.close();
         return out;
     }
     /*

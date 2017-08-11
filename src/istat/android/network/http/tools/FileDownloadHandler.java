@@ -17,7 +17,7 @@ import istat.android.network.utils.StreamOperationTools;
  * Created by istat on 13/02/17.
  */
 
-public abstract class FileDownloadHandler extends HttpAsyncQuery.HttpDownloadHandler<Long> {
+public abstract class FileDownloadHandler extends HttpAsyncQuery.HttpDownloadHandler {
     String destinationPath;
 
     public FileDownloadHandler(String destination) {
