@@ -329,7 +329,7 @@ public final class HttpAsyncQuery extends
     @Deprecated
     public static HttpAsyncQuery doAsyncQuery(HttpQuery<?> http, int queryType,
                                               int bufferSize, String encoding, HttpQueryCallback callBack,
-                                              HttpDownloadHandler<?> processCallBack, String url) {
+                                              HttpDownloadHandler processCallBack, String url) {
         return doAsyncQuery(http, queryType, bufferSize, encoding, callBack,
                 processCallBack, null, url);
     }
@@ -393,7 +393,7 @@ public final class HttpAsyncQuery extends
     @Deprecated
     public static HttpAsyncQuery doAsyncPost(HttpQuery<?> http,
                                              HttpQueryCallback callBack,
-                                             HttpUploadHandler<?> uploadCallback, String url) {
+                                             HttpUploadHandler uploadCallback, String url) {
         HttpAsyncQuery query = doAsyncQuery(http, TYPE_POST,
                 DEFAULT_BUFFER_SIZE, http.mOptions.encoding, callBack, url);
         query.setUploadHandler(uploadCallback);
@@ -416,9 +416,9 @@ public final class HttpAsyncQuery extends
     @Deprecated
     public static HttpAsyncQuery doAsyncPost(MultipartHttpQuery http,
                                              int bufferSize, String encoding, HttpQueryCallback callBack,
-                                             HttpDownloadHandler<?> processCallBack,
+                                             HttpDownloadHandler processCallBack,
                                              CancelListener cancelCallback,
-                                             HttpUploadHandler<?> uploadCallBack, String... urls) {
+                                             HttpUploadHandler uploadCallBack, String... urls) {
         HttpAsyncQuery query = new HttpAsyncQuery(http, callBack);
         query.setDownloadHandler(processCallBack, null);
         query.setCancelListener(cancelCallback);
@@ -447,7 +447,7 @@ public final class HttpAsyncQuery extends
 
     public static HttpAsyncQuery doAsyncQuery(HttpQuery<?> http, int queryType,
                                               int bufferSize, String encoding, HttpQueryCallback callBack,
-                                              HttpDownloadHandler<?> processCallBack,
+                                              HttpDownloadHandler processCallBack,
                                               CancelListener cancelListener, String... urls) {
         HttpAsyncQuery query = new HttpAsyncQuery(http, callBack);
         query.setDownloadHandler(processCallBack, null);
@@ -507,14 +507,14 @@ public final class HttpAsyncQuery extends
     }
 
     // DEFAULT PROCESS CALLBACK IF USER DON'T HAS DEFINE it Own
-    HttpDownloadHandler<?> defaultDownloader = getDefaultDownloader();
-    HttpDownloadHandler<?> successDownloader = null;
-    HttpDownloadHandler<?> errorDownloader = null;
+    HttpDownloadHandler defaultDownloader = getDefaultDownloader();
+    HttpDownloadHandler successDownloader = null;
+    HttpDownloadHandler errorDownloader = null;
 
     HttpAsyncQuery setDownloadHandler(final DownloadHandler downloader, DownloadHandler.WHEN when) {
-        HttpAsyncQuery.HttpDownloadHandler<Integer> downloadHandler = new HttpAsyncQuery.HttpDownloadHandler<Integer>() {
+        HttpAsyncQuery.HttpDownloadHandler downloadHandler = new HttpAsyncQuery.HttpDownloadHandler() {
             @Override
-            public void onProgress(HttpAsyncQuery query, Integer... integers) {
+            public void onProgress(HttpAsyncQuery query, long... integers) {
 
             }
 
@@ -528,7 +528,7 @@ public final class HttpAsyncQuery extends
         return setDownloadHandler(downloadHandler, when);
     }
 
-    HttpAsyncQuery setDownloadHandler(HttpDownloadHandler<?> downloader, DownloadHandler.WHEN when) {
+    HttpAsyncQuery setDownloadHandler(HttpDownloadHandler downloader, DownloadHandler.WHEN when) {
         if (downloader == null) {
             downloader = getDefaultDownloader();
         }
@@ -564,8 +564,8 @@ public final class HttpAsyncQuery extends
         }
     }
 
-    HttpDownloadHandler<?> getDefaultDownloader() {
-        return new HttpDownloadHandler<Integer>() {
+    HttpDownloadHandler getDefaultDownloader() {
+        return new HttpDownloadHandler() {
             {
                 this.query = HttpAsyncQuery.this;
             }
@@ -583,7 +583,7 @@ public final class HttpAsyncQuery extends
             }
 
             @Override
-            public void onProgress(HttpAsyncQuery query, Integer... vars) {
+            public void onProgress(HttpAsyncQuery query, long... vars) {
                 // NOTHING TO DO
             }
 
@@ -828,8 +828,8 @@ public final class HttpAsyncQuery extends
         }
     }
 
-    public static abstract class HttpUploadHandler<ProgressVar> implements
-            UpLoadHandler, ProgressionListener<ProgressVar> {
+    public static abstract class HttpUploadHandler implements
+            UpLoadHandler, ProgressionListener {
         Handler handler;
         HttpAsyncQuery query;
 
@@ -872,9 +872,9 @@ public final class HttpAsyncQuery extends
                 onProgress(query, processVars);
             }
         };
-        ProgressVar[] processVars;
+        long[] processVars;
 
-        public void publishProgression(final ProgressVar... vars) {
+        public void publishProgression(final long... vars) {
             Handler tmpHandler = getHandler();
             if (tmpHandler != null) {
                 processVars = vars;
@@ -886,7 +886,7 @@ public final class HttpAsyncQuery extends
         public final void onUploadStream(long uploadSize, InputStream stream, OutputStream request)
                 throws IOException {
             try {
-                onProceedStreamUpload(uploadSize, request, stream, query);
+                onProceedStreamUpload(uploadSize, stream, request, query);
             } catch (final Exception e) {
                 e.printStackTrace();
                 Handler tmpHandler = getHandler();
@@ -901,14 +901,14 @@ public final class HttpAsyncQuery extends
             }
         }
 
-        public abstract void onProceedStreamUpload(long uploadSize, OutputStream request,
-                                                   InputStream stream, HttpAsyncQuery asyc) throws IOException;
+        public abstract void onProceedStreamUpload(long uploadSize, InputStream stream, OutputStream request,
+                                                   HttpAsyncQuery asyc) throws IOException;
 
         public abstract void onProgress(HttpAsyncQuery query,
-                                        ProgressVar... vars);
+                                        long... vars);
     }
 
-    public static abstract class HttpDownloadHandler<ProgressVar> implements DownloadHandler<Object>, ProgressionListener<ProgressVar> {
+    public static abstract class HttpDownloadHandler implements DownloadHandler<Object>, ProgressionListener {
         Handler handler;
         HttpAsyncQuery query;
 
@@ -982,7 +982,7 @@ public final class HttpAsyncQuery extends
             }
         }
 
-        public void publishProgression(final ProgressVar... vars) {
+        public void publishProgression(final long... vars) {
             getHandler().post(new Runnable() {
                 @Override
                 public void run() {
@@ -993,7 +993,7 @@ public final class HttpAsyncQuery extends
 
 
         public abstract void onProgress(HttpAsyncQuery query,
-                                        ProgressVar... vars);
+                                        long... vars);
 
     }
 

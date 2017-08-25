@@ -1,8 +1,18 @@
 TODO
 -add  Prepare Logix to AsyncHttp
--implement success/error downloader
+-HttpQueryError auto parse Html on error code response if possible
 
-DONE
+DOING----------------------------------------
+
+
+DONE------------------------------------------
+-implement success/error downloader to download error stream and success stream
+
+
+TESTING----------------------------------------
+
+
+FINISH-----------------------------------------
 -provide uploadHandler for all HttpQuery<?> child
 -make uploader variable local to HttpAsyncQuery
 -find a way to use ProgressionListener with HttpDownloadHandler and HttpUploadHandler

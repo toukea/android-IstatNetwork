@@ -10,6 +10,7 @@ import android.telephony.TelephonyManager;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -110,7 +111,7 @@ public final class Connectivity {
                 case TelephonyManager.NETWORK_TYPE_UMTS:
                     return true; // ~ 400-7000 kbps
                 /*
-				 * Above API level 7, make sure to set android:targetSdkVersion
+                 * Above API level 7, make sure to set android:targetSdkVersion
 				 * to appropriate level to use these
 				 */
                 case TelephonyManager.NETWORK_TYPE_EHRPD: // API level 11
@@ -190,6 +191,60 @@ public final class Connectivity {
         } catch (Exception ex) {
         } // for now eat exceptions
         return "";
+    }
+
+    public static String getLocalIPAddress(boolean useIPv4) {
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface intf : interfaces) {
+                List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+                for (InetAddress addr : addrs) {
+                    if (!addr.isLoopbackAddress() && addr.isSiteLocalAddress()) {
+                        String sAddr = addr.getHostAddress().toUpperCase();
+                        boolean isIPv4 = sAddr.indexOf(':') < 0;
+                        if (useIPv4) {
+                            if (isIPv4)
+                                return sAddr;
+                        } else {
+                            if (!isIPv4) {
+                                int delim = sAddr.indexOf('%'); // drop ip6 port suffix
+                                return delim < 0 ? sAddr : sAddr.substring(0, delim);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+        } // for now eat exceptions
+        return "";
+    }
+
+
+    public static List<String> getIPAddressList(boolean useIPv4) {
+        List<String> ips = new ArrayList<>();
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface intf : interfaces) {
+                List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+                for (InetAddress addr : addrs) {
+                    if (!addr.isLoopbackAddress()) {
+                        String sAddr = addr.getHostAddress().toUpperCase();
+                        boolean isIPv4 = sAddr.indexOf(':') < 0;
+                        if (useIPv4) {
+                            if (isIPv4)
+                                ips.add(sAddr);
+                        } else {
+                            if (!isIPv4) {
+                                int delim = sAddr.indexOf('%'); // drop ip6 port suffix
+                                ips.add(delim < 0 ? sAddr : sAddr.substring(0, delim));
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+        } // for now eat exceptions
+        return ips;
     }
 
 }
