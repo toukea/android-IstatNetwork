@@ -22,14 +22,9 @@ public final class AsyncHttp {
         return new AsyncHttp(asycQ);
     }
 
-    /**
-     * deprecated, use {@link #fromSimpleHttp()} instead.
-     *
-     * @return
-     */
-    @Deprecated
-    public final static AsyncHttp fromDefaultHttp() {
-        return fromSimpleHttp();
+    public static AsyncHttp fromBodyPartHttp(Object body) {
+        BodyPartHttpQuery http = new BodyPartHttpQuery(body);
+        return new AsyncHttp(new HttpAsyncQuery(http));
     }
 
     public final static AsyncHttp fromSimpleHttp() {
@@ -219,6 +214,10 @@ public final class AsyncHttp {
 
     public HttpAsyncQuery doPut(String url) {
         return doPut(this.mAsyncQuery.uploadHandler, this.mAsyncQuery.mHttpCallBack, url);
+    }
+
+    public HttpAsyncQuery doQuery(int method, String url) {
+        return this.doQuery(method, this.mAsyncQuery.uploadHandler, this.mAsyncQuery.mHttpCallBack, url);
     }
 
     public HttpAsyncQuery doQuery(int method, HttpAsyncQuery.HttpQueryCallback callback, String url) {

@@ -117,6 +117,10 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     };
 
+    HttpQuery() {
+
+    }
+
     @SuppressWarnings("unchecked")
     public HttpQ addHeader(String name, String value) {
         headers.put(name, value);
@@ -456,7 +460,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
                 while ((read = stream.read(b)) > -1) {
                     request.write(b, 0, read);
                 }
-                //stream.close();
             }
         };
     }
@@ -481,7 +484,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     ParameterHandler parameterHandler = ParameterHandler.DEFAULT_HANDLER;
 
-    public void setParameterHandler(ParameterHandler parameterHandler) {
+    void setParameterHandler(ParameterHandler parameterHandler) {
         if (parameterHandler != null) {
             this.parameterHandler = parameterHandler;
         }
@@ -701,7 +704,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         try {
             final HttpURLConnection connection = getCurrentConnection();
             String responseMessage = connection.getResponseMessage();
-   //         Log.e("HttQuery", "httpMessage=" + responseMessage);
+            //         Log.e("HttQuery", "httpMessage=" + responseMessage);
             return responseMessage;
         } catch (IOException e) {
             e.printStackTrace();

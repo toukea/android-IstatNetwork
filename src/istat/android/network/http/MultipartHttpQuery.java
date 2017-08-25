@@ -46,6 +46,11 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
     private static final String LINE_FEED = "\r\n";
 
     @Override
+    public void setParameterHandler(ParameterHandler parameterHandler) {
+        super.setParameterHandler(parameterHandler);
+    }
+
+    @Override
     public InputStream doPost(String url) throws IOException {
         return POST(url, true);
     }
@@ -118,8 +123,8 @@ public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
             size += boundary.length();
             ByteArrayInputStream endSegmentDataInputStream = new ByteArrayInputStream(boundary.getBytes(encoding));
             InputStream multipartInputStream = ToolKits.Stream.merge(stringDataInputStream, filePartInputStream, endSegmentDataInputStream);
-      //      String summary = ToolKits.Stream.streamToString(multipartInputStream);
-     //       System.out.println(summary);
+            //      String summary = ToolKits.Stream.streamToString(multipartInputStream);
+            //       System.out.println(summary);
             OutputStream os = conn.getOutputStream();
             this.currentOutputStream = os;
             getUploadHandler().onUploadStream(size, multipartInputStream, os);

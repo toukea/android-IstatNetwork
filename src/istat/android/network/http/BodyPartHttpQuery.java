@@ -40,6 +40,15 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
         }
     }
 
+    public BodyPartHttpQuery() {
+
+    }
+
+    public BodyPartHttpQuery setBody(Object body) {
+        this.part = body;
+        return this;
+    }
+
     /**
      * @param Name
      * @param Value
