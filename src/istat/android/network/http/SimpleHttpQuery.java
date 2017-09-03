@@ -1,7 +1,5 @@
 package istat.android.network.http;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 
 /*
@@ -23,7 +21,7 @@ import java.util.HashMap;
 /**
  * @author Toukea Tatsi (Istat)
  */
-public class SimpleHttpQuery extends HttpQuery<SimpleHttpQuery> {
+public class SimpleHttpQuery extends ParameterHttpQuery<SimpleHttpQuery> {
 
 
     @Override

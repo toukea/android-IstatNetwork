@@ -2,22 +2,18 @@ package istat.android.network.http;
 
 import android.text.TextUtils;
 
-import istat.android.network.http.interfaces.UpLoadHandler;
 import istat.android.network.utils.ToolKits;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.SequenceInputStream;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +36,7 @@ import java.util.Map;
 /**
  * @author Toukea Tatsi (Istat)
  */
-public class MultipartHttpQuery extends HttpQuery<MultipartHttpQuery> {
+public class MultipartHttpQuery extends ParameterHttpQuery<MultipartHttpQuery> {
 
     HashMap<String, File> fileParts = new HashMap<String, File>();
     private static final String LINE_FEED = "\r\n";
