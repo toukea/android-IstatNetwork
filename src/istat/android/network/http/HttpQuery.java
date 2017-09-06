@@ -155,6 +155,24 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return (HttpQ) this;
     }
 
+    @SuppressWarnings("unchecked")
+    protected HttpQ addParams(HashMap<?, ?> nameValues) {
+        if (!nameValues.keySet().isEmpty()) {
+            String[] table = new String[nameValues.size()];
+            table = nameValues.keySet().toArray(table);
+            for (String tmp : table) {
+                if (tmp != null) {
+                    Object obj = nameValues.get(tmp);
+                    if (obj != null) {
+                        addParam(tmp, obj.toString());
+                    }
+                }
+            }
+        }
+        return (HttpQ) this;
+    }
+
+
     /**
      * add param as URL parameter. eg: ?name=hello&pseudo=world
      *

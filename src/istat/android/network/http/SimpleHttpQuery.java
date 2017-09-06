@@ -26,18 +26,18 @@ public class SimpleHttpQuery extends ParameterHttpQuery<SimpleHttpQuery> {
 
     @Override
     public void setParameterHandler(
-            final istat.android.network.http.HttpQuery.ParameterHandler postHandler) {
+            final istat.android.network.http.HttpQuery.ParameterHandler pHandler) {
         ParameterHandler parameterHandler = new ParameterHandler() {
 
             @Override
             public String onStringifyQueryParams(String method,
                                                  HashMap<String, String> params, String encoding) {
-                if (METHOD_GET.equalsIgnoreCase(method) || postHandler == null) {
+                if (METHOD_GET.equalsIgnoreCase(method) || pHandler == null) {
                     return ParameterHandler.DEFAULT_HANDLER
                             .onStringifyQueryParams(method, params, encoding);
                 }
                 try {
-                    return postHandler.onStringifyQueryParams(method, params,
+                    return pHandler.onStringifyQueryParams(method, params,
                             encoding);
                 } catch (Exception e) {
                     throw new RuntimeException(e);

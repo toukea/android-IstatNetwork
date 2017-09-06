@@ -14,6 +14,11 @@ import istat.android.network.utils.ToolKits;
  */
 
 abstract class ParameterHttpQuery<HttpQ extends HttpQuery<HttpQ>> extends HttpQuery<HttpQ> {
+    @Override
+    public void setParameterHandler(ParameterHandler parameterHandler) {
+        super.setParameterHandler(parameterHandler);
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     public HttpQ addSendable(HttpSendable sendable) {
         sendable.onFillHttpQuery(this);
@@ -37,19 +42,7 @@ abstract class ParameterHttpQuery<HttpQ extends HttpQuery<HttpQ>> extends HttpQu
 
     @SuppressWarnings("unchecked")
     public HttpQ addParams(HashMap<?, ?> nameValues) {
-        if (!nameValues.keySet().isEmpty()) {
-            String[] table = new String[nameValues.size()];
-            table = nameValues.keySet().toArray(table);
-            for (String tmp : table) {
-                if (tmp != null) {
-                    Object obj = nameValues.get(tmp);
-                    if (obj != null) {
-                        addParam(tmp, obj.toString());
-                    }
-                }
-            }
-        }
-        return (HttpQ) this;
+        return super.addParams(nameValues);
     }
 
     public HttpQ addParams(Object container) {

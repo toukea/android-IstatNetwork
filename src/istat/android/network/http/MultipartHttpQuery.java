@@ -42,11 +42,6 @@ public class MultipartHttpQuery extends ParameterHttpQuery<MultipartHttpQuery> {
     private static final String LINE_FEED = "\r\n";
 
     @Override
-    public void setParameterHandler(ParameterHandler parameterHandler) {
-        super.setParameterHandler(parameterHandler);
-    }
-
-    @Override
     public InputStream doPost(String url) throws IOException {
         return POST(url, true);
     }

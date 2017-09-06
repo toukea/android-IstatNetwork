@@ -37,8 +37,8 @@ public final class AsyncHttp {
         return new AsyncHttp(new HttpAsyncQuery(http));
     }
 
-    AsyncHttp(HttpAsyncQuery asycQuery) {
-        this.mAsyncQuery = asycQuery;
+    AsyncHttp(HttpAsyncQuery asyncQuery) {
+        this.mAsyncQuery = asyncQuery;
     }
 
     String encoding;
