@@ -13,13 +13,13 @@ import android.util.Log;
 public class Security {
     final static String[] PASSWORD_PROPOSITION_CHAR = {"0", "1", "2", "3", "4", "5",
             "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"};
-
+    //header:Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
     public static String generateBasicAuthenticationToken(String userName, String secret) {
         String usernameAndPassword = userName + ":" + secret;
         return Base64.encodeToString(usernameAndPassword.getBytes(),
                 Base64.NO_WRAP);
     }
-
+    //header:X-WSSE
     @SuppressLint("SimpleDateFormat")
     public static String generateXWSSEToken(String userName, String secret) {
         return generateXWSSEToken(userName, secret, System.currentTimeMillis());
