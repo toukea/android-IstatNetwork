@@ -7,17 +7,16 @@ import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
 
-public class HttpQueryError extends RuntimeException implements HttpQueryResponse {
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
+/**
+ * Created by istat on 18/09/17.
+ */
+
+public class HttpQueryResult implements HttpQueryResponse {
     int code = 0;
     Object body;
     HttpAsyncQuery.HttpQueryResponseImpl response;
 
-    HttpQueryError(HttpAsyncQuery.HttpQueryResponseImpl resp) {
-        super(resp.message);
+    HttpQueryResult(HttpAsyncQuery.HttpQueryResponseImpl resp) {
         this.code = resp.getCode();
         this.body = resp.getBody();
         this.response = resp;
@@ -61,22 +60,8 @@ public class HttpQueryError extends RuntimeException implements HttpQueryRespons
         return body.toString();
     }
 
-    @Override
-    public String getMessage() {
-        return super.getMessage();
-    }
-
-    @Override
-    public String toString() {
-        return code + " : " + getMessage() + ", " + this.body;
-    }
-
     public String getHeader(String name) {
         return response.getHeader(name);
-    }
-
-    public List<String> getHeaders(String name) {
-        return response.getHeaders().get(name);
     }
 
     public long getHeaderAsLong(String name) {
@@ -101,28 +86,29 @@ public class HttpQueryError extends RuntimeException implements HttpQueryRespons
 
     @Override
     public boolean isSuccess() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean hasError() {
-        return true;
+        return false;
     }
 
     public Throwable getError() {
-        if (getCause() != null) {
-            return getCause();
-        } else {
-            return this;
-        }
+        return null;
     }
 
+    @Override
     public boolean isAccepted() {
-        return code > 0;
+        return true;
     }
 
     @Override
     public HttpURLConnection getConnection() {
         return response.getConnection();
+    }
+
+    public List<String> getHeaders(String name) {
+        return response.getHeaders().get(name);
     }
 }

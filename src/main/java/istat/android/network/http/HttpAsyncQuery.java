@@ -2,6 +2,7 @@ package istat.android.network.http;
 
 import istat.android.network.http.interfaces.DownloadHandler;
 import istat.android.network.http.interfaces.ProgressionListener;
+import istat.android.network.http.utils.HttpUtils;
 import istat.android.network.utils.StreamOperationTools;
 
 import java.io.IOException;
@@ -17,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
-import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
+import istat.android.network.http.HttpAsyncQuery.HttpQueryResponseImpl;
 import istat.android.network.http.interfaces.UpLoadHandler;
 
 import android.annotation.TargetApi;
@@ -33,7 +34,7 @@ import org.json.JSONObject;
 
 
 public final class HttpAsyncQuery extends
-        AsyncTask<String, HttpQueryResponse, HttpQueryResponse> {
+        AsyncTask<String, HttpQueryResponseImpl, HttpQueryResponseImpl> {
     public final static int TYPE_GET = 1, TYPE_POST = 2, TYPE_PUT = 3,
             TYPE_HEAD = 4, TYPE_DELETE = 5, TYPE_COPY = 6, TYPE_PATCH = 7,
             TYPE_RENAME = 8, TYPE_MOVE = 9, DEFAULT_BUFFER_SIZE = 16384;
@@ -82,7 +83,7 @@ public final class HttpAsyncQuery extends
     }
 
     @Override
-    protected HttpQueryResponse doInBackground(String... urls) {
+    protected HttpQueryResponseImpl doInBackground(String... urls) {
         for (String url : urls) {
             if (isCancelled()) {
                 break;
@@ -123,7 +124,7 @@ public final class HttpAsyncQuery extends
                         stream = mHttp.doGet(url);
                         break;
                 }
-                HttpQueryResponse response = new HttpQueryResponse(stream, null, this);
+                HttpQueryResponseImpl response = new HttpQueryResponseImpl(stream, null, this);
                 return response;
             } catch (HttpQuery.AbortionException e) {
                 e.printStackTrace();
@@ -137,7 +138,7 @@ public final class HttpAsyncQuery extends
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                HttpQueryResponse errorResponse = HttpQueryResponse.newErrorInstance(e, this);
+                HttpQueryResponseImpl errorResponse = HttpQueryResponseImpl.newErrorInstance(e, this);
                 return errorResponse;
             }
         }
@@ -145,7 +146,7 @@ public final class HttpAsyncQuery extends
     }
 
     @Override
-    protected void onProgressUpdate(HttpQueryResponse... values) {
+    protected void onProgressUpdate(HttpQueryResponseImpl... values) {
 
     }
 
@@ -161,29 +162,27 @@ public final class HttpAsyncQuery extends
 
     HttpQueryResponse result;
 
-    private void dispatchQueryResponse(HttpQueryResponse resp) {
-        result = resp;
+    private void dispatchQueryResponse(HttpQueryResponseImpl resp) {
+        this.result = resp;
         executedRunnable.clear();
         try {
             boolean aborted = isAborted();
             if (resp.isAccepted() && !aborted) {
                 if (resp.isSuccess()) {
-                    notifySuccess(resp);
+                    HttpQueryResult result = new HttpQueryResult(resp);
+                    this.result = result;
+                    notifySuccess(result);
                 } else {
-                    HttpQueryError error;
-                    if (resp.hasError() && resp.getError() instanceof HttpQueryError) {
-                        error = (HttpQueryError) resp.getError();
-                    } else {
-                        error = new HttpQueryError(resp);
-                    }
+                    HttpQueryError error = new HttpQueryError(resp);
                     resp.error = error;
-                    notifyError(resp, error);
+                    this.result = error;
+                    notifyError(error);
                 }
             } else {
                 throw resp.getError();
             }
         } catch (Exception e) {
-            notifyFail(e);
+            notifyFail(resp, e);
         }
     }
 
@@ -193,22 +192,22 @@ public final class HttpAsyncQuery extends
         executeWhen(runnableList, when);
     }
 
-    private void notifySuccess(HttpQueryResponse resp) {
+    private void notifySuccess(HttpQueryResult result) {
         int when = WHEN_SUCCEED;
         if (mHttpCallBack != null) {
-            mHttpCallBack.onHttpSuccess(resp);
+            mHttpCallBack.onHttpSuccess(result);
         }
-        notifyCompleted(resp);
+        notifyCompleted(result);
         ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
         executeWhen(runnableList, when);
     }
 
-    private void notifyError(HttpQueryResponse resp, HttpQueryError error) {
+    private void notifyError(HttpQueryError error) {
         int when = WHEN_ERROR;
         if (mHttpCallBack != null) {
-            mHttpCallBack.onHttpError(resp, error);
+            mHttpCallBack.onHttpError(error);
         }
-        notifyCompleted(resp);
+        notifyCompleted(error);
         ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
         executeWhen(runnableList, when);
     }
@@ -222,12 +221,12 @@ public final class HttpAsyncQuery extends
         executeWhen(runnableList, when);
     }
 
-    private void notifyFail(Exception e) {
+    private void notifyFail(HttpQueryResponseImpl resp, Exception e) {
         int when = WHEN_FAILED;
         if (mHttpCallBack != null) {
             mHttpCallBack.onHttpFail(e);
         }
-        notifyCompleted(HttpQueryResponse.newErrorInstance(e, this));
+        notifyCompleted(resp);
         ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
         executeWhen(runnableList, when);
     }
@@ -241,7 +240,7 @@ public final class HttpAsyncQuery extends
         if (mCancelListener != null) {
             mCancelListener.onCanceling(this);
         }
-        result = HttpQueryResponse.newErrorInstance(new HttpQuery.AbortionException(this.mHttp), this);
+        result = HttpQueryResponseImpl.newErrorInstance(new HttpQuery.AbortionException(this.mHttp), this);
         ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
         ConcurrentLinkedQueue<Runnable> runnableAnywayList = runnableTask.get(WHEN_ANYWAY);
         if (runnableList != null && runnableAnywayList != null) {
@@ -257,12 +256,12 @@ public final class HttpAsyncQuery extends
     }
 
     @Override
-    protected void onPostExecute(HttpQueryResponse result) {
+    protected void onPostExecute(HttpQueryResponseImpl result) {
         super.onPostExecute(result);
         if (result == null) {
             return;
         }
-        if (mHttpCallBack != null && !mHttp.isAborted() && !isCancelled()) {
+        if (!mHttp.isAborted() && !isCancelled()) {
             dispatchQueryResponse(result);
         }
         taskQueue.values().removeAll(Collections.singletonList(this));
@@ -590,7 +589,7 @@ public final class HttpAsyncQuery extends
         };
     }
 
-    public static class HttpQueryResponse {
+    static class HttpQueryResponseImpl implements istat.android.network.http.HttpQueryResponse {
         Object body;
         Exception error;
         HttpAsyncQuery mAsyncQ;
@@ -599,9 +598,13 @@ public final class HttpAsyncQuery extends
         HttpURLConnection connexion;
         Map<String, List<String>> headers = new HashMap<String, List<String>>();
 
-        static HttpQueryResponse newErrorInstance(Exception e, HttpAsyncQuery asycQ) {
+        public HttpURLConnection getConnection() {
+            return connexion;
+        }
+
+        static HttpQueryResponseImpl newErrorInstance(Exception e, HttpAsyncQuery asycQ) {
             try {
-                return new HttpQueryResponse(null, e, asycQ);
+                return new HttpQueryResponseImpl(null, e, asycQ);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 return null;
@@ -616,7 +619,8 @@ public final class HttpAsyncQuery extends
             return message;
         }
 
-        HttpQueryResponse(InputStream stream, Exception e, HttpAsyncQuery asyncQ) throws HttpQuery.AbortionException {
+
+        HttpQueryResponseImpl(InputStream stream, Exception e, HttpAsyncQuery asyncQ) throws HttpQuery.AbortionException {
             mAsyncQ = asyncQ;
             init(stream, e);
         }
@@ -625,14 +629,14 @@ public final class HttpAsyncQuery extends
             HttpQuery<?> http = mAsyncQ.mHttp;
             connexion = http.getCurrentConnection();
             this.error = e;
-            this.code = http.getCurrentResponseCode();
-            this.message = http.getCurrentResponseMessage();
             if (connexion != null) {
+                this.code = http.getCurrentResponseCode();
+                this.message = http.getCurrentResponseMessage();
                 try {
                     this.body = null;
                     if (stream != null) {
                         HttpDownloadHandler downloader = this.mAsyncQ.defaultDownloader;
-                        if (isSuccessCode(connexion.getResponseCode()) && this.mAsyncQ.successDownloader != null) {
+                        if (HttpUtils.isSuccessCode(connexion.getResponseCode()) && this.mAsyncQ.successDownloader != null) {
                             downloader = this.mAsyncQ.successDownloader;
                         } else if (this.mAsyncQ.errorDownloader != null) {
                             downloader = this.mAsyncQ.errorDownloader;
@@ -662,6 +666,10 @@ public final class HttpAsyncQuery extends
 
         public Map<String, List<String>> getHeaders() {
             return headers;
+        }
+
+        public List<String> getHeaders(String name) {
+            return getHeaders().get(name);
         }
 
         public String getHeader(String name) {
@@ -694,7 +702,7 @@ public final class HttpAsyncQuery extends
         }
 
         public boolean hasError() {
-            return error != null || !isSuccessCode(code);
+            return error != null || !HttpUtils.isSuccessCode(code);
         }
 
         public boolean isSuccess() {
@@ -753,22 +761,6 @@ public final class HttpAsyncQuery extends
         public Exception getError() {
             return error;
         }
-
-        public static boolean isSuccessCode(int code) {
-            return code > 0 && code >= 200 && code <= 299;
-        }
-
-        public static boolean isErrorCode(int code) {
-            return !isSuccessCode(code);
-        }
-
-        public static boolean isClientErrorCode(int code) {
-            return code > 0 && code >= 400 && code <= 499;
-        }
-
-        public static boolean isServerErrorCode(int code) {
-            return code > 0 && code >= 500 && code <= 599;
-        }
     }
 
 
@@ -779,10 +771,9 @@ public final class HttpAsyncQuery extends
     }
 
     public interface HttpQueryCallback {
-        void onHttpSuccess(HttpQueryResponse resp);
+        void onHttpSuccess(HttpQueryResult resp);
 
-        void onHttpError(HttpQueryResponse resp,
-                         istat.android.network.http.HttpQueryError e);
+        void onHttpError(istat.android.network.http.HttpQueryError e);
 
         void onHttpFail(Exception e);
 
@@ -812,7 +803,7 @@ public final class HttpAsyncQuery extends
     }
 
     public static List<HttpAsyncQuery> getTaskQueue() {
-        return new ArrayList<HttpAsyncQuery>(taskQueue.values());
+        return new ArrayList(taskQueue.values());
     }
 
     public static void cancelAll() {
@@ -1004,39 +995,6 @@ public final class HttpAsyncQuery extends
         }
     };
 
-    /**
-     * use {@link AsyncHttp#from(HttpQuery)} instead.
-     *
-     * @param http
-     * @return
-     */
-    @Deprecated
-    public final static AsyncHttp from(HttpQuery<?> http) {
-        return new AsyncHttp(new HttpAsyncQuery(http));
-    }
-
-    /**
-     * * use {@link AsyncHttp#fromDefaultHttp()} instead.
-     *
-     * @return
-     */
-    @Deprecated
-    public final static AsyncHttp fromDefaultHttp() {
-        SimpleHttpQuery http = new SimpleHttpQuery();
-        return new AsyncHttp(new HttpAsyncQuery(http));
-    }
-
-    /**
-     * * use {@link AsyncHttp#fromMultipartHttp()} instead.
-     *
-     * @return
-     */
-    @Deprecated
-    public final static AsyncHttp fromMultipartHttp() {
-        MultipartHttpQuery http = new MultipartHttpQuery();
-        return new AsyncHttp(new HttpAsyncQuery(http));
-    }
-
     public HttpPromise then(Runnable runnable) {
         HttpPromise promise = new HttpPromise(this);
         promise.then(runnable);
@@ -1074,16 +1032,16 @@ public final class HttpAsyncQuery extends
     public final static int WHEN_ABORTION = 3;
     public final static int WHEN_FAILED = 4;
 
-    public static interface WhenCallback {
-        public void onWhen(HttpQueryResponse resp, HttpAsyncQuery query, int when);
+    public interface WhenCallback {
+        void onWhen(HttpQueryResponse resp, HttpAsyncQuery query, int when);
     }
 
-    public static interface PromiseCallback {
-        public void onPromise(HttpQueryResponse resp, HttpAsyncQuery query);
+    public interface PromiseCallback {
+        void onPromise(HttpQueryResponse resp, HttpAsyncQuery query);
     }
 
-    final ConcurrentHashMap<Runnable, Integer> executedRunnable = new ConcurrentHashMap<Runnable, Integer>();
-    final ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Runnable>> runnableTask = new ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Runnable>>();
+    final ConcurrentHashMap<Runnable, Integer> executedRunnable = new ConcurrentHashMap();
+    final ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Runnable>> runnableTask = new ConcurrentHashMap();
 
     public HttpAsyncQuery runWhen(final WhenCallback callback, final int... when) {
         if (callback == null)
@@ -1095,7 +1053,7 @@ public final class HttpAsyncQuery extends
                 int when = WHEN_ANYWAY;
                 try {
                     resp = getResult();
-                    when = executedRunnable.get(this);
+//                    when = executedRunnable.get(this);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
@@ -1118,7 +1076,7 @@ public final class HttpAsyncQuery extends
         if (!isWhenContain(runnable, conditionTime)) {
             ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(conditionTime);
             if (runnableList == null) {
-                runnableList = new ConcurrentLinkedQueue<Runnable>();
+                runnableList = new ConcurrentLinkedQueue();
             }
             runnableList.add(runnable);
             runnableTask.put(conditionTime, runnableList);
@@ -1137,8 +1095,12 @@ public final class HttpAsyncQuery extends
         if (runnableList != null && runnableList.size() > 0) {
             for (Runnable runnable : runnableList) {
                 if (!executedRunnable.contains(runnable)) {
-                    runnable.run();
-                    executedRunnable.put(runnable, when);
+                    try {
+                        runnable.run();
+                        executedRunnable.put(runnable, when);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

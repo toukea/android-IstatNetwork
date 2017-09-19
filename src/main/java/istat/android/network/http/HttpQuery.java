@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
@@ -13,19 +12,16 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import istat.android.network.http.HttpAsyncQuery.HttpQueryResponse;
-import istat.android.network.http.interfaces.HttpSendable;
+import istat.android.network.http.HttpAsyncQuery.HttpQueryResponseImpl;
 import istat.android.network.http.interfaces.UpLoadHandler;
+import istat.android.network.http.utils.HttpUtils;
 import istat.android.network.utils.ToolKits;
 import istat.android.network.utils.ToolKits.Text;
-
-import org.apache.http.message.BasicNameValuePair;
 
 import android.text.TextUtils;
 import android.util.Log;
@@ -613,7 +609,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             eval = conn.getContentLength();
         }
 
-        if (HttpQueryResponse.isSuccessCode(responseCode)) {
+        if (HttpUtils.isSuccessCode(responseCode)) {
             stream = conn.getInputStream();
         } else if (handleError) {
             stream = conn.getErrorStream();

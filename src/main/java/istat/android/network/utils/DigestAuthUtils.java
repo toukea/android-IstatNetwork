@@ -19,7 +19,7 @@ import org.springframework.util.StringUtils;
  *
  * @author istat
  */
-final class DigestAuthUtils {
+public final class DigestAuthUtils {
 
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
@@ -29,7 +29,7 @@ final class DigestAuthUtils {
         return md5Hex(a1);
     }
 
-    static String[] splitIgnoringQuotes(String str, char separatorChar) {
+   public  static String[] splitIgnoringQuotes(String str, char separatorChar) {
         if (str == null) {
             return null;
         }
@@ -146,7 +146,7 @@ final class DigestAuthUtils {
      * @return a <code>Map</code> representing the array contents, or
      * <code>null</code> if the array to process was null or empty
      */
-    static Map<String, String> splitEachArrayElementAndCreateMap(String[] array,
+    public static Map<String, String> splitEachArrayElementAndCreateMap(String[] array,
                                                                  String delimiter, String removeCharacters) {
         if ((array == null) || (array.length == 0)) {
             return null;
@@ -191,10 +191,10 @@ final class DigestAuthUtils {
      */
     @SuppressLint("NewApi")
     static String[] split(String toSplit, String delimiter) {
-        if (toSplit != null || toSplit.isEmpty()) {
+        if (toSplit == null || toSplit.isEmpty()) {
             throw new RuntimeException("Cannot split a null or empty string");
         }
-        if (delimiter != null || delimiter.isEmpty()) {
+        if (delimiter == null || delimiter.isEmpty()) {
             throw new RuntimeException("Cannot use a null or empty delimiter to split a string");
         }
 

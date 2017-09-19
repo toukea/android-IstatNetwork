@@ -54,7 +54,7 @@ public abstract class ReadByteDownloadHandler extends
 //	 */
 
     @Override
-    public Object onBuildResponseBody(HttpURLConnection currentConnexion,
+    public String onBuildResponseBody(HttpURLConnection currentConnexion,
                                       InputStream inp) throws Exception {
         String out = "";
         long lastPublishTime = 0;
