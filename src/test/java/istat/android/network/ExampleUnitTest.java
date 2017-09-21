@@ -3,8 +3,6 @@ package istat.android.network;
 
 import org.junit.Test;
 
-import istat.android.base.utils.AbsListWrapper;
-
 import static org.junit.Assert.*;
 
 /**
@@ -13,13 +11,6 @@ import static org.junit.Assert.*;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 public class ExampleUnitTest {
-    @Test
-    public void addition_isCorrect() throws Exception {
-        assertEquals(4, 2 + 2);
-        MyList list = new MyList();
-        String toJson = list.toJson();
-        System.out.println(toJson);
-    }
 
     @Test
     public void matches() throws Exception {
@@ -46,22 +37,4 @@ public class ExampleUnitTest {
 				"distance":"-1"
 			}
      */
-    @Test
-    public void TestFinder() throws Exception {
-        TextFinder finder = new TextFinder("\\{.*\\}");
-    }
-
-    class MyList extends AbsListWrapper<String> {
-        public MyList() {
-            super();
-            add("Hello");
-            add("world");
-            add("dady");
-            add("polo");
-        }
-
-        public String toJson() {
-            return null;
-        }
-    }
 }

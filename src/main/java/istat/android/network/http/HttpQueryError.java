@@ -110,6 +110,9 @@ public class HttpQueryError extends RuntimeException implements HttpQueryRespons
     }
 
     public Throwable getError() {
+        if (body != null && body instanceof Throwable) {
+            return (Throwable) body;
+        }
         if (getCause() != null) {
             return getCause();
         } else {

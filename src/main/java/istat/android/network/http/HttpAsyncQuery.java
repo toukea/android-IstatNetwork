@@ -51,6 +51,19 @@ public final class HttpAsyncQuery extends
 
         }
     };
+    public final static HashMap<String, Integer> METHOD_NAME_TYPE_MAP = new HashMap() {
+        {
+            put("COPY", TYPE_COPY);
+            put("MOVE", TYPE_MOVE);
+            put("GET", TYPE_GET);
+            put("POST", TYPE_POST);
+            put("PATCH", TYPE_PATCH);
+            put("HEAD", TYPE_HEAD);
+            put("PUT", TYPE_PUT);
+            put("DELETE", TYPE_DELETE);
+
+        }
+    };
     public final static String DEFAULT_ENCODING = "UTF-8";
     UpLoadHandler uploadHandler;
     HttpQueryCallback mHttpCallBack;
