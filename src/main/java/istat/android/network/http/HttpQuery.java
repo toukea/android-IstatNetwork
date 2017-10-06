@@ -1,5 +1,8 @@
 package istat.android.network.http;
 
+import android.text.TextUtils;
+import android.util.Log;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,14 +20,10 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import istat.android.network.http.HttpAsyncQuery.HttpQueryResponseImpl;
 import istat.android.network.http.interfaces.UpLoadHandler;
 import istat.android.network.http.utils.HttpUtils;
 import istat.android.network.utils.ToolKits;
 import istat.android.network.utils.ToolKits.Text;
-
-import android.text.TextUtils;
-import android.util.Log;
 
 /*
  * Copyright (C) 2014 Istat Dev.
@@ -170,7 +169,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
 
     /**
-     * add param as URL parameter. eg: ?name=hello&pseudo=world
+     * add param as URL parameter.
      *
      * @param Name
      * @param Value

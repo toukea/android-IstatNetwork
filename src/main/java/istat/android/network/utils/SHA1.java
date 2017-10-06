@@ -162,7 +162,7 @@ public final class SHA1 {
 
     /**
      * Hash a single 512-bit block. This is the core of the algorithm.
-     * <p/>
+     * <p></p>
      * Note that working with arrays is very inefficent in Java as it does a
      * class cast check each time you store into the array.
      */
