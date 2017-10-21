@@ -11,7 +11,7 @@ And Android Library to make Http Query Easy.
         It allow to specify how the queryer would read and build body response.
         Default read and return plain text
      */
-    HttpAsyncQuery.HttpDownloadHandler<Integer> downloader = new HttpAsyncQuery.HttpDownloadHandler<Integer> (){
+    HttpAsyncQuery.HttpDownloadHandler downloader = new HttpAsyncQuery.HttpDownloadHandler (){
     //Your own implementation
     };
     /*
