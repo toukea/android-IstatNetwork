@@ -13,7 +13,7 @@ import istat.android.network.utils.ToolKits;
  * Created by istat on 03/09/17.
  */
 
-abstract class ParameterHttpQuery<HttpQ extends HttpQuery<HttpQ>> extends HttpQuery<HttpQ> {
+public abstract class ParameterHttpQuery<HttpQ extends HttpQuery<HttpQ>> extends HttpQuery<HttpQ> {
     @Override
     public void setParameterHandler(ParameterHandler parameterHandler) {
         super.setParameterHandler(parameterHandler);

@@ -786,7 +786,7 @@ public final class HttpAsyncQuery extends
     public interface HttpQueryCallback {
         void onHttpSuccess(HttpQueryResult resp);
 
-        void onHttpError(istat.android.network.http.HttpQueryError e);
+        void onHttpError(HttpQueryError e);
 
         void onHttpFail(Exception e);
 
