@@ -1,5 +1,6 @@
 package istat.android.network.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -27,6 +28,7 @@ public final class Connectivity {
      * @param context
      * @return
      */
+    @SuppressLint("MissingPermission")
     public static NetworkInfo getNetworkInfo(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
