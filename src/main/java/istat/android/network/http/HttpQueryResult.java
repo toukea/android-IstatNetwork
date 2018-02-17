@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Created by istat on 18/09/17.
  */
-
+//TODO inner variable is really needed?
 public class HttpQueryResult implements HttpQueryResponse {
     int code = 0;
     Object body;
@@ -20,6 +20,12 @@ public class HttpQueryResult implements HttpQueryResponse {
         this.code = resp.getCode();
         this.body = resp.getBody();
         this.response = resp;
+
+    }
+
+    @Override
+    public String getMessage() {
+        return response.getMessage();
     }
 
     public int getCode() {

@@ -6,7 +6,7 @@ import org.json.JSONObject;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
-
+//TODO inner variable is really needed?
 public class HttpQueryError extends RuntimeException implements HttpQueryResponse {
     /**
      *

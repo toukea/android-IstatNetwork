@@ -18,6 +18,8 @@ public interface HttpQueryResponse {
 
     int getCode();
 
+    String getMessage();
+
     @SuppressWarnings("unchecked")
     <T> T getBody();
 
