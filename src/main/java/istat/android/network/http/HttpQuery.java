@@ -307,6 +307,11 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return doQuery(url, method, false, holdError);
     }
 
+//   class ConnectionDescription {
+//        long length;
+//        URLConnection connection;
+//    }
+
     protected synchronized InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
             throws IOException {
         //       Log.d("HttpQuery", "Method=" + method + ", bodyData=" + bodyData + ", holdError=" + holdError + ", url=" + getURL(url));
@@ -314,7 +319,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         String data = "";
         if (!bodyData || !urlPramNames.isEmpty()) {
             HashMap<String, String> urlParameters = getUrlParameters();
-            HashMap<String, String> parameters = new HashMap<String, String>();
+            HashMap<String, String> parameters = new HashMap();
             if (!bodyData) { //pas de body Data
                 parameters.putAll(this.parameters);
             } else if (!urlParameters.isEmpty()) {//hasUrl param enable
@@ -335,7 +340,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             if (bodyData) {//data uploading
                 connection.setDoOutput(true);
                 OutputStream os = connection.getOutputStream();
-                length = writeDataToOutputStream(method, os);
+                length = writeDataInToOutputStream(method, os);
                 os.close();
             }
             InputStream stream = eval(connection, holdError);
@@ -351,16 +356,22 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         }
     }
 
+    protected void configureConnection(HttpURLConnection conn) throws IOException {
+        if (mOptions != null) {
+            applyOptions(conn);
+        }
+        fillHeader(conn);
+//        Map<String, List<String>> headerss = conn.getRequestProperties();
+//        System.out.println(headerss);
+    }
+
     protected HttpURLConnection prepareConnection(final String url,
                                                   String method) throws IOException {
         onQueryStarting();
         URL Url = new URL(url);
         URLConnection urlConnexion = Url.openConnection();
         HttpURLConnection conn = (HttpURLConnection) urlConnexion;
-        if (mOptions != null) {
-            applyOptions(conn);
-        }
-        fillHeader(conn);
+        configureConnection(conn);
         try {
             conn.setRequestMethod(method);
         } catch (Exception ex) {
@@ -405,7 +416,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             public String onStringifyQueryParams(String method,
                                                  HashMap<String, String> params, String encoding) {
                 try {
-                    return createStringularQueryAbleData(params, encoding);
+                    return createUrlQueryParamSequence(params, encoding);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -453,18 +464,18 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         }
     }
 
-    protected final long writeDataToOutputStream(String method,
-                                                 OutputStream os) throws IOException {
+    protected final long writeDataInToOutputStream(String method,
+                                                   OutputStream os) throws IOException {
         currentOutputStream = os;
-        long length = onWriteDataToOutputStream(method, currentOutputStream);
+        long length = onWriteDataInToOutputStream(method, currentOutputStream);
         if (length > 0) {
             currentOutputStream.flush();
         }
         return length;
     }
 
-    protected long onWriteDataToOutputStream(String method,
-                                             OutputStream dataOutputStream) throws IOException {
+    protected long onWriteDataInToOutputStream(String method,
+                                               OutputStream dataOutputStream) throws IOException {
         String encoding = getOptions().encoding;
         String data = "";
         if (parameterHandler != null) {
@@ -481,7 +492,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     public String getURL(String address) throws IOException {
         // --------------------------
-        String paramString = createStringularQueryAbleData(parameters,
+        String paramString = createUrlQueryParamSequence(parameters,
                 mOptions.encoding);
         return address
                 + (paramString == null || paramString.equals("") ? "" : "?"
@@ -497,6 +508,12 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     public boolean isAutoClearParamsEnable() {
         return mOptions.autoClearRequestParams;
+    }
+
+    //TODO provide a easy an safe way to get Connection
+    public HttpURLConnection openConnction(String url) {
+        // doGet(url);
+        return null;
     }
 
     public HttpURLConnection getCurrentConnection() {
@@ -541,7 +558,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         this.mOptions.autoClearRequestParams = autoClearParams;
     }
 
-    public static String createStringularQueryAbleData(
+    public static String createUrlQueryParamSequence(
             HashMap<String, String> params, String encoding)
             throws UnsupportedEncodingException {
         StringBuilder result = new StringBuilder();

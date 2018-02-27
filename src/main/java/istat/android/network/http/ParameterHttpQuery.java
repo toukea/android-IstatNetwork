@@ -1,6 +1,5 @@
 package istat.android.network.http;
 
-import org.apache.http.message.BasicNameValuePair;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,13 +29,6 @@ public abstract class ParameterHttpQuery<HttpQ extends HttpQuery<HttpQ>> extends
         for (HttpSendable sendable : sendableArray) {
             sendable.onFillHttpQuery(this);
         }
-        return (HttpQ) this;
-    }
-
-    @SuppressWarnings("unchecked")
-    public HttpQ addParams(List<BasicNameValuePair> nameValues) {
-        for (BasicNameValuePair pair : nameValues)
-            addParam(pair.getName(), pair.getValue());
         return (HttpQ) this;
     }
 

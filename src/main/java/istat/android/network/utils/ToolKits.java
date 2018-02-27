@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.ActivityManager.RunningServiceInfo;
@@ -149,7 +148,7 @@ public final class ToolKits {
         public static boolean isNetworkConnected(Context context) {
             final ConnectivityManager conMgr = (ConnectivityManager) context
                     .getSystemService(Context.CONNECTIVITY_SERVICE);
-            @SuppressLint("MissingPermission") final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
+            final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
             if (activeNetwork != null && activeNetwork.isConnected()) {
                 return true;
             } else {

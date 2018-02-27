@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 ext {
     PUBLISH_GROUP_ID = 'istat.android.network.http'
     PUBLISH_ARTIFACT_ID = 'istat-network'
-    PUBLISH_VERSION = '2.6.0'
+    PUBLISH_VERSION = '2.6.1'
 }
 apply from: 'release-jar.gradle'
 dependencies {
@@ -11,7 +11,7 @@ dependencies {
 
 android {
 
-    compileSdkVersion 18
+    compileSdkVersion 24
     buildToolsVersion '25.0.0'
     lintOptions {
         abortOnError false

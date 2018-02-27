@@ -33,7 +33,7 @@ public final class Connectivity {
      * @param context
      * @return
      */
-    @SuppressLint("MissingPermission")
+//    @SuppressLint("MissingPermission")
     public static NetworkInfo getNetworkInfo(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -254,33 +254,35 @@ public final class Connectivity {
         return ips;
     }
 
-    @TargetApi(Build.VERSION_CODES.GINGERBREAD)
+    //    @TargetApi(Build.VERSION_CODES.GINGERBREAD)
     public static String getMacAddress() {
-        try {
-            List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
-            for (NetworkInterface nif : all) {
-                if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.GINGERBREAD) {
+            try {
+                List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
+                for (NetworkInterface nif : all) {
+                    if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
 
-                byte[] macBytes = nif.getHardwareAddress();
-                if (macBytes == null) {
-                    return "";
-                }
+                    byte[] macBytes = nif.getHardwareAddress();
+                    if (macBytes == null) {
+                        return "";
+                    }
 
-                StringBuilder res1 = new StringBuilder();
-                for (byte b : macBytes) {
-                    res1.append(Integer.toHexString(b & 0xFF) + ":");
+                    StringBuilder res1 = new StringBuilder();
+                    for (byte b : macBytes) {
+                        res1.append(Integer.toHexString(b & 0xFF) + ":");
+                    }
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < macBytes.length; i++) {
+                        sb.append(String.format("%02X%s", macBytes[i], (i < macBytes.length - 1) ? "-" : ""));
+                    }
+                    if (res1.length() > 0) {
+                        res1.deleteCharAt(res1.length() - 1);
+                    }
+                    return res1.toString();
                 }
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < macBytes.length; i++) {
-                    sb.append(String.format("%02X%s", macBytes[i], (i < macBytes.length - 1) ? "-" : ""));
-                }
-                if (res1.length() > 0) {
-                    res1.deleteCharAt(res1.length() - 1);
-                }
-                return res1.toString();
+            } catch (Exception ex) {
+                //handle exception
             }
-        } catch (Exception ex) {
-            //handle exception
         }
         return getSystemMacAddress();
     }

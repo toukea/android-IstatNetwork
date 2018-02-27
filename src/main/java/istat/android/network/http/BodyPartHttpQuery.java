@@ -115,7 +115,7 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
     final static long SIZE_1MB = 1024 * 1024 * 1024;
 
     @Override
-    protected long onWriteDataToOutputStream(String method, OutputStream dataOutputStream) throws IOException {
+    protected long onWriteDataInToOutputStream(String method, OutputStream dataOutputStream) throws IOException {
         long size;
         if (part instanceof InputStream) {
             InputStream inputStream = (InputStream) part;

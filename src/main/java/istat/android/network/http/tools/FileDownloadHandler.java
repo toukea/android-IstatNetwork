@@ -1,8 +1,5 @@
 package istat.android.network.http.tools;
 
-import android.util.Log;
-
-import org.apache.http.client.methods.HttpOptions;
 
 import java.io.File;
 import java.io.FileOutputStream;
