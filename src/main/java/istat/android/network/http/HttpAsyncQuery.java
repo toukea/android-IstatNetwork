@@ -168,9 +168,9 @@ public final class HttpAsyncQuery extends
             return result;
         }
         if (!isPending()) {
-            throw new IllegalAccessException("Current query can't has result for now. it is still pending.");
+            throw new IllegalAccessException("Current httpAsyncQuery can't has result for now. it is still pending.");
         }
-        throw new IllegalAccessException("Current query has not response for now.");
+        throw new IllegalAccessException("Current httpAsyncQuery has not response for now.");
     }
 
     HttpQueryResponse result;
@@ -544,13 +544,14 @@ public final class HttpAsyncQuery extends
         if (downloader == null) {
             downloader = getDefaultDownloader();
         }
-        downloader.query = this;
-        if (when == DownloadHandler.WHEN.SUCCESS)
+        downloader.httpAsyncQuery = this;
+        if (when == DownloadHandler.WHEN.SUCCESS) {
             this.successDownloader = downloader;
-        else if (when == DownloadHandler.WHEN.ERROR)
+        } else if (when == DownloadHandler.WHEN.ERROR) {
             this.errorDownloader = downloader;
-        else
+        } else {
             this.defaultDownloader = downloader;
+        }
         return this;
     }
 
@@ -577,10 +578,7 @@ public final class HttpAsyncQuery extends
     }
 
     HttpDownloadHandler getDefaultDownloader() {
-        return new HttpDownloadHandler() {
-            {
-                this.query = HttpAsyncQuery.this;
-            }
+        HttpDownloadHandler downloadHandler = new HttpDownloadHandler() {
 
             @Override
             public String onBuildResponseBody(HttpURLConnection currentConnexion,
@@ -600,6 +598,8 @@ public final class HttpAsyncQuery extends
             }
 
         };
+        downloadHandler.httpAsyncQuery = this;
+        return downloadHandler;
     }
 
     static class HttpQueryResponseImpl implements istat.android.network.http.HttpQueryResponse {
@@ -609,7 +609,7 @@ public final class HttpAsyncQuery extends
         int code = -1;
         String message;
         HttpURLConnection connexion;
-        Map<String, List<String>> headers = new HashMap<String, List<String>>();
+        Map<String, List<String>> headers = new HashMap();
 
         public HttpURLConnection getConnection() {
             return connexion;
@@ -660,7 +660,7 @@ public final class HttpAsyncQuery extends
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     if (ex instanceof IOException && this.mAsyncQ.isAborted()) {
-                        throw new HttpQuery.AbortionException(this.mAsyncQ.mHttp, e);
+                        throw new HttpQuery.AbortionException(http, e);
                     }
                     code = 0;
                     this.error = ex;
@@ -914,7 +914,7 @@ public final class HttpAsyncQuery extends
 
     public static abstract class HttpDownloadHandler implements DownloadHandler<Object>, ProgressionListener {
         Handler handler;
-        HttpAsyncQuery query;
+        HttpAsyncQuery httpAsyncQuery;
 
         public HttpDownloadHandler(Handler handler) {
             this.handler = handler;
@@ -928,23 +928,31 @@ public final class HttpAsyncQuery extends
             }
         }
 
+        void setHandler(Handler handler) {
+            this.handler = handler;
+        }
+
+        void setHttpAsyncQuery(HttpAsyncQuery httpAsyncQuery) {
+            this.httpAsyncQuery = httpAsyncQuery;
+        }
+
         public int getConnetionContentLenght() {
-            return query != null && query.mHttp != null
-                    && query.mHttp.currentConnection != null ? query.mHttp.currentConnection
+            return httpAsyncQuery != null && httpAsyncQuery.mHttp != null
+                    && httpAsyncQuery.mHttp.currentConnection != null ? httpAsyncQuery.mHttp.currentConnection
                     .getContentLength() : 0;
         }
 
         public String getConnetionContentType() {
-            return query != null && query.mHttp != null
-                    && query.mHttp.currentConnection != null ? query.mHttp.currentConnection
+            return httpAsyncQuery != null && httpAsyncQuery.mHttp != null
+                    && httpAsyncQuery.mHttp.currentConnection != null ? httpAsyncQuery.mHttp.currentConnection
                     .getContentType() : null;
         }
 
         public HttpAsyncQuery getAsyncQuery() {
-            return query;
+            return httpAsyncQuery;
         }
 
-        public HttpQuery<?> getQuery() {
+        public HttpQuery<?> getHttpAsyncQuery() {
             return getAsyncQuery().mHttp;
         }
 
@@ -970,7 +978,7 @@ public final class HttpAsyncQuery extends
          * @return whether or not this method should rethrow the Exception.
          */
         protected boolean onFail(Exception e) {
-            return !(this.query.isCancelled() || this.query.mHttp.isAborted());
+            return !(this.httpAsyncQuery.isCancelled() || this.httpAsyncQuery.mHttp.isAborted());
         }
 
         Object buildResponseBody(HttpURLConnection connexion, InputStream stream) throws Exception {
@@ -990,7 +998,7 @@ public final class HttpAsyncQuery extends
             getHandler().post(new Runnable() {
                 @Override
                 public void run() {
-                    onProgress(query, vars);
+                    onProgress(httpAsyncQuery, vars);
                 }
             });
         }

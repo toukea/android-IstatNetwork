@@ -19,7 +19,7 @@ And Android Library to make Http Query Easy.
         can also use MutipartHttpQuery, BodyPartHttpQuery or your own HttpQuery<?> child class instance
      */
     SimpleHttpQuery http = new SimpleHttpQuery();
-    //add http parm to your http query
+    //add http parm to your http httpAsyncQuery
     http.addParam("parma1","value1");
     http.addParam("param2","value2");
     //build and call your Async Http Query. for example a GET

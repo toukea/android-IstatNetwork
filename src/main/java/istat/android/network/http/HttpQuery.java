@@ -307,14 +307,8 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return doQuery(url, method, false, holdError);
     }
 
-//   class ConnectionDescription {
-//        long length;
-//        URLConnection connection;
-//    }
-
     protected synchronized InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
             throws IOException {
-        //       Log.d("HttpQuery", "Method=" + method + ", bodyData=" + bodyData + ", holdError=" + holdError + ", url=" + getURL(url));
         long length = 0;
         String data = "";
         if (!bodyData || !urlPramNames.isEmpty()) {
@@ -361,8 +355,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             applyOptions(conn);
         }
         fillHeader(conn);
-//        Map<String, List<String>> headerss = conn.getRequestProperties();
-//        System.out.println(headerss);
     }
 
     protected HttpURLConnection prepareConnection(final String url,
@@ -510,12 +502,6 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return mOptions.autoClearRequestParams;
     }
 
-    //TODO provide a easy an safe way to get Connection
-    public HttpURLConnection openConnction(String url) {
-        // doGet(url);
-        return null;
-    }
-
     public HttpURLConnection getCurrentConnection() {
         return currentConnection;
     }
@@ -589,6 +575,10 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     void onQueryComplete() {
+        onQueryFinished();
+    }
+
+    void onQueryFinished() {
         if (mOptions != null && mOptions.autoClearRequestParams) {
             clearParams();
         }
@@ -687,15 +677,10 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
                 }
             }
-            onQueryComplete();
+            onQueryFinished();
         }
         return out;
     }
-
-    // private void notifyAborted() {
-    // onQueryComplete();
-    // aborted = true;
-    // }
 
     public List<Long> getCurrentOutputContentLegthHistoric() {
         return historic.get(TAG_OUTPUT);
