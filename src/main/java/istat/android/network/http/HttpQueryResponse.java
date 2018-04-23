@@ -14,7 +14,7 @@ import istat.android.network.utils.ToolKits;
  * Created by istat on 18/09/17.
  */
 
-public interface HttpQueryResponse {
+public interface HttpResponse {
 
     int getCode();
 
