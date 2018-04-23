@@ -6,17 +6,18 @@ import org.json.JSONObject;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
+
 //TODO inner variable is really needed?
-public class HttpQueryError extends RuntimeException implements HttpResponse {
+public class HttpError extends RuntimeException implements HttpQueryResponse {
     /**
      *
      */
     private static final long serialVersionUID = 1L;
     int code;
     Object body;
-    HttpResponse response;
+    HttpQueryResponse response;
 
-    HttpQueryError(HttpAsyncQuery.HttpQueryResponse resp) {
+    HttpError(HttpAsyncQuery.HttpQueryResponse resp) {
         super(resp.message);
         this.code = resp.getCode();
         this.body = resp.getBody();

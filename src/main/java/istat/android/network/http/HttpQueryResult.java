@@ -12,11 +12,11 @@ import java.util.Map;
  */
 //TODO inner variable is really needed?
 public class HttpQueryResult implements HttpQueryResponse {
-    int code = 0;
+    int code;
     Object body;
-    HttpAsyncQuery.HttpQueryResponseImpl response;
+    HttpAsyncQuery.HttpQueryResponse response;
 
-    HttpQueryResult(HttpAsyncQuery.HttpQueryResponseImpl resp) {
+    HttpQueryResult(HttpAsyncQuery.HttpQueryResponse resp) {
         this.code = resp.getCode();
         this.body = resp.getBody();
         this.response = resp;
