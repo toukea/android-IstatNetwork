@@ -14,7 +14,7 @@ import java.util.Map;
 public class HttpQueryResult implements HttpQueryResponse {
     int code;
     Object body;
-    HttpAsyncQuery.HttpQueryResponse response;
+    HttpQueryResponse response;
 
     HttpQueryResult(HttpAsyncQuery.HttpQueryResponse resp) {
         this.code = resp.getCode();

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 //TODO inner variable is really needed?
-public class HttpError extends RuntimeException implements HttpQueryResponse {
+public class HttpQueryError extends RuntimeException implements HttpQueryResponse {
     /**
      *
      */
@@ -17,7 +17,7 @@ public class HttpError extends RuntimeException implements HttpQueryResponse {
     Object body;
     HttpQueryResponse response;
 
-    HttpError(HttpAsyncQuery.HttpQueryResponse resp) {
+    HttpQueryError(HttpAsyncQuery.HttpQueryResponse resp) {
         super(resp.message);
         this.code = resp.getCode();
         this.body = resp.getBody();

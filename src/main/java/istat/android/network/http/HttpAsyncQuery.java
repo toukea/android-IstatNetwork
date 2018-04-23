@@ -185,7 +185,7 @@ public final class HttpAsyncQuery extends
                     this.result = result;
                     notifySuccess(result);
                 } else {
-                    HttpError error = new HttpError(resp);
+                    HttpQueryError error = new HttpQueryError(resp);
                     resp.error = error;
                     this.result = error;
                     notifyError(error);
@@ -214,7 +214,7 @@ public final class HttpAsyncQuery extends
         executeWhen(runnableList, when);
     }
 
-    private void notifyError(HttpError error) {
+    private void notifyError(HttpQueryError error) {
         int when = WHEN_ERROR;
         if (mHttpCallBack != null) {
             mHttpCallBack.onHttpError(error);
@@ -668,7 +668,7 @@ public final class HttpAsyncQuery extends
             }
             if (e == null && !isSuccess() && !TextUtils.isEmpty(message)
                     && code > 0) {
-                this.error = new HttpError(this);
+                this.error = new HttpQueryError(this);
             }
         }
 
@@ -785,7 +785,7 @@ public final class HttpAsyncQuery extends
     public interface HttpQueryCallback {
         void onHttpSuccess(HttpQueryResult resp);
 
-        void onHttpError(HttpError e);
+        void onHttpError(HttpQueryError e);
 
         void onHttpFail(Exception e);
 
