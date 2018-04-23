@@ -61,7 +61,7 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
     }
 
     @Override
-    public InputStream doQuery(String url, String method, boolean holdError) throws IOException {
+    public Response doQuery(String url, String method, boolean holdError) throws IOException {
         if (!method.equals("POST") && method.equals("PUT")) {
             throw new RuntimeException("Method Not supported. can do " + method + " from BodyPart Http Query");
         }
@@ -69,7 +69,7 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
     }
 
     @Override
-    protected synchronized InputStream doQuery(String url, String method, boolean bodyData, boolean holdError) throws IOException {
+    protected synchronized Response doQuery(String url, String method, boolean bodyData, boolean holdError) throws IOException {
         long length = 0;
         String data = "";
         if (parameterHandler != null) {
@@ -84,21 +84,21 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
         return super.doQuery(url, method, bodyData, holdError);
     }
 
-    public static InputStream doPost(Object object, String url) throws IOException {
+    public static Response doPost(Object object, String url) throws IOException {
         BodyPartHttpQuery http = new BodyPartHttpQuery(object, null);
         return http.doPost(url);
     }
 
-    public static InputStream doPut(Object object, String url) throws IOException {
+    public static Response doPut(Object object, String url) throws IOException {
         BodyPartHttpQuery http = new BodyPartHttpQuery(object, null);
         return http.doPut(url);
     }
 
-    public static InputStream doPost(Object object, UpLoadHandler uploadHandler, String url) throws IOException {
+    public static Response doPost(Object object, UpLoadHandler uploadHandler, String url) throws IOException {
         return doPut(object, null);
     }
 
-    public static InputStream doPut(Object object, UpLoadHandler uploadHandler, String url) throws IOException {
+    public static Response doPut(Object object, UpLoadHandler uploadHandler, String url) throws IOException {
         BodyPartHttpQuery http = new BodyPartHttpQuery(object);
         return http.doPut(url);
     }

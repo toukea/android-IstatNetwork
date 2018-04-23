@@ -42,12 +42,8 @@ public class MultipartHttpQuery extends ParameterHttpQuery<MultipartHttpQuery> {
     private static final String LINE_FEED = "\r\n";
 
     @Override
-    public InputStream doPost(String url) throws IOException {
-        return POST(url, true);
-    }
-
-    public InputStream doPost(String url, boolean holdError) throws IOException {
-        return POST(url, holdError);
+    public Response doPost(String url) throws IOException {
+        return POST(url);
     }
 
     @Override
@@ -226,10 +222,10 @@ public class MultipartHttpQuery extends ParameterHttpQuery<MultipartHttpQuery> {
         return null;
     }
 
-    protected synchronized InputStream POST(String url, boolean holdError) throws IOException {
+    protected synchronized Response POST(String url) throws IOException {
         HttpURLConnection conn = sendMultipartData(url);
-        InputStream stream;
-        stream = eval(conn, holdError);
+        Response stream;
+        stream = eval(conn);
         onQueryComplete();
         return stream;
     }

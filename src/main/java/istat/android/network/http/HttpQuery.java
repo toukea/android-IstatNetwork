@@ -3,6 +3,9 @@ package istat.android.network.http;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,8 +23,10 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import istat.android.network.http.interfaces.DownloadHandler;
 import istat.android.network.http.interfaces.UpLoadHandler;
 import istat.android.network.http.utils.HttpUtils;
+import istat.android.network.utils.StreamOperationTools;
 import istat.android.network.utils.ToolKits;
 import istat.android.network.utils.ToolKits.Text;
 
@@ -59,6 +64,39 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     static String TAG_INPUT = "input", TAG_OUTPUT = "output";
     volatile HttpURLConnection currentConnection;
     long lastConnectionTime = System.currentTimeMillis();
+    public final StreamOperationTools.OperationController executionController = new StreamOperationTools.OperationController() {
+        @Override
+        public boolean isStopped() {
+            return isAborted();
+        }
+    };
+
+    DownloadHandler getDefaultDownloader() {
+        return new HttpAsyncQuery.HttpDownloadHandler() {
+
+            @Override
+            public String onBuildResponseBody(HttpURLConnection currentConnexion,
+                                              InputStream stream) {
+                try {
+                    return StreamOperationTools.streamToString(executionController,
+                            stream, mOptions.bufferSize, mOptions.encoding);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return "";
+                }
+            }
+
+            @Override
+            public void onProgress(HttpAsyncQuery query, long... vars) {
+                // NOTHING TO DO
+            }
+
+        };
+    }
+
+    DownloadHandler defaultDownloader = getDefaultDownloader();
+    DownloadHandler successDownloader = null;
+    DownloadHandler errorDownloader = null;
     protected HashMap<String, List<Long>> historic = new HashMap<String, List<Long>>() {
 
         /**
@@ -261,53 +299,53 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     UpLoadHandler uploadHandler = getDefaultUploader();
 
-    public InputStream doPost(String url) throws IOException {
+    public Response doPost(String url) throws IOException {
         return doQuery(url, "POST", true, true);
     }
 
-    public InputStream doGet(String url) throws IOException {
+    public Response doGet(String url) throws IOException {
         return doGet(url, true);
     }
 
-    public InputStream doPut(String url) throws IOException {
+    public Response doPut(String url) throws IOException {
         String method = "PUT";
         return doQuery(url, method, true, true);
     }
 
-    public Map<String, List<String>> doHead(String url) throws IOException {
-        doQuery(url, "HEAD");
-        return currentConnection.getHeaderFields();
+    public Response doHead(String url) throws IOException {
+        return doQuery(url, "HEAD");
+//        return currentConnection.getHeaderFields();
     }
 
-    public InputStream doDelete(String url) throws IOException {
+    public Response doDelete(String url) throws IOException {
         return doQuery(url, "DELETE", true, true);
     }
 
-    public InputStream doCopy(String url) throws IOException {
+    public Response doCopy(String url) throws IOException {
         return doQuery(url, "COPY", true, true);
     }
 
-    public InputStream doPatch(String url) throws IOException {
+    public Response doPatch(String url) throws IOException {
         return doQuery(url, "PATCH", true, true);
     }
 
-    public InputStream doGet(String url, boolean handleError)
+    public Response doGet(String url, boolean handleError)
             throws IOException {
         // ---------------------------
         String method = "GET";
         return doQuery(url, method, false, handleError);
     }
 
-    public InputStream doQuery(String url, String method) throws IOException {
+    public Response doQuery(String url, String method) throws IOException {
         return doQuery(url, method, true);
     }
 
-    public InputStream doQuery(String url, String method, boolean holdError)
+    public Response doQuery(String url, String method, boolean holdError)
             throws IOException {
         return doQuery(url, method, false, holdError);
     }
 
-    protected synchronized InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
+    protected synchronized Response doQuery(String url, String method, boolean bodyData, boolean holdError)
             throws IOException {
         long length = 0;
         String data = "";
@@ -337,10 +375,10 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
                 length = writeDataInToOutputStream(method, os);
                 os.close();
             }
-            InputStream stream = eval(connection, holdError);
+            Response response = eval(connection);
             addToOutputHistoric(length);
             onQueryComplete();
-            return stream;
+            return response;
         } catch (IOException e) {
             if (isAborted()) {
                 throw new AbortionException(this, e);
@@ -399,6 +437,14 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
                 }
             }
         };
+    }
+
+    public DownloadHandler getSuccessDownloader() {
+        return successDownloader != null ? successDownloader : defaultDownloader;
+    }
+
+    public DownloadHandler getErrorDownloader() {
+        return errorDownloader != null ? errorDownloader : defaultDownloader;
     }
 
     public interface ParameterHandler {
@@ -605,7 +651,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     protected volatile InputStream currentInputStream;
     protected volatile OutputStream currentOutputStream;
 
-    InputStream eval(HttpURLConnection conn, boolean handleError)
+    Response eval(HttpURLConnection conn)
             throws IOException {
         int eval = 0;
         InputStream stream = null;
@@ -615,20 +661,21 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             eval = conn.getContentLength();
         }
 
-        if (HttpUtils.isSuccessCode(responseCode)) {
-            stream = conn.getInputStream();
-        } else if (handleError) {
-            stream = conn.getErrorStream();
-        }
-        if (isAborted()) {
-            throw new AbortionException(this);
-        }
-        if (stream != null) {
-            eval = stream.available();
-        }
-        currentInputStream = stream;
-        addToInputHistoric(eval);
-        return stream;
+//        if (HttpUtils.isSuccessCode(responseCode)) {
+//            stream = conn.getInputStream();
+//        } else if (handleError) {
+//            stream = conn.getErrorStream();
+//        }
+//        if (isAborted()) {
+//            throw new AbortionException(this);
+//        }
+//        if (stream != null) {
+//            eval = stream.available();
+//        }
+//        currentInputStream = stream;
+//        addToInputHistoric(eval);
+//        return stream;
+        return null;
     }
 
     int getCurrentResponseCode() {
@@ -813,6 +860,167 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
         public HttpQuery getHttpQuery() {
             return httpQuery;
+        }
+    }
+
+    public class Response implements istat.android.network.http.HttpQueryResponse {
+        Object body;
+        Exception error;
+        //  HttpAsyncQuery mAsyncQ;
+        int code = -1;
+        String message;
+        HttpURLConnection connexion;
+        Map<String, List<String>> headers = new HashMap();
+        HttpQuery http;
+
+        public HttpURLConnection getConnection() {
+            return connexion;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+
+        Response(HttpQuery http) throws Exception {
+            this.http = http;
+            connexion = http.getCurrentConnection();
+            if (connexion != null) {
+                this.headers = connexion.getHeaderFields();
+                this.message = http.getCurrentResponseMessage();
+                try {
+                    this.body = null;
+                    DownloadHandler downloader = this.http.defaultDownloader;
+                    InputStream stream = null;
+                    this.code = connexion.getResponseCode();
+                    if (HttpUtils.isSuccessCode(this.code)) {
+                        downloader = http.getSuccessDownloader();
+                        stream = connexion.getInputStream();
+                    } else {
+                        downloader = http.getErrorDownloader();
+                        stream = connexion.getErrorStream();
+                    }
+                    this.body = downloader.onBuildResponseBody(connexion, stream);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    if (ex instanceof IOException && this.http.isAborted()) {
+                        throw new HttpQuery.AbortionException(http, ex);
+                    }
+                    code = 0;
+                    this.error = ex;
+                }
+
+            }
+//            if (e == null && !isSuccess() && !TextUtils.isEmpty(message)
+//                    && code > 0) {
+//                this.error = new HttpQueryError(this);
+//            }
+        }
+
+        public boolean containHeader(String name) {
+            return getHeaders() != null && getHeaders().containsKey(name);
+        }
+
+        public Map<String, List<String>> getHeaders() {
+            return headers;
+        }
+
+        public List<String> getHeaders(String name) {
+            return getHeaders().get(name);
+        }
+
+        public String getHeader(String name) {
+            if (connexion != null) {
+                return connexion.getHeaderField(name);
+            }
+            return "";
+        }
+
+        public long getHeaderAsLong(String name) {
+            return getHeaderAsLong(name, 0);
+        }
+
+        public long getHeaderAsLong(String name, long defaultValue) {
+            if (connexion != null) {
+                return connexion.getHeaderFieldDate(name, defaultValue);
+            }
+            return defaultValue;
+        }
+
+        public int getHeaderAsInt(String name) {
+            return getHeaderAsInt(name, 0);
+        }
+
+        public int getHeaderAsInt(String name, int defaultValue) {
+            if (connexion != null) {
+                return connexion.getHeaderFieldInt(name, defaultValue);
+            }
+            return defaultValue;
+        }
+
+        public boolean hasError() {
+            return error != null || !HttpUtils.isSuccessCode(code);
+        }
+
+        public boolean isSuccess() {
+            return !hasError();
+        }
+
+        public boolean isAccepted() {
+            return code > 0;
+        }
+
+        @SuppressWarnings("unchecked")
+        public <T> T getBody() {
+            if (body == null) {
+                return null;
+            }
+            try {
+                return (T) body;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public <T> T getBodyAs(Class<T> cLass) {
+            if (body == null) {
+                return null;
+            }
+            if (cLass.isAssignableFrom(body.getClass())) {
+                return (T) body;
+            }
+            return null;
+        }
+
+        public <T> T optBody() {
+            if (body == null) {
+                return null;
+            }
+            try {
+                return (T) body;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public String getBodyAsString() {
+            if (body == null)
+                return null;
+            return body.toString();
+        }
+
+        public JSONObject getBodyAsJson() throws JSONException {
+            if (body == null)
+                return null;
+            return new JSONObject(body.toString());
+        }
+
+        public Exception getError() {
+            return error;
         }
     }
 }

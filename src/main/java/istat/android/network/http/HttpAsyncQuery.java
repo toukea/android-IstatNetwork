@@ -100,7 +100,7 @@ public final class HttpAsyncQuery extends
             if (isCancelled()) {
                 break;
             }
-            InputStream stream = null;
+            istat.android.network.http.HttpQueryResponse stream = null;
             Log.d("HttpAsyncQuery", "doInBackground::type=" + type);
             try {
                 switch (type) {
@@ -114,8 +114,7 @@ public final class HttpAsyncQuery extends
                         stream = mHttp.doPut(url);
                         break;
                     case TYPE_HEAD:
-                        mHttp.doHead(url);
-                        stream = mHttp.currentInputStream;
+                        stream = mHttp.doHead(url);
                         break;
                     case TYPE_COPY:
                         stream = mHttp.doCopy(url);
@@ -517,11 +516,6 @@ public final class HttpAsyncQuery extends
         return System.currentTimeMillis() - startTimeStamp;
     }
 
-    // DEFAULT PROCESS CALLBACK IF USER DON'T HAS DEFINE it Own
-    HttpDownloadHandler defaultDownloader = getDefaultDownloader();
-    HttpDownloadHandler successDownloader = null;
-    HttpDownloadHandler errorDownloader = null;
-
     HttpAsyncQuery setDownloadHandler(final DownloadHandler downloader, DownloadHandler.WHEN when) {
         HttpAsyncQuery.HttpDownloadHandler downloadHandler = new HttpAsyncQuery.HttpDownloadHandler() {
             @Override
@@ -545,11 +539,11 @@ public final class HttpAsyncQuery extends
         }
         downloader.httpAsyncQuery = this;
         if (when == DownloadHandler.WHEN.SUCCESS) {
-            this.successDownloader = downloader;
+            this.mHttp.successDownloader = downloader;
         } else if (when == DownloadHandler.WHEN.ERROR) {
-            this.errorDownloader = downloader;
+            this.mHttp.errorDownloader = downloader;
         } else {
-            this.defaultDownloader = downloader;
+            this.mHttp.defaultDownloader = downloader;
         }
         return this;
     }
@@ -638,38 +632,37 @@ public final class HttpAsyncQuery extends
         }
 
         private void init(InputStream stream, Exception e) throws HttpQuery.AbortionException {
-            HttpQuery<?> http = mAsyncQ.mHttp;
-            connexion = http.getCurrentConnection();
-            this.error = e;
-            if (connexion != null) {
-                this.code = http.getCurrentResponseCode();
-                this.message = http.getCurrentResponseMessage();
-                try {
-                    this.body = null;
-                    if (stream != null) {
-                        HttpDownloadHandler downloader = this.mAsyncQ.defaultDownloader;
-                        if (HttpUtils.isSuccessCode(connexion.getResponseCode()) && this.mAsyncQ.successDownloader != null) {
-                            downloader = this.mAsyncQ.successDownloader;
-                        } else if (this.mAsyncQ.errorDownloader != null) {
-                            downloader = this.mAsyncQ.errorDownloader;
-                        }
-                        this.body = downloader.buildResponseBody(
-                                connexion, stream);
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    if (ex instanceof IOException && this.mAsyncQ.isAborted()) {
-                        throw new HttpQuery.AbortionException(http, e);
-                    }
-                    code = 0;
-                    this.error = ex;
-                }
-                this.headers = connexion.getHeaderFields();
-            }
-            if (e == null && !isSuccess() && !TextUtils.isEmpty(message)
-                    && code > 0) {
-                this.error = new HttpQueryError(this);
-            }
+//            HttpQuery<?> http = mAsyncQ.mHttp;
+//            connexion = http.getCurrentConnection();
+//            this.error = e;
+//            if (connexion != null) {
+//                this.code = http.getCurrentResponseCode();
+//                this.message = http.getCurrentResponseMessage();
+//                try {
+//                    this.body = null;
+//                    if (stream != null) {
+//                        HttpDownloadHandler downloader = this.mAsyncQ.defaultDownloader;
+//                        if (HttpUtils.isSuccessCode(connexion.getResponseCode()) && this.mAsyncQ.successDownloader != null) {
+//                            downloader = this.mAsyncQ.successDownloader;
+//                        } else if (this.mAsyncQ.errorDownloader != null) {
+//                            downloader = this.mAsyncQ.errorDownloader;
+//                        }
+//                        this.body = downloader.buildResponseBody(connexion, stream);
+//                    }
+//                } catch (Exception ex) {
+//                    ex.printStackTrace();
+//                    if (ex instanceof IOException && this.mAsyncQ.isAborted()) {
+//                        throw new HttpQuery.AbortionException(http, e);
+//                    }
+//                    code = 0;
+//                    this.error = ex;
+//                }
+//                this.headers = connexion.getHeaderFields();
+//            }
+//            if (e == null && !isSuccess() && !TextUtils.isEmpty(message)
+//                    && code > 0) {
+//                this.error = new HttpQueryError(this);
+//            }
         }
 
         public boolean containHeader(String name) {

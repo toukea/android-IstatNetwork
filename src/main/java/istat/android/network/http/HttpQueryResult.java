@@ -10,15 +10,10 @@ import java.util.Map;
 /**
  * Created by istat on 18/09/17.
  */
-//TODO inner variable is really needed?
 public class HttpQueryResult implements HttpQueryResponse {
-    int code;
-    Object body;
     HttpQueryResponse response;
 
     HttpQueryResult(HttpAsyncQuery.HttpQueryResponse resp) {
-        this.code = resp.getCode();
-        this.body = resp.getBody();
         this.response = resp;
 
     }
@@ -29,41 +24,24 @@ public class HttpQueryResult implements HttpQueryResponse {
     }
 
     public int getCode() {
-        return code;
+        return response.getCode();
     }
 
     @SuppressWarnings("unchecked")
     public <T> T getBody() {
-        if (body == null) {
-            return null;
-        }
-        try {
-            return (T) body;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return response.getBody();
     }
 
     public JSONObject getBodyAsJson() throws JSONException {
-        if (body == null)
-            return null;
-        return new JSONObject(body.toString());
+        return response.getBodyAsJson();
     }
 
     public <T> T getBodyAs(Class<T> cLass) {
-        if (body == null) {
-            return null;
-        }
-        if (cLass.isAssignableFrom(body.getClass())) {
-            return (T) body;
-        }
-        return null;
+        return response.getBodyAs(cLass);
     }
 
     public String getBodyAsString() {
-        if (body == null)
-            return null;
-        return body.toString();
+        return response.getBodyAsString();
     }
 
     public String getHeader(String name) {

@@ -17,8 +17,8 @@ public class HttpQueryError extends RuntimeException implements HttpQueryRespons
     Object body;
     HttpQueryResponse response;
 
-    HttpQueryError(HttpAsyncQuery.HttpQueryResponse resp) {
-        super(resp.message);
+    HttpQueryError(HttpQueryResponse resp) {
+        super(resp.getMessage());
         this.code = resp.getCode();
         this.body = resp.getBody();
         this.response = resp;
