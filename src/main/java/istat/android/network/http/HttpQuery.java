@@ -614,19 +614,24 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             responseCode = conn.getResponseCode();
             eval = conn.getContentLength();
         }
-
-        if (HttpUtils.isSuccessCode(responseCode)) {
-            stream = conn.getInputStream();
-        } else if (handleError) {
-            stream = conn.getErrorStream();
+        if (!isAborted()) {
+            if (HttpUtils.isSuccessCode(responseCode)) {
+                stream = conn.getInputStream();
+            } else if (handleError) {
+                stream = conn.getErrorStream();
+            }
         }
+        currentInputStream = stream;
         if (isAborted()) {
+            if (stream != null) {
+                stream.close();
+                conn.disconnect();
+            }
             throw new AbortionException(this);
         }
         if (stream != null) {
             eval = stream.available();
         }
-        currentInputStream = stream;
         addToInputHistoric(eval);
         return stream;
     }
@@ -658,24 +663,24 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         boolean out = hasPendingRequest();
         Log.e("HttQuery", "abortRequest_start::runningRequest=" + out);
         if (out) {
-            try {
-                currentConnection.disconnect();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             if (currentOutputStream != null) {
                 try {
                     currentOutputStream.close();
                 } catch (Exception e) {
-
+                    e.printStackTrace();
                 }
             }
             if (currentInputStream != null) {
                 try {
                     currentInputStream.close();
                 } catch (Exception e) {
-
+                    e.printStackTrace();
                 }
+            }
+            try {
+                currentConnection.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             onQueryFinished();
         }

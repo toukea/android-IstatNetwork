@@ -284,6 +284,7 @@ public final class HttpAsyncQuery extends
     protected void onCancelled() {
         Log.i("HttpAsyncQuery", "onCancelled::canceListener::" + mCancelListener);
         Log.i("HttpAsyncQuery", "onCancelled::httpCallback::" + mHttpCallBack);
+        notifyAborted();
         endTimeStamp = System.currentTimeMillis();
         if (mCancelListener != null) {
             mCancelListener.onCancelled(this);
@@ -295,6 +296,7 @@ public final class HttpAsyncQuery extends
     private Runnable httpAbortRunnable = new Runnable() {
         public void run() {
             mHttp.abortRequest();
+            HttpAsyncQuery.super.cancel(true);
         }
     };
 
@@ -509,9 +511,10 @@ public final class HttpAsyncQuery extends
         if (mHttp.hasPendingRequest()) {
             Log.i("HttQuery", "cancel_has_running");
             new Thread(httpAbortRunnable).start();
+            return true;
+        } else {
+            return cancel(true);
         }
-        notifyAborted();
-        return cancel(true);
     }
 
     private long getDuration() {
