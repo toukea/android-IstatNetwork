@@ -345,6 +345,12 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return doRequest(url, method, false, holdError);
     }
 
+    @Deprecated
+    protected synchronized Response doQuery(String url, String method, boolean bodyData, boolean holdError)
+            throws IOException {
+        return doRequest(url, method, bodyData, holdError);
+    }
+
     protected synchronized Response doRequest(String url, String method, boolean bodyData, boolean holdError)
             throws IOException {
         long length = 0;
