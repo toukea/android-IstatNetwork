@@ -2,7 +2,6 @@ package istat.android.network.http;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.Executor;
 
@@ -148,7 +147,7 @@ public final class AsyncHttp {
     }
 
     public HttpAsyncQuery doDelete(HttpAsyncQuery.HttpQueryCallback callback, String url) {
-        return doQuery(HttpAsyncQuery.TYPE_DELETE, mAsyncQuery.uploadHandler, callback, url);
+        return doRequest(HttpAsyncQuery.TYPE_DELETE, mAsyncQuery.uploadHandler, callback, url);
     }
 
 
@@ -157,7 +156,7 @@ public final class AsyncHttp {
     }
 
     public HttpAsyncQuery doGet(HttpAsyncQuery.HttpQueryCallback callback, String url) {
-        return doQuery(HttpAsyncQuery.TYPE_GET, mAsyncQuery.uploadHandler, callback, url);
+        return doRequest(HttpAsyncQuery.TYPE_GET, mAsyncQuery.uploadHandler, callback, url);
     }
 
     public HttpAsyncQuery doPost(String url) {
@@ -173,7 +172,7 @@ public final class AsyncHttp {
     }
 
     public HttpAsyncQuery doPost(UpLoadHandler uploader, HttpAsyncQuery.HttpQueryCallback callback, String url) {
-        return doQuery(HttpAsyncQuery.TYPE_POST, uploader, callback, url);
+        return doRequest(HttpAsyncQuery.TYPE_POST, uploader, callback, url);
     }
 
     public HttpAsyncQuery doHead(String url) {
@@ -181,7 +180,7 @@ public final class AsyncHttp {
     }
 
     public HttpAsyncQuery doHead(HttpAsyncQuery.HttpQueryCallback callback, String url) {
-        return doQuery(HttpAsyncQuery.TYPE_HEAD, mAsyncQuery.uploadHandler, callback, url);
+        return doRequest(HttpAsyncQuery.TYPE_HEAD, mAsyncQuery.uploadHandler, callback, url);
     }
 
     public HttpAsyncQuery doPatch(String url) {
@@ -189,7 +188,7 @@ public final class AsyncHttp {
     }
 
     public HttpAsyncQuery doPatch(HttpAsyncQuery.HttpQueryCallback callback, String url) {
-        return doQuery(HttpAsyncQuery.TYPE_PATCH, mAsyncQuery.uploadHandler, callback, url);
+        return doRequest(HttpAsyncQuery.TYPE_PATCH, mAsyncQuery.uploadHandler, callback, url);
     }
 
     public HttpAsyncQuery doPut(HttpAsyncQuery.HttpUploadHandler uploader, String url) {
@@ -209,22 +208,27 @@ public final class AsyncHttp {
     }
 
     public HttpAsyncQuery doPut(UpLoadHandler uploader, HttpAsyncQuery.HttpQueryCallback callback, String url) {
-        return doQuery(HttpAsyncQuery.TYPE_PUT, uploader, callback, url);
+        return doRequest(HttpAsyncQuery.TYPE_PUT, uploader, callback, url);
     }
 
     public HttpAsyncQuery doPut(String url) {
         return doPut(this.mAsyncQuery.uploadHandler, this.mAsyncQuery.mHttpCallBack, url);
     }
 
-    public HttpAsyncQuery doQuery(int method, String url) {
-        return this.doQuery(method, this.mAsyncQuery.uploadHandler, this.mAsyncQuery.mHttpCallBack, url);
+    public HttpAsyncQuery doRequest(int method, String url) {
+        return this.doRequest(method, this.mAsyncQuery.uploadHandler, this.mAsyncQuery.mHttpCallBack, url);
     }
 
+    @Deprecated
     public HttpAsyncQuery doQuery(int method, HttpAsyncQuery.HttpQueryCallback callback, String url) {
-        return this.doQuery(method, this.mAsyncQuery.uploadHandler, callback, url);
+        return this.doRequest(method, this.mAsyncQuery.uploadHandler, callback, url);
     }
 
-    public HttpAsyncQuery doQuery(int method, UpLoadHandler uploader, HttpAsyncQuery.HttpQueryCallback callback, String url) {
+    public HttpAsyncQuery doRequest(int method, HttpAsyncQuery.HttpQueryCallback callback, String url) {
+        return this.doRequest(method, this.mAsyncQuery.uploadHandler, callback, url);
+    }
+
+    public HttpAsyncQuery doRequest(int method, UpLoadHandler uploader, HttpAsyncQuery.HttpQueryCallback callback, String url) {
         this.mAsyncQuery.type = method;
         this.mAsyncQuery.mHttpCallBack = callback;
         this.mAsyncQuery.setUploadHandler(uploader);
@@ -232,7 +236,7 @@ public final class AsyncHttp {
         return this.mAsyncQuery;
     }
 
-//    public HttpAsyncQuery doQuery(String method, UpLoadHandler uploader, HttpAsyncQuery.HttpQueryCallback callback, String url) {
+//    public HttpAsyncQuery doRequest(String method, UpLoadHandler uploader, HttpAsyncQuery.HttpQueryCallback callback, String url) {
 //        int methodInt = HttpAsyncQuery.TYPE_GET;
 //        case "GET":
 //        methodInt = HttpAsyncQuery.TYPE_GET;
@@ -253,7 +257,7 @@ public final class AsyncHttp {
 //        methodInt = HttpAsyncQuery.TYPE_DELETE;
 //        break;
 //
-//        return doQuery(methodInt, uploader, callback, url);
+//        return doRequest(methodInt, uploader, callback, url);
 //    }
 
     public AsyncHttp setCancelListener(HttpAsyncQuery.CancelListener listener) {

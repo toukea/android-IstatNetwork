@@ -300,7 +300,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     UpLoadHandler uploadHandler = getDefaultUploader();
 
     public Response doPost(String url) throws IOException {
-        return doQuery(url, "POST", true, true);
+        return doRequest(url, "POST", true, true);
     }
 
     public Response doGet(String url) throws IOException {
@@ -309,43 +309,43 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     public Response doPut(String url) throws IOException {
         String method = "PUT";
-        return doQuery(url, method, true, true);
+        return doRequest(url, method, true, true);
     }
 
     public Response doHead(String url) throws IOException {
-        return doQuery(url, "HEAD");
+        return doRequest(url, "HEAD");
 //        return currentConnection.getHeaderFields();
     }
 
     public Response doDelete(String url) throws IOException {
-        return doQuery(url, "DELETE", true, true);
+        return doRequest(url, "DELETE", true, true);
     }
 
     public Response doCopy(String url) throws IOException {
-        return doQuery(url, "COPY", true, true);
+        return doRequest(url, "COPY", true, true);
     }
 
     public Response doPatch(String url) throws IOException {
-        return doQuery(url, "PATCH", true, true);
+        return doRequest(url, "PATCH", true, true);
     }
 
     public Response doGet(String url, boolean handleError)
             throws IOException {
         // ---------------------------
         String method = "GET";
-        return doQuery(url, method, false, handleError);
+        return doRequest(url, method, false, handleError);
     }
 
-    public Response doQuery(String url, String method) throws IOException {
-        return doQuery(url, method, true);
+    public Response doRequest(String url, String method) throws IOException {
+        return doRequest(url, method, true);
     }
 
-    public Response doQuery(String url, String method, boolean holdError)
+    public Response doRequest(String url, String method, boolean holdError)
             throws IOException {
-        return doQuery(url, method, false, holdError);
+        return doRequest(url, method, false, holdError);
     }
 
-    protected synchronized Response doQuery(String url, String method, boolean bodyData, boolean holdError)
+    protected synchronized Response doRequest(String url, String method, boolean bodyData, boolean holdError)
             throws IOException {
         long length = 0;
         String data = "";

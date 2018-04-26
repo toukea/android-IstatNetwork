@@ -25,7 +25,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.TextUtils;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -120,10 +119,10 @@ public final class HttpAsyncQuery extends
                         stream = mHttp.doCopy(url);
                         break;
                     case TYPE_RENAME:
-                        stream = mHttp.doQuery(url, "RENAME");
+                        stream = mHttp.doRequest(url, "RENAME");
                         break;
                     case TYPE_MOVE:
-                        stream = mHttp.doQuery(url, "MOVE", true, true);
+                        stream = mHttp.doRequest(url, "MOVE", true, true);
                         break;
                     case TYPE_DELETE:
                         stream = mHttp.doDelete(url);

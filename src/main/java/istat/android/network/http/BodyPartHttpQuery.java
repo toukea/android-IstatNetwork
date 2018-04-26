@@ -61,15 +61,15 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
     }
 
     @Override
-    public Response doQuery(String url, String method, boolean holdError) throws IOException {
+    public Response doRequest(String url, String method, boolean holdError) throws IOException {
         if (!method.equals("POST") && method.equals("PUT")) {
             throw new RuntimeException("Method Not supported. can do " + method + " from BodyPart Http Query");
         }
-        return super.doQuery(url, method, holdError);
+        return super.doRequest(url, method, holdError);
     }
 
     @Override
-    protected synchronized Response doQuery(String url, String method, boolean bodyData, boolean holdError) throws IOException {
+    protected synchronized Response doRequest(String url, String method, boolean bodyData, boolean holdError) throws IOException {
         long length = 0;
         String data = "";
         if (parameterHandler != null) {
@@ -81,7 +81,7 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
             length = data.length();
         }
         addToOutputHistoric(length);
-        return super.doQuery(url, method, bodyData, holdError);
+        return super.doRequest(url, method, bodyData, holdError);
     }
 
     public static Response doPost(Object object, String url) throws IOException {
