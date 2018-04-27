@@ -1,7 +1,7 @@
 package istat.android.network.http;
 
 import istat.android.network.http.interfaces.DownloadHandler;
-import istat.android.network.http.interfaces.ProgressionListener;
+import istat.android.network.http.interfaces.ProgressListener;
 import istat.android.network.http.utils.HttpUtils;
 import istat.android.network.utils.StreamOperationTools;
 
@@ -836,7 +836,7 @@ public final class HttpAsyncQuery extends
     }
 
     public static abstract class HttpUploadHandler implements
-            UpLoadHandler, ProgressionListener {
+            UpLoadHandler, ProgressListener {
         Handler handler;
         HttpAsyncQuery query;
 
@@ -915,7 +915,7 @@ public final class HttpAsyncQuery extends
                                         long... vars);
     }
 
-    public static abstract class HttpDownloadHandler implements DownloadHandler<Object>, ProgressionListener {
+    public static abstract class HttpDownloadHandler implements DownloadHandler<Object>, ProgressListener {
         Handler handler;
         HttpAsyncQuery httpAsyncQuery;
 

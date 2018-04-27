@@ -6,7 +6,7 @@ import istat.android.network.http.HttpAsyncQuery;
  * Created by istat on 26/02/17.
  */
 
-public interface ProgressionListener{
+public interface ProgressListener {
     void onProgress(HttpAsyncQuery query,
                     long... vars);
 }

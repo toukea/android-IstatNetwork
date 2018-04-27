@@ -2,12 +2,11 @@ package istat.android.network.http;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.Executor;
 
 import istat.android.network.http.interfaces.DownloadHandler;
-import istat.android.network.http.interfaces.ProgressionListener;
+import istat.android.network.http.interfaces.ProgressListener;
 import istat.android.network.http.interfaces.UpLoadHandler;
 
 /**
@@ -99,7 +98,7 @@ public final class AsyncHttp {
         return useDownloader(downloader, when);
     }
 
-    public AsyncHttp useDownloader(final DownloadHandler downloader, final ProgressionListener progressionListener) {
+    public AsyncHttp useDownloader(final DownloadHandler downloader, final ProgressListener progressionListener) {
         DownloadHandler.WHEN when = null;
         return useDownloader(downloader, when, progressionListener);
     }
@@ -113,7 +112,7 @@ public final class AsyncHttp {
         return this;
     }
 
-    public AsyncHttp useDownloader(final DownloadHandler downloader, DownloadHandler.WHEN when, final ProgressionListener progressionListener) {
+    public AsyncHttp useDownloader(final DownloadHandler downloader, DownloadHandler.WHEN when, final ProgressListener progressionListener) {
         if (downloader == null && progressionListener == null) {
             return this;
         }
