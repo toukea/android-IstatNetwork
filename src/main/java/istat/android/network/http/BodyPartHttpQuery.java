@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 
 import istat.android.network.http.interfaces.UpLoadHandler;
 import istat.android.network.utils.ToolKits;
@@ -42,6 +43,16 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
 
     public BodyPartHttpQuery() {
 
+    }
+
+    public BodyPartHttpQuery setBody(File body) {
+        this.part = body;
+        return this;
+    }
+
+    public BodyPartHttpQuery setBody(InputStream body) {
+        this.part = body;
+        return this;
     }
 
     public BodyPartHttpQuery setBody(Object body) {
@@ -113,6 +124,22 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
     }
 
     final static long SIZE_1MB = 1024 * 1024 * 1024;
+
+    @Override
+    protected HttpURLConnection prepareConnection(String url, String method) throws IOException {
+        HttpURLConnection connection = super.prepareConnection(url, method);
+        if (part instanceof InputStream) {
+            this.currentConnection.setChunkedStreamingMode(mOptions.chunkedStreamingMode);
+        } else if (part instanceof File) {
+            this.currentConnection.setChunkedStreamingMode(mOptions.chunkedStreamingMode);
+        } else {
+            String sendable = part.toString();
+            if (sendable.length() >= SIZE_1MB) {
+                this.currentConnection.setChunkedStreamingMode(mOptions.chunkedStreamingMode);
+            }
+        }
+        return connection;
+    }
 
     @Override
     protected long onWriteDataInToOutputStream(String method, OutputStream dataOutputStream) throws IOException {
