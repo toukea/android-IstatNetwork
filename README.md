@@ -38,7 +38,7 @@ Just add the dependency to your `build.gradle`:
 
 ```groovy
 dependencies {
-   compile 'istat.android.network.http:istat-network:3.0.0'
+   compile 'istat.android.network.http:istat-network:3.0.1'
 }
 ```
 
