@@ -612,7 +612,7 @@ public final class HttpAsyncQuery extends
         int code = -1;
         String message;
         HttpURLConnection connexion;
-        Map<String, List<String>> headers = new HashMap();
+        Header headers=new Header();
 
         public HttpURLConnection getConnection() {
             return connexion;
@@ -668,7 +668,7 @@ public final class HttpAsyncQuery extends
                     code = 0;
                     this.error = ex;
                 }
-                this.headers = connexion.getHeaderFields();
+                this.headers = new Header(connexion.getHeaderFields());
             }
             if (e == null && !isSuccess() && !TextUtils.isEmpty(message)
                     && code > 0) {
@@ -680,7 +680,7 @@ public final class HttpAsyncQuery extends
             return getHeaders() != null && getHeaders().containsKey(name);
         }
 
-        public Map<String, List<String>> getHeaders() {
+        public Header getHeaders() {
             return headers;
         }
 

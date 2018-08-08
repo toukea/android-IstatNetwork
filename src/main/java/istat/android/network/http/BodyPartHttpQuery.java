@@ -92,8 +92,8 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
     }
 
     @Override
-    protected synchronized InputStream doQuery(String url, String method, boolean bodyData, boolean holdError) throws IOException {
-        long length = 0;
+    protected synchronized InputStream doQuery(String url, String method, boolean bodyDataEnable, boolean holdError) throws IOException {
+        //  long length = 0;
         String data = "";
         if (parameterHandler != null) {
             data = parameterHandler.onStringifyQueryParams(method, parameters,
@@ -101,10 +101,10 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
         }
         if (!ToolKits.Text.isEmpty(data)) {
             url += (url.contains("?") ? "" : "?") + data;
-            length = data.length();
+            // length = data.length();
         }
-        addToOutputHistoric(length);
-        return super.doQuery(url, method, bodyData, holdError);
+        //addToOutputHistoric(length);
+        return super.doQuery(url, method, bodyDataEnable, holdError);
     }
 
     public static InputStream doPost(Object object, String url) throws IOException {
@@ -139,6 +139,9 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
 
     @Override
     protected long onWriteDataInToOutputStream(String method, OutputStream dataOutputStream) throws IOException {
+        if (this.part == null) {
+            return 0;
+        }
         long size;
         if (part instanceof InputStream) {
             InputStream inputStream = (InputStream) part;

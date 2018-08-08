@@ -307,14 +307,14 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return doQuery(url, method, false, holdError);
     }
 
-    protected synchronized InputStream doQuery(String url, String method, boolean bodyData, boolean holdError)
+    protected synchronized InputStream doQuery(String url, String method, boolean bodyDataEnable, boolean holdError)
             throws IOException {
         long length = 0;
         String data = "";
-        if (!bodyData || !urlPramNames.isEmpty()) {
+        if (!bodyDataEnable || !urlPramNames.isEmpty()) {
             HashMap<String, String> urlParameters = getUrlParameters();
             HashMap<String, String> parameters = new HashMap();
-            if (!bodyData) { //pas de body Data
+            if (!bodyDataEnable) { //pas de body Data
                 parameters.putAll(this.parameters);
             } else if (!urlParameters.isEmpty()) {//hasUrl param enable
                 parameters.putAll(urlParameters);
@@ -331,7 +331,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         }
         try {
             HttpURLConnection connection = prepareConnection(url, method);
-            if (bodyData) {//data uploading
+            if (bodyDataEnable) {//data uploading
                 connection.setDoOutput(true);
                 OutputStream os = connection.getOutputStream();
                 length = writeDataInToOutputStream(method, os);
