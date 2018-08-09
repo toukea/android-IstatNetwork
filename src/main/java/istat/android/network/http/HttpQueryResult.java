@@ -12,7 +12,7 @@ import java.util.Map;
  */
 //TODO inner variable is really needed?
 public class HttpQueryResult implements HttpQueryResponse {
-    int code = 0;
+    int code;
     Object body;
     HttpAsyncQuery.HttpQueryResponseImpl response;
 
@@ -86,7 +86,7 @@ public class HttpQueryResult implements HttpQueryResponse {
         return response.getHeaderAsInt(name, defaultValue);
     }
 
-    public Map<String, List<String>> getHeaders() {
+    public Header getHeaders() {
         return response.getHeaders();
     }
 
