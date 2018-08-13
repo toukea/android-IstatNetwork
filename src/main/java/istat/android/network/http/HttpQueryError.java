@@ -95,7 +95,7 @@ public class HttpQueryError extends RuntimeException implements HttpQueryRespons
         return response.getHeaderAsInt(name, defaultValue);
     }
 
-    public Map<String, List<String>> getHeaders() {
+    public Header getHeaders() {
         return response.getHeaders();
     }
 
