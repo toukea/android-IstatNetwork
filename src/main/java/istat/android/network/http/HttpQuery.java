@@ -123,7 +123,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     public HttpQ addHeaders(HashMap<String, String> headers) {
-        headers.putAll(headers);
+        this.headers.putAll(headers);
         return (HttpQ) this;
     }
 
