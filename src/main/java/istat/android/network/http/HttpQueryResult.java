@@ -5,7 +5,6 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by istat on 18/09/17.
@@ -14,9 +13,9 @@ import java.util.Map;
 public class HttpQueryResult implements HttpQueryResponse {
     int code;
     Object body;
-    HttpAsyncQuery.HttpQueryResponseImpl response;
+    HttpQueryResponse response;
 
-    HttpQueryResult(HttpAsyncQuery.HttpQueryResponseImpl resp) {
+    HttpQueryResult(HttpQueryResponse resp) {
         this.code = resp.getCode();
         this.body = resp.getBody();
         this.response = resp;

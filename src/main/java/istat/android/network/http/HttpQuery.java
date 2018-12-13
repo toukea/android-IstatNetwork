@@ -20,6 +20,7 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import istat.android.network.http.interfaces.DownloadHandler;
 import istat.android.network.http.interfaces.UpLoadHandler;
 import istat.android.network.http.utils.HttpUtils;
 import istat.android.network.utils.ToolKits;
@@ -60,6 +61,8 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     static String TAG_INPUT = "input", TAG_OUTPUT = "output";
     volatile HttpURLConnection currentConnection;
     long lastConnectionTime = System.currentTimeMillis();
+    DownloadHandler defaultDownloadHandler = getDefaultDownloader();
+    final HashMap<DownloadHandler.WHEN, DownloadHandler> downloadHandlerHashMap = new HashMap();
     protected HashMap<String, List<Long>> historic = new HashMap<String, List<Long>>() {
 
         /**
@@ -250,6 +253,23 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         this.uploadHandler = uploadHandler;
     }
 
+    public void setDownloadHandler(DownloadHandler downloadHandler) {
+        setDownloadHandler(downloadHandler, null);
+    }
+
+    public void setDownloadHandler(DownloadHandler downloadHandler, DownloadHandler.WHEN when) {
+
+        if (downloadHandler == null) {
+            downloadHandler = getDefaultDownloader();
+        }
+        if (when == null) {
+            this.defaultDownloadHandler = downloadHandler;
+            this.downloadHandlerHashMap.put(DownloadHandler.WHEN.SUCCESS, downloadHandler);
+            this.downloadHandlerHashMap.put(DownloadHandler.WHEN.ERROR, downloadHandler);
+        }
+        downloadHandlerHashMap.put(when, downloadHandler);
+    }
+
     int uploadBufferSize = ToolKits.Stream.DEFAULT_BUFFER_SIZE;
 
     public void setUploadBufferSize(int uploadBufferSize) {
@@ -260,55 +280,66 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return uploadHandler;
     }
 
+    public DownloadHandler getDefaultDownloadHandler() {
+        return defaultDownloadHandler;
+    }
+
+    public DownloadHandler getDownloadHandler(DownloadHandler.WHEN when) {
+        DownloadHandler downloadHandler = downloadHandlerHashMap.get(when);
+        if (downloadHandler == null) {
+            downloadHandler = getDefaultDownloadHandler();
+        }
+        return downloadHandler;
+    }
+
     UpLoadHandler uploadHandler = getDefaultUploader();
 
-    public InputStream doPost(String url) throws IOException {
+    public HttpQueryResponse doPost(String url) throws IOException {
         return doQuery(url, "POST", true, true);
     }
 
-    public InputStream doGet(String url) throws IOException {
+    public HttpQueryResponse doGet(String url) throws IOException {
         return doGet(url, true);
     }
 
-    public InputStream doPut(String url) throws IOException {
+    public HttpQueryResponse doPut(String url) throws IOException {
         String method = "PUT";
         return doQuery(url, method, true, true);
     }
 
-    public Map<String, List<String>> doHead(String url) throws IOException {
-        doQuery(url, "HEAD");
-        return currentConnection.getHeaderFields();
+    public HttpQueryResponse doHead(String url) throws IOException {
+        return doQuery(url, "HEAD");
     }
 
-    public InputStream doDelete(String url) throws IOException {
+    public HttpQueryResponse doDelete(String url) throws IOException {
         return doQuery(url, "DELETE", true, true);
     }
 
-    public InputStream doCopy(String url) throws IOException {
+    public HttpQueryResponse doCopy(String url) throws IOException {
         return doQuery(url, "COPY", true, true);
     }
 
-    public InputStream doPatch(String url) throws IOException {
+    public HttpQueryResponse doPatch(String url) throws IOException {
         return doQuery(url, "PATCH", true, true);
     }
 
-    public InputStream doGet(String url, boolean handleError)
+    public HttpQueryResponse doGet(String url, boolean handleError)
             throws IOException {
         // ---------------------------
         String method = "GET";
         return doQuery(url, method, false, handleError);
     }
 
-    public InputStream doQuery(String url, String method) throws IOException {
+    public HttpQueryResponse doQuery(String url, String method) throws IOException {
         return doQuery(url, method, true);
     }
 
-    public InputStream doQuery(String url, String method, boolean holdError)
+    public HttpQueryResponse doQuery(String url, String method, boolean holdError)
             throws IOException {
         return doQuery(url, method, false, holdError);
     }
 
-    protected synchronized InputStream doQuery(String url, String method, boolean bodyDataEnable, boolean holdError)
+    protected synchronized HttpQueryResponse doQuery(String url, String method, boolean bodyDataEnable, boolean holdError)
             throws IOException {
         long length = 0;
         String data = "";
@@ -341,7 +372,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             InputStream stream = eval(connection, holdError);
             addToOutputHistoric(length);
             onQueryComplete();
-            return stream;
+            return new HttpQueryResponseImpl(this, stream);
         } catch (IOException e) {
             if (isAborted()) {
                 throw new AbortionException(this, e);
@@ -398,6 +429,15 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
                 while ((read = stream.read(b)) > -1) {
                     request.write(b, 0, read);
                 }
+            }
+        };
+    }
+
+    private DownloadHandler<String> getDefaultDownloader() {
+        return new DownloadHandler<String>() {
+            @Override
+            public String onBuildResponseBody(HttpURLConnection connexion, InputStream stream) throws Exception {
+                return ToolKits.Stream.streamToString(stream);
             }
         };
     }
