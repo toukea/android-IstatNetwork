@@ -612,7 +612,7 @@ public final class HttpAsyncQuery extends
         int code = -1;
         String message;
         HttpURLConnection connexion;
-        Header headers=new Header();
+        Header headers = new Header();
 
         public HttpURLConnection getConnection() {
             return connexion;
@@ -970,7 +970,11 @@ public final class HttpAsyncQuery extends
             getHandler().post(new Runnable() {
                 @Override
                 public void run() {
-                    onFail(e);
+                    try {
+                        onFail(e);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                 }
             });
             throw new RuntimeException(e);

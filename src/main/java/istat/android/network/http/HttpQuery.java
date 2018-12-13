@@ -44,6 +44,7 @@ import istat.android.network.utils.ToolKits.Text;
 /**
  * @author Toukea Tatsi (Istat)
  */
+//TODO a deep problem is that doQuery return STream instead of Connexion or other complex result that can handle code, headers, stream.
 public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     public final static String METHOD_GET = "GET",
             METHOD_POST = "POST",

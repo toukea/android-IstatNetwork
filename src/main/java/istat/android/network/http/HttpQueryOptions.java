@@ -13,11 +13,12 @@ public class HttpQueryOptions {
     boolean followRedirects = true, instanceFollowRedirects = true,
             allowUserInteraction = true, useCaches = false;
 
+    @Deprecated
     public static HttpQueryOptions build() {
         return new HttpQueryOptions();
     }
 
-    HttpQueryOptions() {
+    public HttpQueryOptions() {
 
     }
 
