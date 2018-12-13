@@ -7,6 +7,9 @@ import android.support.test.runner.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import istat.android.network.http.HttpQueryResponse;
+import istat.android.network.http.SimpleHttpQuery;
+
 import static org.junit.Assert.*;
 
 /**
@@ -20,7 +23,11 @@ public class ExampleInstrumentedTest {
     public void useAppContext() throws Exception {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
-
         assertEquals("istat.android.base.tools.test", appContext.getPackageName());
+        SimpleHttpQuery http = new SimpleHttpQuery();
+        http.addParam("query", "name");
+        http.addParam("hl", "en");
+        HttpQueryResponse response = http.doGet("www.google.com");
+        assertTrue(response.isSuccess());
     }
 }
