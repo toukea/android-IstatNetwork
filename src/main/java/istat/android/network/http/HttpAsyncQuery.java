@@ -523,14 +523,18 @@ public final class HttpAsyncQuery extends
             return handler;
         }
 
-        void notifyProcessFail(Exception e) {
-            if (onFail(e)) {
-                throw new RuntimeException(e);
-            }
+        void notifyProcessFail(final Exception e) {
+            getHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    onFail(e);
+                }
+            });
+            throw new RuntimeException(e);
         }
 
-        protected boolean onFail(Exception e) {
-            return !(this.query.isCancelled() || this.query.mHttp.isAborted());
+        protected void onFail(Exception e) {
+
         }
 
         Runnable publishRunner = new Runnable() {
@@ -558,12 +562,7 @@ public final class HttpAsyncQuery extends
                 e.printStackTrace();
                 Handler tmpHandler = getHandler();
                 if (tmpHandler != null) {
-                    getHandler().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            notifyProcessFail(e);
-                        }
-                    });
+                    notifyProcessFail(e);
                 }
             }
         }
@@ -630,11 +629,7 @@ public final class HttpAsyncQuery extends
             getHandler().post(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        onFail(e);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
+                    onFail(e);
                 }
             });
             throw new RuntimeException(e);
@@ -644,8 +639,8 @@ public final class HttpAsyncQuery extends
          * @param e
          * @return whether or not this method should rethrow the Exception.
          */
-        protected boolean onFail(Exception e) {
-            return !(this.httpAsyncQuery.isCancelled() || this.httpAsyncQuery.mHttp.isAborted());
+        protected void onFail(Exception e) {
+
         }
 
         Object buildResponseBody(HttpURLConnection connexion, InputStream stream) throws Exception {
