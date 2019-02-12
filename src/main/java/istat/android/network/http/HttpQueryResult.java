@@ -10,6 +10,7 @@ import java.util.List;
  * Created by istat on 18/09/17.
  */
 //TODO inner variable is really needed?
+//TODO un result ne peut pas avoir une erreur, pas de sens.
 public class HttpQueryResult implements HttpQueryResponse {
     int code;
     Object body;

@@ -38,7 +38,7 @@ import java.util.Map;
  */
 public class MultipartHttpQuery extends ParameterHttpQuery<MultipartHttpQuery> {
 
-    HashMap<String, File> fileParts = new HashMap<String, File>();
+    HashMap<String, File> fileParts = new HashMap();
     private static final String LINE_FEED = "\r\n";
 
     @Override
@@ -51,26 +51,25 @@ public class MultipartHttpQuery extends ParameterHttpQuery<MultipartHttpQuery> {
     }
 
     @Override
-    public MultipartHttpQuery addHeader(String name, String value) {
-        super.addHeader(name, value);
+    public MultipartHttpQuery putHeader(String name, String value) {
+        super.putHeader(name, value);
         return this;
     }
 
-    public MultipartHttpQuery addFilePart(String name, File file) {
+    public MultipartHttpQuery putFilePart(String name, File file) {
         fileParts.put(name, file);
         return this;
     }
 
-    public MultipartHttpQuery addFilePart(String name, String file) {
-        addFilePart(name, new File(file));
+    public MultipartHttpQuery putFilePart(String name, String file) {
+        putFilePart(name, new File(file));
         return this;
     }
 
     @Override
-    public MultipartHttpQuery clearParams() {
-        super.clearParams();
+    public boolean clearParams() {
         clearParts();
-        return this;
+        return super.clearParams();
     }
 
     public MultipartHttpQuery clearParts() {
@@ -238,7 +237,7 @@ public class MultipartHttpQuery extends ParameterHttpQuery<MultipartHttpQuery> {
         return "===" + System.currentTimeMillis() + "===";
     }
 
-    public final MultipartHttpQuery addParams(HashMap<?, ?> nameValues) {
+    public final MultipartHttpQuery putParams(HashMap<?, ?> nameValues) {
         if (!nameValues.keySet().isEmpty()) {
             String[] table = new String[nameValues.size()];
             table = nameValues.keySet().toArray(table);
@@ -247,9 +246,9 @@ public class MultipartHttpQuery extends ParameterHttpQuery<MultipartHttpQuery> {
                 if (tmp != null) {
                     Object value = nameValues.get(tmp);
                     if (value instanceof File) {
-                        addFilePart(tmp, (File) value);
+                        putFilePart(tmp, (File) value);
                     } else {
-                        addParam(tmp, nameValues.get(tmp).toString());
+                        putParam(tmp, nameValues.get(tmp).toString());
                     }
                 }
             }

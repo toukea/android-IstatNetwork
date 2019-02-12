@@ -3,6 +3,8 @@ package istat.android.network;
 
 import org.junit.Test;
 
+import istat.android.network.http.SimpleHttpQuery;
+
 import static org.junit.Assert.*;
 
 /**
@@ -18,6 +20,12 @@ public class ExampleUnitTest {
         String text = "{\"Pharmacies\":{";//"{\n\t\"Pharmacies\":{\n\t";
         boolean matches = text.matches(pattern);
         assertTrue(matches);
+    }
+
+    @Test
+    public void testHttp() throws Exception {
+        SimpleHttpQuery http = new SimpleHttpQuery()
+                .putHeader("papa", "mama");
     }
 
     /*

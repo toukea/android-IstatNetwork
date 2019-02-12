@@ -1,7 +1,6 @@
 package istat.android.network.http;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -121,12 +120,12 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     @SuppressWarnings("unchecked")
-    public HttpQ addHeader(String name, String value) {
+    public HttpQ putHeader(String name, String value) {
         headers.put(name, value);
         return (HttpQ) this;
     }
 
-    public HttpQ addHeaders(HashMap<String, String> headers) {
+    public HttpQ putHeaders(HashMap<String, String> headers) {
         this.headers.putAll(headers);
         return (HttpQ) this;
     }
@@ -140,8 +139,8 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return urlParameters;
     }
 
-    protected HttpQ addParam(String Name, String Value, boolean urlParam) {
-        addParam(Name, Value);
+    protected HttpQ putParam(String Name, String Value, boolean urlParam) {
+        putParam(Name, Value);
         if (urlParam) {
             urlPramNames.add(Name);
         }
@@ -149,13 +148,13 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     }
 
     @SuppressWarnings("unchecked")
-    protected HttpQ addParam(String Name, String Value) {
+    protected HttpQ putParam(String Name, String Value) {
         parameters.put(Name, Value);
         return (HttpQ) this;
     }
 
     @SuppressWarnings("unchecked")
-    protected HttpQ addParams(HashMap<?, ?> nameValues) {
+    protected HttpQ putParams(HashMap<?, ?> nameValues) {
         if (!nameValues.keySet().isEmpty()) {
             String[] table = new String[nameValues.size()];
             table = nameValues.keySet().toArray(table);
@@ -163,7 +162,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
                 if (tmp != null) {
                     Object obj = nameValues.get(tmp);
                     if (obj != null) {
-                        addParam(tmp, obj.toString());
+                        putParam(tmp, obj.toString());
                     }
                 }
             }
@@ -179,24 +178,24 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
      * @param Value
      * @return
      */
-    public HttpQ addURLParam(String Name, String Value) {
-        return addParam(Name, Value, true);
+    public HttpQ putURLParam(String Name, String Value) {
+        return putParam(Name, Value, true);
     }
 
-    public HttpQ addURLParam(String Name, String[] values) {
+    public HttpQ putURLParam(String Name, String[] values) {
         for (int i = 0; i < values.length; i++) {
-            addURLParam(Name + "[" + i + "]", values[i]);
+            putURLParam(Name + "[" + i + "]", values[i]);
         }
         return (HttpQ) this;
     }
 
-    public HttpQ addURLParams(HashMap<String, Object> nameValues) {
+    public HttpQ putURLParams(HashMap<String, Object> nameValues) {
         if (!nameValues.keySet().isEmpty()) {
             String[] table = new String[nameValues.size()];
             table = nameValues.keySet().toArray(table);
             for (String tmp : table) {
                 if (tmp != null) {
-                    addURLParam(tmp, nameValues.get(tmp).toString());
+                    putURLParam(tmp, nameValues.get(tmp).toString());
                 }
             }
         }
@@ -205,19 +204,19 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
 
     @SuppressWarnings("unchecked")
     public HttpQ setContentType(String name) {
-        addHeader("Content-Type", name);
+        putHeader("Content-Type", name);
         return (HttpQ) this;
     }
 
     @SuppressWarnings("unchecked")
     public HttpQ setAccept(String name) {
-        addHeader("Accept", name);
+        putHeader("Accept", name);
         return (HttpQ) this;
     }
 
     @SuppressWarnings("unchecked")
     public HttpQ setUserAgent(String name) {
-        addHeader("User-Agent", name);
+        putHeader("User-Agent", name);
         return (HttpQ) this;
     }
 
@@ -225,25 +224,24 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         headers.remove(name);
     }
 
-    @SuppressWarnings("unchecked")
-    public HttpQ clearParams() {
+    public boolean clearParams() {
+        boolean out = !parameters.isEmpty() || !urlPramNames.isEmpty();
         parameters.clear();
         urlPramNames.clear();
-        return (HttpQ) this;
-
+        return out;
     }
 
-    @SuppressWarnings("unchecked")
-    public HttpQ clearHeaders() {
+    public boolean clearHeaders() {
+        boolean out = !headers.isEmpty();
         headers.clear();
-        return (HttpQ) this;
+        return out;
     }
 
     @SuppressWarnings("unchecked")
-    public HttpQ clearExtraData() {
+    public boolean clearExtraData() {
         clearHeaders();
         clearParams();
-        return (HttpQ) this;
+        return clearHeaders() || clearParams();
     }
 
     public void setUploadHandler(UpLoadHandler uploadHandler) {
@@ -702,7 +700,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
     public boolean abortRequest() {
         aborted = true;
         boolean out = hasPendingRequest();
-        Log.e("HttQuery", "abortRequest_start::runningRequest=" + out);
+        // Log.e("HttQuery", "abortRequest_start::runningRequest=" + out);
         if (out) {
             if (currentOutputStream != null) {
                 try {

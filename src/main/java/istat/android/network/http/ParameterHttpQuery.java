@@ -13,19 +13,23 @@ import istat.android.network.utils.ToolKits;
  */
 
 public abstract class ParameterHttpQuery<HttpQ extends HttpQuery<HttpQ>> extends HttpQuery<HttpQ> {
+    ParameterHttpQuery() {
+
+    }
+
     @Override
     public void setParameterHandler(ParameterHandler parameterHandler) {
         super.setParameterHandler(parameterHandler);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public HttpQ addSendable(HttpSendable sendable) {
+    public HttpQ putSendable(HttpSendable sendable) {
         sendable.onFillHttpQuery(this);
         return (HttpQ) this;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public HttpQ addSendable(HttpSendable... sendableArray) {
+    public HttpQ putSendable(HttpSendable... sendableArray) {
         for (HttpSendable sendable : sendableArray) {
             sendable.onFillHttpQuery(this);
         }
@@ -33,57 +37,59 @@ public abstract class ParameterHttpQuery<HttpQ extends HttpQuery<HttpQ>> extends
     }
 
     @SuppressWarnings("unchecked")
-    public HttpQ addParams(HashMap<?, ?> nameValues) {
-        return super.addParams(nameValues);
+    public HttpQ putParams(HashMap<?, ?> nameValues) {
+        return super.putParams(nameValues);
     }
 
-    public HttpQ addParams(Object container) {
-        return addParams(ToolKits.toHashMap(container, true, false, false));
+    public HttpQ putParams(Object container) {
+        return putParams(ToolKits.toHashMap(container, true, false, false));
     }
 
-    public HttpQ addParams(Object container, boolean privateAndSuper) {
-        return addParams(ToolKits.toHashMap(container, false, privateAndSuper, false));
+    public HttpQ putParams(Object container, boolean privateAndSuper) {
+        return putParams(ToolKits.toHashMap(container, false, privateAndSuper, false));
     }
 
-    public HttpQ addParams(Object container, String... ignoredFields) {
-        return addParams(ToolKits.toHashMap(container, true, false, false, ignoredFields));
+    public HttpQ putParams(Object container, String... ignoredFields) {
+        return putParams(ToolKits.toHashMap(container, true, false, false, ignoredFields));
     }
 
-    public HttpQ addParams(Object container, boolean privateAndSuper, String... ignoredFields) {
-        return addParams(ToolKits.toHashMap(container, privateAndSuper, false, false, ignoredFields));
+    public HttpQ putParams(Object container, boolean privateAndSuper, String... ignoredFields) {
+        return putParams(ToolKits.toHashMap(container, privateAndSuper, false, false, ignoredFields));
     }
 
-    public void removeParam(String name) {
+    public boolean removeParam(String name) {
+        boolean out = !parameters.isEmpty() || urlPramNames.isEmpty();
         parameters.remove(name);
         urlPramNames.remove(name);
+        return out;
     }
 
 
     @SuppressWarnings("unchecked")
-    public HttpQ addParam(String Name, String... values) {
+    public HttpQ putParam(String Name, String... values) {
         for (int i = 0; i < values.length; i++) {
-            addParam(Name + "[" + i + "]", values[i]);
+            putParam(Name + "[" + i + "]", values[i]);
         }
         return (HttpQ) this;
     }
 
     @SuppressWarnings("unchecked")
-    public HttpQ addParam(String Name, HashMap<?, ?> values) {
+    public HttpQ putParam(String Name, HashMap<?, ?> values) {
         Iterator<?> iterator = values.keySet().iterator();
         while (iterator.hasNext()) {
             Object name = iterator.next();
             Object value = values.get(name);
-            addParam(Name + "[" + name + "]", value + "");
+            putParam(Name + "[" + name + "]", value + "");
         }
         return (HttpQ) this;
     }
 
-    public HttpQ addParam(String Name, String Value, boolean urlParam) {
-        return super.addParam(Name, Value, urlParam);
+    public HttpQ putParam(String Name, String Value, boolean urlParam) {
+        return super.putParam(Name, Value, urlParam);
     }
 
     @SuppressWarnings("unchecked")
-    public HttpQ addParam(String Name, String Value) {
-        return super.addParam(Name, Value);
+    public HttpQ putParam(String Name, String Value) {
+        return super.putParam(Name, Value);
     }
 }

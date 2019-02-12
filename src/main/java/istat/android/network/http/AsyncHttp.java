@@ -47,23 +47,23 @@ public final class AsyncHttp {
         return this;
     }
 
-    public AsyncHttp addHttpParam(String name, String value) {
-        this.mAsyncQuery.mHttp.addParam(name, value);
+    public AsyncHttp putHttpParam(String name, String value) {
+        this.mAsyncQuery.mHttp.putParam(name, value);
         return this;
     }
 
-    public AsyncHttp addHttpParams(HashMap<String, ?> params) {
-        this.mAsyncQuery.mHttp.addParams(params);
+    public AsyncHttp putHttpParams(HashMap<String, ?> params) {
+        this.mAsyncQuery.mHttp.putParams(params);
         return this;
     }
 
-    public AsyncHttp addHttpHeader(String name, String value) {
-        this.mAsyncQuery.mHttp.addHeader(name, value);
+    public AsyncHttp putHttpHeader(String name, String value) {
+        this.mAsyncQuery.mHttp.putHeader(name, value);
         return this;
     }
 
-    public AsyncHttp addHttpHeaders(HashMap<String, String> headers) {
-        this.mAsyncQuery.mHttp.addHeaders(headers);
+    public AsyncHttp putHttpHeaders(HashMap<String, String> headers) {
+        this.mAsyncQuery.mHttp.putHeaders(headers);
         return this;
     }
 

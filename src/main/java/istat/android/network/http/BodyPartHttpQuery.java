@@ -27,11 +27,12 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
 
     public BodyPartHttpQuery(File obj) {
         this((Object) obj);
+        this.setContentType("application/octet-stream");
     }
 
     public BodyPartHttpQuery(JSONObject jsonObject) {
         this((Object) jsonObject);
-        this.setContentType("Application/json");
+        this.setContentType("application/json");
     }
 
     public BodyPartHttpQuery(Object obj, UpLoadHandler handler) {
@@ -64,10 +65,10 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
      * @param Name
      * @param Value
      * @return
-     * @throws RuntimeException then called due to addParam not supported for BodyPart.
+     * @throws RuntimeException then called due to putParam not supported for BodyPart.
      */
     @Override
-    public BodyPartHttpQuery addParam(String Name, String Value) throws RuntimeException {
+    public BodyPartHttpQuery putParam(String Name, String Value) throws RuntimeException {
         throw new RuntimeException("Not supported.");
     }
 

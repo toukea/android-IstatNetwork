@@ -25,8 +25,8 @@ public class ExampleInstrumentedTest {
         Context appContext = InstrumentationRegistry.getTargetContext();
         assertEquals("istat.android.base.tools.test", appContext.getPackageName());
         SimpleHttpQuery http = new SimpleHttpQuery();
-        http.addParam("query", "name");
-        http.addParam("hl", "en");
+        http.putParam("query", "name");
+        http.putParam("hl", "en");
         HttpQueryResponse response = http.doGet("www.google.com");
         assertTrue(response.isSuccess());
     }
