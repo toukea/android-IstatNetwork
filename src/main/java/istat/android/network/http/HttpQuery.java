@@ -178,24 +178,24 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
      * @param Value
      * @return
      */
-    public HttpQ putURLParam(String Name, String Value) {
+    public HttpQ putQuery(String Name, String Value) {
         return putParam(Name, Value, true);
     }
 
-    public HttpQ putURLParam(String Name, String[] values) {
+    public HttpQ putQuery(String Name, String[] values) {
         for (int i = 0; i < values.length; i++) {
-            putURLParam(Name + "[" + i + "]", values[i]);
+            putQuery(Name + "[" + i + "]", values[i]);
         }
         return (HttpQ) this;
     }
 
-    public HttpQ putURLParams(HashMap<String, Object> nameValues) {
+    public HttpQ putQueries(HashMap<String, Object> nameValues) {
         if (!nameValues.keySet().isEmpty()) {
             String[] table = new String[nameValues.size()];
             table = nameValues.keySet().toArray(table);
             for (String tmp : table) {
                 if (tmp != null) {
-                    putURLParam(tmp, nameValues.get(tmp).toString());
+                    putQuery(tmp, nameValues.get(tmp).toString());
                 }
             }
         }
