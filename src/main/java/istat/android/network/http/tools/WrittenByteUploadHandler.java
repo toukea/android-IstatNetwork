@@ -7,11 +7,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import istat.android.network.http.HttpAsyncQuery;
-import istat.android.network.http.HttpAsyncQuery.HttpUploadHandler;
 import istat.android.network.http.HttpQuery;
 import istat.android.network.utils.ToolKits.Stream;
 
-public abstract class WrittenByteUploadHandler extends HttpUploadHandler {
+public abstract class WrittenByteUploadHandler extends HttpAsyncQuery.UploadHandler {
     int buffer = Stream.DEFAULT_BUFFER_SIZE;
 
     long publishTimeInterval = -1;

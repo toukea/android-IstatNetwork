@@ -59,7 +59,7 @@ public final class HttpAsyncQuery extends
     };
     public final static String DEFAULT_ENCODING = "UTF-8";
     UpLoadHandler uploadHandler;
-    HttpQueryCallback mHttpCallBack;
+    Callback mHttpCallBack;
     CancelListener mCancelListener;
     final HttpQuery<?> mHttp;
     int type = TYPE_GET;
@@ -74,7 +74,7 @@ public final class HttpAsyncQuery extends
         this.mHttp = http;
     }
 
-    private HttpAsyncQuery(HttpQuery<?> http, HttpQueryCallback callBack) {
+    private HttpAsyncQuery(HttpQuery<?> http, Callback callBack) {
         this.mHttpCallBack = callBack;
         this.mHttp = http;
     }
@@ -234,7 +234,7 @@ public final class HttpAsyncQuery extends
     private void notifyFail(HttpQueryResponseImpl resp) {
         int when = WHEN_FAILED;
         if (mHttpCallBack != null) {
-            mHttpCallBack.onHttpFail(resp.getError());
+            mHttpCallBack.onHttpFailure(resp.getError());
         }
         notifyCompleted(resp);
         ConcurrentLinkedQueue<Runnable> runnableList = runnableTask.get(when);
@@ -288,8 +288,8 @@ public final class HttpAsyncQuery extends
     boolean prepareQuery() {
         if (uploadHandler != null) {
             mHttp.setUploadHandler(uploadHandler);
-            if (uploadHandler instanceof HttpUploadHandler) {
-                ((HttpUploadHandler) uploadHandler).query = this;
+            if (uploadHandler instanceof UploadHandler) {
+                ((UploadHandler) uploadHandler).query = this;
             }
             return true;
         }
@@ -446,12 +446,12 @@ public final class HttpAsyncQuery extends
         void onCancelled(HttpAsyncQuery asyncQ);
     }
 
-    public interface HttpQueryCallback {
+    public interface Callback {
         void onHttpSuccess(HttpQueryResult resp);
 
         void onHttpError(HttpQueryError e);
 
-        void onHttpFail(Exception e);
+        void onHttpFailure(Exception e);
 
         void onHttComplete(HttpQueryResponse resp);
 
@@ -470,7 +470,7 @@ public final class HttpAsyncQuery extends
         taskQueue.put(uniqueToken, this);
     }
 
-    public static HttpAsyncQuery getTask(HttpQueryCallback callback) {
+    public static HttpAsyncQuery getTask(Callback callback) {
         return taskQueue.get(callback);
     }
 
@@ -495,12 +495,12 @@ public final class HttpAsyncQuery extends
         }
     }
 
-    public static abstract class HttpUploadHandler implements
+    public static abstract class UploadHandler implements
             UpLoadHandler, ProgressListener {
         Handler handler;
         HttpAsyncQuery query;
 
-        public HttpUploadHandler(Handler handler) {
+        public UploadHandler(Handler handler) {
             if (handler == null) {
                 try {
                     this.handler = getHandler();
@@ -512,7 +512,7 @@ public final class HttpAsyncQuery extends
             }
         }
 
-        public HttpUploadHandler() {
+        public UploadHandler() {
             this(null);
         }
 
