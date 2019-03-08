@@ -47,7 +47,7 @@ class HttpQueryResponseImpl implements HttpQueryResponse {
         this.error = e;
     }
 
-    HttpQueryResponseImpl(HttpQuery http, InputStream stream) throws HttpQuery.AbortionException {
+    HttpQueryResponseImpl(HttpQuery http, InputStream stream) throws IOException {
         connexion = http.getCurrentConnection();
         if (connexion != null) {
             this.code = http.getCurrentResponseCode();
@@ -69,7 +69,9 @@ class HttpQueryResponseImpl implements HttpQueryResponse {
                 if (ex instanceof IOException && http.isAborted()) {
                     throw new HttpQuery.AbortionException(http, ex);
                 }
-                this.error = ex;
+                IOException instantiationException = new IOException("Error when reading stream to create HttpQueryResponse body.");
+                instantiationException.setStackTrace(ex.getStackTrace());
+                throw instantiationException;
             }
             this.headers = new Header(connexion.getHeaderFields());
         }

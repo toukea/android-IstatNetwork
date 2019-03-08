@@ -371,11 +371,13 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             addToOutputHistoric(length);
             onQueryComplete();
             return new HttpQueryResponseImpl(this, stream);
-        } catch (IOException e) {
+        } catch (Exception e) {
             if (isAborted()) {
                 throw new AbortionException(this, e);
             } else {
-                throw e;
+                IOException exception = new IOException();
+                exception.initCause(e);
+                throw exception;
             }
         }
     }
@@ -859,4 +861,5 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             return httpQuery;
         }
     }
+
 }
