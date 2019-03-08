@@ -54,7 +54,7 @@ add the dependency to your pom.xml:
 <dependency>
   <groupId>istat.android.network.http</groupId>
   <artifactId>istat-network</artifactId>
-  <version>3.0.0</version>
+  <version>3.1.1</version>
   <type>pom</type>
 </dependency>
 ```
