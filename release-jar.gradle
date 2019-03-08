@@ -17,16 +17,16 @@ android.libraryVariants.all { variant ->
     }
 }
 
-task androidJavadocs(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
-    classpath += files(ext.androidJar)
-}
-
-task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-    classifier = 'javadoc'
-    from androidJavadocs.destinationDir
-}
+//task androidJavadocs(type: Javadoc) {
+//    source = android.sourceSets.main.java.srcDirs
+//    ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
+//    classpath += files(ext.androidJar)
+//}
+//
+//task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+//    classifier = 'javadoc'
+//    from androidJavadocs.destinationDir
+//}
 
 task androidSourcesJar(type: Jar) {
     classifier = 'sources'
@@ -59,7 +59,7 @@ generateRelease.dependsOn(uploadArchives)
 generateRelease.dependsOn(zipRelease)
 
 
-artifacts {
-    archives androidSourcesJar
-    archives androidJavadocsJar
-}
+//artifacts {
+//    archives androidSourcesJar
+//    archives androidJavadocsJar
+//}

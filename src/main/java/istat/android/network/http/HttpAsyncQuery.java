@@ -419,14 +419,9 @@ public final class HttpAsyncQuery extends
 
             @Override
             public String onBuildResponseBody(HttpURLConnection currentConnexion,
-                                              InputStream stream) {
-                try {
-                    return StreamOperationTools.streamToString(executionController,
-                            stream, bufferSize, encoding);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return "";
-                }
+                                              InputStream stream) throws IOException {
+                return StreamOperationTools.streamToString(executionController,
+                        stream, bufferSize, encoding);
             }
 
             @Override

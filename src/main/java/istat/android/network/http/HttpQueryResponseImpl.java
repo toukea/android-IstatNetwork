@@ -59,7 +59,7 @@ class HttpQueryResponseImpl implements HttpQueryResponse {
                     if (HttpUtils.isSuccessCode(connexion.getResponseCode())) {
                         downloader = http.getDownloadHandler(DownloadHandler.WHEN.SUCCESS);
                     } else {
-                        downloader = http.getDownloadHandler(DownloadHandler.WHEN.SUCCESS);
+                        downloader = http.getDownloadHandler(DownloadHandler.WHEN.ERROR);
                     }
                     this.body = downloader.onBuildResponseBody(connexion, stream);
                 }
