@@ -337,6 +337,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
         return doQuery(url, method, false, holdError);
     }
 
+    //TODO est ce qu'il est vrai et judicieux de considérer ces erreur comme des IOException forcé. sa gache le debuguage.
     protected synchronized HttpQueryResponse doQuery(String url, String method, boolean bodyDataEnable, boolean holdError)
             throws IOException {
         long length = 0;
@@ -375,7 +376,7 @@ public abstract class HttpQuery<HttpQ extends HttpQuery<?>> {
             if (isAborted()) {
                 throw new AbortionException(this, e);
             } else {
-                IOException exception = new IOException();
+                IOException exception = new IOException(e.getMessage());
                 exception.initCause(e);
                 throw exception;
             }

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.util.HashMap;
 
 import istat.android.network.http.interfaces.UpLoadHandler;
 import istat.android.network.utils.ToolKits;
@@ -61,15 +62,12 @@ public class BodyPartHttpQuery extends HttpQuery<BodyPartHttpQuery> {
         return this;
     }
 
-    /**
-     * @param Name
-     * @param Value
-     * @return
-     * @throws RuntimeException then called due to putParam not supported for BodyPart.
-     */
     @Override
-    public BodyPartHttpQuery putParam(String Name, String Value) throws RuntimeException {
-        throw new RuntimeException("Not supported.");
+    protected BodyPartHttpQuery putParam(String Name, String Value, boolean urlParam) {
+        if (!urlParam) {
+            throw new RuntimeException("Not supported.");
+        }
+        return super.putParam(Name, Value, urlParam);
     }
 
     @Override
