@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 ext {
     PUBLISH_GROUP_ID = 'istat.android.network.http'
     PUBLISH_ARTIFACT_ID = 'istat-network'
-    PUBLISH_VERSION = '3.1.1'
+    PUBLISH_VERSION = '3.1.2'
 }
 apply from: 'release-jar.gradle'
 dependencies {
@@ -73,10 +73,10 @@ android {
     }
 
     dependencies {
-        compile fileTree(dir: 'libs', include: ['*.jar'])
-        androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        implementation fileTree(dir: 'libs', include: ['*.jar'])
+        androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
             exclude group: 'com.android.support', module: 'support-annotations'
         })
-        testCompile 'junit:junit:4.12'
+        testImplementation 'junit:junit:4.12'
     }
 }
