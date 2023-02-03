@@ -12,10 +12,6 @@ dependencies {
 android {
 
     compileSdkVersion 26
-    buildToolsVersion "27.0.3"
-    lintOptions {
-        abortOnError false
-    }
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
@@ -78,5 +74,8 @@ android {
             exclude group: 'com.android.support', module: 'support-annotations'
         })
         testImplementation 'junit:junit:4.12'
+    }
+    lint {
+        abortOnError false
     }
 }
