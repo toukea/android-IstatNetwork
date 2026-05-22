@@ -1,9 +1,9 @@
 package istat.android.network.utils;
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkInfo.DetailedState;
 import android.net.wifi.WifiInfo;
@@ -26,6 +26,28 @@ import java.util.List;
  * @author emil http://stackoverflow.com/users/220710/emil
  */
 public final class Connectivity {
+
+    public static boolean isInternetConnected(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (connectivityManager != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // For Android Marshmallow (API level 23) and above
+                Network activeNetwork = connectivityManager.getActiveNetwork();
+                if (activeNetwork != null) {
+                    NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork);
+                    return networkCapabilities != null &&
+                            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                            networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+                }
+            } else {
+                // For older versions, use deprecated methods
+                android.net.NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+                return networkInfo != null && networkInfo.isConnected();
+            }
+        }
+        return false;
+    }
 
     /**
      * Get the network info
@@ -119,8 +141,8 @@ public final class Connectivity {
                     return true; // ~ 400-7000 kbps
                 /*
                  * Above API level 7, make sure to set android:targetSdkVersion
-				 * to appropriate level to use these
-				 */
+                 * to appropriate level to use these
+                 */
                 case TelephonyManager.NETWORK_TYPE_EHRPD: // API level 11
                     return true; // ~ 1-2 Mbps
                 case TelephonyManager.NETWORK_TYPE_EVDO_B: // API level 9
